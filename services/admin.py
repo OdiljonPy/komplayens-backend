@@ -1,3 +1,41 @@
 from django.contrib import admin
+from .models import CategoryOrganization, Organization, Service, Training, TrainingMedia, News
 
-# Register your models here.
+@admin.register(CategoryOrganization)
+class CategoryOrganizationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    list_display_links = ('id', 'name')
+    search_fields = ('name',)
+
+@admin.register(Organization)
+class OrganizationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'phone_number', 'address')
+    list_display_links = ('id', 'name')
+    search_fields = ('name', 'phone_number', 'address', 'district', 'region', 'email')
+    list_filter = ('region', 'district')
+
+@admin.register(Service)
+class ServiceAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'organization')
+    list_display_links = ('id', 'name')
+    search_fields = ('name', 'organization')
+
+@admin.register(Training)
+class TrainingAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'number_participants')
+    list_display_links = ('id', 'name')
+    search_fields = ('name', 'description')
+
+@admin.register(TrainingMedia)
+class TrainingMediaAdmin(admin.ModelAdmin):
+    list_display = ('id', 'order', 'type')
+    list_display_links = ('id', 'order')
+    search_fields = ('order',)
+    list_filter = ('type',)
+
+@admin.register(News)
+class NewsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'is_published', 'is_published_date')
+    list_display_links = ('id', 'title')
+    search_fields = ('title', 'description', 'short_description', 'is_published_date')
+    list_filter = ('is_published',)

@@ -15,8 +15,13 @@ class Region(BaseModel):
 
 
 class District(BaseModel):
-    region = models.ForeignKey(Region, on_delete=models.CASCADE)
-    name = models.CharField(max_length=150)
+    region = models.ForeignKey(Region, on_delete=models.CASCADE, verbose_name="Регион")
+    name = models.CharField(max_length=150, verbose_name="Название")
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = "Область"
+        verbose_name_plural = "Области"
+        ordering = ('-created_at',)

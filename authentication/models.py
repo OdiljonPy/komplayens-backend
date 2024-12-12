@@ -1,5 +1,3 @@
-from tabnanny import verbose
-
 from django.db import models
 from abstarct_model.base_model import BaseModel
 
@@ -36,7 +34,7 @@ class User(BaseModel):
 
 class Employee(User):
     role = models.PositiveSmallIntegerField(choices=ROLE_CHOICES, default=2, verbose_name="Роль")
-    organization = models.ForeignKey('services.Organization', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Организация")
+    organization = models.ForeignKey(to='services.Organization', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Организация")
 
     class Meta:
         verbose_name = 'Сотрудник'

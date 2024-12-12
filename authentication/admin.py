@@ -5,7 +5,9 @@ from .models import User, Employee
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('id', 'full_name')
+    list_display = ('id', 'full_name', 'username', 'phone_number')
+    list_display_links = ('id', 'full_name')
+    search_fields = ('full_name', 'username', 'phone_number')
 
 
 

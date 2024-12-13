@@ -1,47 +1,36 @@
-from tabnanny import verbose
-
 from django.db import models
 from abstarct_model.base_model import BaseModel
 
-# from services.models import Organization
-
 ROLE_CHOICES = (
-    (0, 'SuperAdmin'),
-    (1, 'Admin'),
-    (2, 'Staff'),
+    (1, 'SuperAdmin'),
+    (2, 'Admin'),
+    (3, 'Officer'),
+    (4, 'Employee'),
+)
+
+OFFICER_REQUEST_STATUS = (
+    (1, 'Waiting'),
+    (2, 'Approved'),
+    (3, 'Rejected'),
 )
 
 
 class User(BaseModel):
-    id = models.AutoField(primary_key=True)
-    full_name = models.CharField(max_length=250, verbose_name="Полное имя")
-    username = models.CharField(max_length=250, unique=True, verbose_name="Имя пользователя")
+    first_name = models.CharField(max_length=80, verbose_name='Имя')
+    last_name = models.CharField(max_length=80, verbose_name='Фамилия')
     password = models.CharField(max_length=250, verbose_name="Пароль")
     phone_number = models.CharField(max_length=14, verbose_name="Номер телефона")
+    organization = models.ForeignKey(
+        to='services.Organization', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Организация")
+    role = models.PositiveSmallIntegerField(choices=ROLE_CHOICES, default=2, verbose_name="Роль")
     login_time = models.DateTimeField(null=True, verbose_name="Время входа")
-
-
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['full_name']
-
+    status = models.IntegerField(choices=OFFICER_REQUEST_STATUS, default=1, verbose_name='Статус')
+    active = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.username
+        return str(self.id)
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
         ordering = ('-created_at',)
-
-
-class Employee(User):
-    role = models.PositiveSmallIntegerField(choices=ROLE_CHOICES, default=2, verbose_name="Роль")
-    organization = models.ForeignKey('services.Organization', null=True, blank=True, on_delete=models.SET_NULL, verbose_name="Организация")
-
-    class Meta:
-        verbose_name = 'Сотрудник'
-        verbose_name_plural = 'Сотрудники'
-        ordering = ('-created_at',)
-
-# class User(BaseUser):
-#     pass

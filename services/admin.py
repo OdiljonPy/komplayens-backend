@@ -1,5 +1,9 @@
 from django.contrib import admin
-from .models import CategoryOrganization, Organization, Service, Training, TrainingMedia, News
+from .models import (
+    CategoryOrganization, Organization, Service,
+    Training, TrainingMedia, News
+)
+
 
 @admin.register(CategoryOrganization)
 class CategoryOrganizationAdmin(admin.ModelAdmin):
@@ -7,18 +11,21 @@ class CategoryOrganizationAdmin(admin.ModelAdmin):
     list_display_links = ('id', 'name')
     search_fields = ('name',)
 
+
 @admin.register(Organization)
 class OrganizationAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'phone_number', 'address')
     list_display_links = ('id', 'name')
-    search_fields = ('name', 'phone_number', 'address', 'district', 'region', 'email')
+    search_fields = ('name', 'phone_number', 'address', 'district__name', 'region__name', 'email')
     list_filter = ('region', 'district')
+
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'organization')
     list_display_links = ('id', 'name')
-    search_fields = ('name', 'organization')
+    search_fields = ('name', 'organization__name')
+
 
 @admin.register(Training)
 class TrainingAdmin(admin.ModelAdmin):
@@ -26,12 +33,14 @@ class TrainingAdmin(admin.ModelAdmin):
     list_display_links = ('id', 'name')
     search_fields = ('name', 'description')
 
+
 @admin.register(TrainingMedia)
 class TrainingMediaAdmin(admin.ModelAdmin):
     list_display = ('id', 'order', 'type')
     list_display_links = ('id', 'order')
     search_fields = ('order',)
     list_filter = ('type',)
+
 
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):

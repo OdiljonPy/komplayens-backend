@@ -1,4 +1,5 @@
 from django.db import models
+from tinymce.models import HTMLField
 from abstarct_model.base_model import BaseModel
 
 FAQ_TYPE_CHOICES = (
@@ -41,8 +42,8 @@ class District(BaseModel):
 
 
 class FAQ(BaseModel):
-    question = models.CharField(max_length=120, verbose_name='Вопрос')
-    answer = models.CharField(max_length=120, verbose_name='Отвечать')
+    question = models.CharField(max_length=250, verbose_name='Вопрос')
+    answer = HTMLField(verbose_name='Отвечать')
     type = models.IntegerField(choices=FAQ_TYPE_CHOICES, default=1, verbose_name='Тип')
 
     def __str__(self):
@@ -86,7 +87,7 @@ class CorruptionRisk(BaseModel):
 
 class CorruptionCase(BaseModel):
     corruption = models.ForeignKey(CorruptionRisk, on_delete=models.CASCADE, verbose_name='Коррупция')
-    description = models.TextField(max_length=300, verbose_name='Описание')
+    description = HTMLField(verbose_name='Описание')
 
     def __str__(self):
         return str(self.id)

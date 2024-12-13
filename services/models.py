@@ -18,12 +18,6 @@ REPORT_STATUS_CHOICES = (
     (3, 'Completed')
 )
 
-REPORT_SUBMISSION_TYPE_CHOICES = (
-    (1, 'By System'),
-    (2, 'By Phone Number'),
-    (3, 'By Email')
-)
-
 
 class CategoryOrganization(BaseModel):
     name = models.CharField(max_length=150, verbose_name="Название")
@@ -383,8 +377,7 @@ class ViolationReport(BaseModel):
     district = models.ForeignKey(to='base.District', on_delete=models.SET_NULL, null=True, verbose_name='Округ')
     status = models.IntegerField(choices=REPORT_STATUS_CHOICES, verbose_name='Статус')
     report_type = models.ForeignKey(ReportType, on_delete=models.SET_NULL, null=True, verbose_name='Тип отчета')
-    comment = models.TextField(max_length=350, verbose_name='Комментарий')
-    submission_type = models.IntegerField(choices=REPORT_SUBMISSION_TYPE_CHOICES, verbose_name='Тип отправки')
+    comment = models.TextField(verbose_name='Комментарий')
 
     def __str__(self):
         return str(self.id)
@@ -441,6 +434,7 @@ class GuiltyPerson(BaseModel):
 
 
 class TechnicalSupport(BaseModel):
+    image = models.FileField(upload_to='technical_support/')
     comment = models.TextField(max_length=300, verbose_name='Комментарий')
 
     def __str__(self):

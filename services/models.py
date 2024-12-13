@@ -3,7 +3,6 @@ from tinymce.models import HTMLField
 from django.db import models
 from django.utils import timezone
 from abstarct_model.base_model import BaseModel
-from authentication.models import Employee
 from base.models import Region, District
 from .utils import validate_file_type_and_size
 
@@ -67,7 +66,7 @@ class Service(BaseModel):
 
 
 class Training(BaseModel):
-    auther = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, verbose_name="Автор")
+    author = models.CharField(max_length=150, verbose_name="Автор")
     name = models.CharField(max_length=255, verbose_name="Название")
     image = models.ImageField(upload_to="trainings/", verbose_name="Изображение")
     description = models.TextField(verbose_name="описание")
@@ -206,6 +205,19 @@ class HonestyTestAnswer(BaseModel):
         ordering = ('-created_at',)
 
 
+class CorruptionRating(BaseModel):
+    corruption = models.ForeignKey(to='base.CorruptionRisk', on_delete=models.CASCADE, verbose_name='Коррупция')
+    rating = models.IntegerField(default=0, verbose_name='Рейтинг')
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name = 'Рейтинг клиентов'
+        verbose_name_plural = 'Рейтинг клиентов'
+        ordering = ('-created_at',)
+
+
 class CorruptionType(BaseModel):
     name = models.CharField(max_length=80, verbose_name='Название коррупции')
 
@@ -332,8 +344,8 @@ class ProfessionalEthics(BaseModel):
         ordering = ('-created_at',)
 
 
-class CustomerTip(BaseModel):
-    customer = models.ForeignKey(to='authentication.User', on_delete=models.CASCADE, verbose_name='Клиент')
+class OfficerAdvice(BaseModel):
+    officer = models.ForeignKey(to='authentication.User', on_delete=models.CASCADE, verbose_name='Клиент')
     professional_ethics = models.ForeignKey(
         ProfessionalEthics, on_delete=models.CASCADE, verbose_name='Профессиональная этика')
     comment = models.TextField(max_length=350, verbose_name='Комментарий')

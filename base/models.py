@@ -88,16 +88,10 @@ class CorruptionCase(BaseModel):
     corruption = models.ForeignKey(CorruptionRisk, on_delete=models.CASCADE, verbose_name='Коррупция')
     description = models.TextField(max_length=300, verbose_name='Описание')
 
-
-class CustomerRating(BaseModel):
-    corruption = models.ForeignKey(CorruptionRisk, on_delete=models.CASCADE, verbose_name='Коррупция')
-    customer = models.ForeignKey(to='authentication.User', on_delete=models.CASCADE, verbose_name='Клиент')
-    rating = models.IntegerField(default=0, verbose_name='Рейтинг')
-
     def __str__(self):
         return str(self.id)
 
     class Meta:
-        verbose_name = 'Рейтинг клиентов'
-        verbose_name_plural = 'Рейтинг клиентов'
+        verbose_name = 'Дело о коррупции'
+        verbose_name_plural = 'Дело о коррупции'
         ordering = ('-created_at',)

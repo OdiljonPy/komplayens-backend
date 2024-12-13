@@ -13,11 +13,15 @@ MEDIA_TYPE_CHOICES = (
 )
 
 REPORT_STATUS_CHOICES = (
-    (1, '')
+    (1, 'Viewing'),
+    (2, 'Checking'),
+    (3, 'Completed')
 )
 
 REPORT_SUBMISSION_TYPE_CHOICES = (
-    (1, '')
+    (1, 'By System'),
+    (2, 'By Phone Number'),
+    (3, 'By Email')
 )
 
 
@@ -166,7 +170,7 @@ class ElectronLibrary(BaseModel):
 class News(BaseModel):
     title = models.CharField(max_length=150, verbose_name="Заголовок")
     short_description = HTMLField(max_length=300, verbose_name="Краткое описание")
-    discretion = HTMLField(verbose_name="Описание")
+    description = HTMLField(verbose_name="Описание")
     image = models.ImageField(upload_to="news/", verbose_name="Изображение")
     is_published = models.BooleanField(default=True, verbose_name="Опубликован")
     is_published_date = models.DateField(verbose_name="Дата публикации")

@@ -13,6 +13,14 @@ MEDIA_TYPE_CHOICES = (
     ('PPT', 'PPT'),
 )
 
+REPORT_STATUS_CHOICES = (
+    (1, '')
+)
+
+REPORT_SUBMISSION_TYPE_CHOICES = (
+    (1, '')
+)
+
 
 class CategoryOrganization(BaseModel):
     name = models.CharField(max_length=150, verbose_name="Название")
@@ -129,7 +137,7 @@ class TrainingTestAnswer(BaseModel):
         ordering = ('-created_at',)
 
 
-class ElectronicLibraryCategory(BaseModel):
+class ElectronLibraryCategory(BaseModel):
     name = models.CharField(max_length=40, verbose_name='Название')
 
     def __str__(self):
@@ -141,11 +149,11 @@ class ElectronicLibraryCategory(BaseModel):
         ordering = ('-created_at',)
 
 
-class ElectronicLibrary(BaseModel):
+class ElectronLibrary(BaseModel):
     title = models.CharField(max_length=120, verbose_name='Название')
-    file = models.FileField(upload_to='electronic_libraries/', verbose_name='Файл книги')
+    file = models.FileField(upload_to='electron_libraries/', verbose_name='Файл книги')
     category = models.ForeignKey(
-        ElectronicLibraryCategory, on_delete=models.SET_NULL, null=True, verbose_name='Категория')
+        ElectronLibraryCategory, on_delete=models.SET_NULL, null=True, verbose_name='Категория')
 
     def __str__(self):
         return str(self.id)
@@ -336,4 +344,93 @@ class CustomerTip(BaseModel):
     class Meta:
         verbose_name = 'Советы клиентам'
         verbose_name_plural = 'Советы клиентам'
+        ordering = ('-created_at',)
+
+
+class ReportType(BaseModel):
+    name = models.CharField(max_length=120, verbose_name='Название')
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name = 'Тип отчета'
+        verbose_name_plural = 'Тип отчета'
+        ordering = ('-created_at',)
+
+
+class ViolationReport(BaseModel):
+    organization = models.ForeignKey(
+        to='services.Organization', on_delete=models.SET_NULL, null=True, verbose_name='Организация')
+    event_time = models.DateField(verbose_name='Время события')
+    region = models.ForeignKey(to='base.Region', on_delete=models.SET_NULL, null=True, verbose_name='Область')
+    district = models.ForeignKey(to='base.District', on_delete=models.SET_NULL, null=True, verbose_name='Округ')
+    status = models.IntegerField(choices=REPORT_STATUS_CHOICES, verbose_name='Статус')
+    report_type = models.ForeignKey(ReportType, on_delete=models.SET_NULL, null=True, verbose_name='Тип отчета')
+    comment = models.TextField(max_length=350, verbose_name='Комментарий')
+    submission_type = models.IntegerField(choices=REPORT_SUBMISSION_TYPE_CHOICES, verbose_name='Тип отправки')
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name = 'Отчет о нарушении'
+        verbose_name_plural = 'Отчет о нарушении'
+        ordering = ('-created_at',)
+
+
+class ViolationReportFile(BaseModel):
+    report = models.ForeignKey(ViolationReport, on_delete=models.CASCADE, verbose_name='Отчет о нарушении')
+    file = models.FileField(upload_to='violation_report/', verbose_name='Файл')
+    comment = models.TextField(max_length=350, verbose_name='Комментарий')
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name = 'Файл отчета о нарушении'
+        verbose_name_plural = 'Файл отчета о нарушении'
+        ordering = ('-created_at',)
+
+
+class OrganizationSummary(BaseModel):
+    organization = models.ForeignKey(
+        to='services.Organization', on_delete=models.SET_NULL, null=True, verbose_name='Организация')
+    report = models.ForeignKey(ViolationReport, on_delete=models.CASCADE, verbose_name='Отчет о нарушении')
+    comment = models.TextField(max_length=350, verbose_name='Комментарий')
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name = 'Краткое описание организации'
+        verbose_name_plural = 'Краткое описание организации'
+        ordering = ('-created_at',)
+
+
+class GuiltyPerson(BaseModel):
+    report = models.ForeignKey(ViolationReport, on_delete=models.CASCADE, verbose_name='Отчет о нарушении')
+    first_name = models.CharField(max_length=80, verbose_name='Имя')
+    last_name = models.CharField(max_length=80, verbose_name='Фамилия')
+    position = models.CharField(max_length=150, verbose_name='Позиция')
+    contact = models.CharField(max_length=80, verbose_name='Контакт')
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name = 'Виновное лицо'
+        verbose_name_plural = 'Виновное лицо'
+        ordering = ('-created_at',)
+
+
+class TechnicalSupport(BaseModel):
+    comment = models.TextField(max_length=300, verbose_name='Комментарий')
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name = 'Техническая поддержка'
+        verbose_name_plural = 'Техническая поддержка'
         ordering = ('-created_at',)

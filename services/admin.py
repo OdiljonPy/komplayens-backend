@@ -1,7 +1,13 @@
 from django.contrib import admin
 from .models import (
-    CategoryOrganization, Organization, Service,
-    Training, TrainingMedia, News
+    CategoryOrganization, Organization, Service, Training,
+    TrainingMedia, TrainingTest, TrainingTestAnswer,
+    ElectronLibraryCategory, ElectronLibrary, News, HonestyTest,
+    HonestyTestAnswer, CorruptionRating, CorruptionType, Corruption,
+    CorruptionMaterial, CitizenOversight, ConflictAlertType,
+    ConflictAlert, RelatedPerson, Profession, ProfessionalEthics, OfficerAdvice,
+    ReportType, ViolationReport, ViolationReportFile, OrganizationSummary,
+    GuiltyPerson, TechnicalSupport
 )
 
 
@@ -40,6 +46,13 @@ class TrainingMediaAdmin(admin.ModelAdmin):
     list_display_links = ('id', 'order')
     search_fields = ('order',)
     list_filter = ('type',)
+
+
+@admin.register(TrainingTest)
+class TrainingTestAdmin(admin.ModelAdmin):
+    list_display = ('id', 'training', 'question')
+    list_display_links = ('id', 'training')
+    search_fields = ('training__name', 'question')
 
 
 @admin.register(News)

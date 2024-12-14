@@ -5,8 +5,8 @@ from .models import (
     ElectronLibraryCategory, ElectronLibrary, News, HonestyTest,
     HonestyTestAnswer, CorruptionRating, CorruptionType, Corruption,
     CorruptionMaterial, CitizenOversight, ConflictAlertType,
-    ConflictAlert, RelatedPerson, Profession, ProfessionalEthics, OfficerAdvice,
-    ReportType, ViolationReport, ViolationReportFile, OrganizationSummary,
+    ConflictAlert, RelatedPerson, Profession, ProfessionalEthics,
+    OfficerAdvice, ReportType, ViolationReport, ViolationReportFile,
     GuiltyPerson, TechnicalSupport
 )
 

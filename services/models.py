@@ -402,21 +402,6 @@ class ViolationReportFile(BaseModel):
         ordering = ('-created_at',)
 
 
-class OrganizationSummary(BaseModel):
-    organization = models.ForeignKey(
-        to='services.Organization', on_delete=models.SET_NULL, null=True, verbose_name='Организация')
-    report = models.ForeignKey(ViolationReport, on_delete=models.CASCADE, verbose_name='Отчет о нарушении')
-    comment = models.TextField(max_length=350, verbose_name='Комментарий')
-
-    def __str__(self):
-        return str(self.id)
-
-    class Meta:
-        verbose_name = 'Краткое описание организации'
-        verbose_name_plural = 'Краткое описание организации'
-        ordering = ('-created_at',)
-
-
 class GuiltyPerson(BaseModel):
     report = models.ForeignKey(ViolationReport, on_delete=models.CASCADE, verbose_name='Отчет о нарушении')
     first_name = models.CharField(max_length=80, verbose_name='Имя')

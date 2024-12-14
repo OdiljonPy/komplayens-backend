@@ -1,5 +1,59 @@
 from django.urls import path
+from .views import (
+    OrganizationViewSet, TrainingViewSet, ElectronLibraryViewSet,
+    NewsViewSet, HonestyViewSet, CorruptionRiskRatingViewSet,
+    CorruptionViewSet, CitizenOversightViewSet, ConflictAlertviewSet,
+    ProfessionalEthicsViewSet, OfficerAdviceViewSet, ViolationReportViewSet,
+    TechnicalSupportViewSet
+)
 
 urlpatterns = [
+    path('organization/', OrganizationViewSet.as_view({'get': 'organization_list'})),
+    path('organization/<int:pk>/', OrganizationViewSet.as_view({'get': 'organization'})),
+    path('organization/category/', OrganizationViewSet.as_view({'get': 'organization_category_list'})),
+    path('organization/service/', OrganizationViewSet.as_view({'get': 'service_list'})),
+    path('organization/service/<int:pk>/', OrganizationViewSet.as_view({'get': 'service'})),
 
+    path('training/', TrainingViewSet.as_view({'get': 'training_list'})),
+    path('training/<int:pk>/', TrainingViewSet.as_view({'get': 'training'})),
+    path('training/test/', TrainingViewSet.as_view({'get': 'training_test_list'})),
+    path('training/test/<int:pk>/', TrainingViewSet.as_view({'get': 'training_test'})),
+    path('training/test/answer/', TrainingViewSet.as_view({'get': 'training_test_answer'})),
+
+    path('electron/library/', ElectronLibraryViewSet.as_view({'get': 'electron_library_list'})),
+    path('electron/library/<int:pk>/', ElectronLibraryViewSet.as_view({'get': 'electron_library'})),
+    path('electron/library/category/', ElectronLibraryViewSet.as_view({'get': 'electron_library_category'})),
+
+    path('news/', NewsViewSet.as_view({'get': 'news_list'})),
+    path('news/<int:pk>/', NewsViewSet.as_view({'get': 'news'})),
+
+    path('honesty/test/', HonestyViewSet.as_view({'get': 'honesty_test_list'})),
+    path('honesty/test/<int:pk>/', HonestyViewSet.as_view({'get': 'honesty_test'})),
+    path('honesty/answer/', HonestyViewSet.as_view({'get': 'honesty_test_answer'})),
+
+    path('corruption/', CorruptionViewSet.as_view({'get': 'corruption_list'})),
+    path('corruption/<int:pk>/', CorruptionViewSet.as_view({'get': 'corruption'})),
+    path('corruption/types/', CorruptionViewSet.as_view({'get': 'corruption_types'})),
+
+    path('corruption/risk/rating/', CorruptionRiskRatingViewSet.as_view({'post': 'create_rating'})),
+
+    path('citizen/oversight/', CitizenOversightViewSet.as_view({'get': 'citizen_oversight_list'})),
+    path('citizen/oversight/<int:pk>/', CitizenOversightViewSet.as_view({'get': 'citizen_oversight'})),
+
+    path('conflict/alert/',
+         ConflictAlertviewSet.as_view({'post': 'create_conflict_alert', 'delete': 'delete_conflict_alert'})),
+    path('conflict/alert/<int:pk>/', ConflictAlertviewSet.as_view({'get': 'conflict_alert'})),
+    path('conflict/alert/types/', ConflictAlertviewSet.as_view({'get': 'conflict_alert_types'})),
+
+    path('professional/', ProfessionalEthicsViewSet.as_view({'get': 'profession_list'})),
+    path('professional/ethics/', ProfessionalEthicsViewSet.as_view({'get': 'professional_ethics_list'})),
+    path('professional/ethics/<int:pk>/', ProfessionalEthicsViewSet.as_view({'get': 'professional_ethics'})),
+
+    path('officer/advice/', OfficerAdviceViewSet.as_view({'post': 'create_officer_advice'})),
+    path('officer/advice/', OfficerAdviceViewSet.as_view({'post': 'officer_advice_list'})),
+
+    path('violation/report/', ViolationReportViewSet.as_view({'post': 'create_violation_report'})),
+    path('violation/report/types/', ViolationReportViewSet.as_view({'post': 'report_types'})),
+
+    path('technical/support/', TechnicalSupportViewSet.as_view({'post': 'create_technical_support'}))
 ]

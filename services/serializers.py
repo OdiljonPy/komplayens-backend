@@ -5,8 +5,8 @@ from .models import (
     ElectronLibraryCategory, ElectronLibrary, News, HonestyTest,
     HonestyTestAnswer, CorruptionRating, CorruptionType, Corruption,
     CorruptionMaterial, CitizenOversight, ConflictAlertType,
-    ConflictAlert, RelatedPerson, Profession, ProfessionalEthics, OfficerAdvice,
-    ReportType, ViolationReport, ViolationReportFile, OrganizationSummary,
+    ConflictAlert, RelatedPerson, Profession, ProfessionalEthics,
+    OfficerAdvice, ReportType, ViolationReport, ViolationReportFile,
     GuiltyPerson, TechnicalSupport
 )
 
@@ -165,12 +165,6 @@ class ViolationReportFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = ViolationReportFile
         fields = ('id', 'report', 'file', 'comment')
-
-
-class OrganizationSummarySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OrganizationSummary
-        fields = ('id', 'organization', 'report', 'comment')
 
 
 class GuiltyPersonSerializer(serializers.ModelSerializer):

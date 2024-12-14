@@ -8,9 +8,10 @@ class RegionSerializer(serializers.ModelSerializer):
 
 
 class DistrictSerializer(serializers.ModelSerializer):
+    region_name = serializers.CharField(source='region.name', read_only=True)
     class Meta:
         model = District
-        fields = ['id', 'name', 'region']
+        fields = ['id', 'name', 'region', 'region_name']
 
 
 class FAQSerializer(serializers.ModelSerializer):

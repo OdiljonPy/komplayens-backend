@@ -27,43 +27,17 @@ class RegionViewSet(ViewSet):
         serializer = RegionSerializer(regions, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        operation_summary='Details of Region',
-        operation_description='Details of Region',
-        responses={200: RegionSerializer()},
-        tags=['Region']
-    )
-    def detail_(self, request, pk=None):
-        region = Region.objects.filter(id=pk).first()
-        if region is None:
-            raise CustomApiException(ErrorCodes.NOT_FOUND, message='Region not found')
-        serializer = RegionSerializer(region, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
 
 class DistrictViewSet(ViewSet):
     @swagger_auto_schema(
-        operation_summary='List of Districts',
-        operation_description='List of Districts',
+        operation_summary='List of Districts by Region ID',
+        operation_description='List of Districts by Region ID',
         responses={200: DistrictSerializer(many=True)},
         tags=['District']
     )
-    def list(self, request):
-        districts = District.objects.all()
+    def list(self, request, pk=None):
+        districts = District.objects.filter(region_id=pk).select_related('region')
         serializer = DistrictSerializer(districts, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        operation_summary='Details of District',
-        operation_description='Details of District',
-        responses={200: DistrictSerializer()},
-        tags=['District']
-    )
-    def detail_(self, request, pk=None):
-        district = District.objects.filter(id=pk).first()
-        if district is None:
-            raise CustomApiException(ErrorCodes.NOT_FOUND, message='District not found')
-        serializer = DistrictSerializer(district, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 
@@ -77,19 +51,6 @@ class FAQViewSet(ViewSet):
     def list(self, request):
         faqs = FAQ.objects.all()
         serializer = FAQSerializer(faqs, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        operation_summary='Details of FAQ',
-        operation_description='Details of FAQ',
-        responses={200: FAQSerializer()},
-        tags=['FAQ']
-    )
-    def detail_(self, request, pk=None):
-        faq = FAQ.objects.filter(id=pk).first()
-        if faq is None:
-            raise CustomApiException(ErrorCodes.NOT_FOUND, message='FAQ not found')
-        serializer = FAQSerializer(faq, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 

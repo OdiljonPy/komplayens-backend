@@ -36,5 +36,9 @@ class UserLoginSerializer(serializers.Serializer):
 
 
 class OTPSerializer(serializers.Serializer):
-    otp_key = serializers.IntegerField(required=True)
-    otp_code = serializers.UUIDField(required=True)
+    otp_key = serializers.UUIDField(required=True)
+    otp_code = serializers.IntegerField(required=True)
+
+
+class ResendOTPSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(required=True, validators=[phone_number_validation])

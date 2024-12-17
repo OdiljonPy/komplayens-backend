@@ -40,12 +40,12 @@ class OTP(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     otp_key = models.UUIDField(default=uuid4)
     otp_code = models.IntegerField()
-    count = models.IntegerField(default=1)
+    request_count = models.IntegerField(default=0)
 
     def __str__(self):
         return str(self.id)
 
     class Meta:
-        verbose_name = ''
-        verbose_name_plural = ''
+        verbose_name = 'ОТП'
+        verbose_name_plural = 'ОТП'
         ordering = ('-created_at',)

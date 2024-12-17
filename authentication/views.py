@@ -1,18 +1,20 @@
-from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from rest_framework.viewsets import ViewSet
-from drf_yasg.utils import swagger_auto_schema
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 from drf_yasg import openapi
-from django.contrib.auth.hashers import check_password
+from drf_yasg.utils import swagger_auto_schema
 from django.utils import timezone
-from exceptions.exception import CustomApiException
+from django.contrib.auth.hashers import check_password
 from exceptions.error_messages import ErrorCodes
-from .utils import gen_otp_code, create_otp, check_otp
+from exceptions.exception import CustomApiException
 from .models import User, OTP
+from .utils import (
+    otp_create, otp_verification, is_user_created
+)
 from .serializers import (
     UserCreateSerializer, UserSerializer, UserLoginSerializer,
-    OTPSerializer
+    OTPSerializer, ResendOTPSerializer
 )
 
 
@@ -24,14 +26,12 @@ class UserViewSet(ViewSet):
     )
     def create(self, request):
         data = request.data
-        user = User.objects.filter(phone_number=data.get('phone_number')).first()
-        if user:
-            raise CustomApiException(ErrorCodes.ALREADY_EXISTS)
+        is_user_created(request)
         serializer = UserCreateSerializer(data=data, context={'request': request})
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
         user = serializer.save()
-        otp_key = create_otp(user.id)
+        otp_key = otp_create(user.id)
         return Response(data={'result': {'otp_key': otp_key}, 'ok': True}, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(
@@ -43,7 +43,25 @@ class UserViewSet(ViewSet):
         serializer = OTPSerializer(data=request.data)
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
-        check_otp(serializer.data)
+        user_id = otp_verification(serializer.data)
+        OTP.objects.filter(user_id=user_id).delete()
+        User.objects.filter(id=user_id).update(is_verify=True)
+        return Response(data={'result': '', 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        request_body=ResendOTPSerializer(),
+        responses={200: ResendOTPSerializer()},
+        tags=["User"],
+    )
+    def resend_otp(self, request):
+        serializer = ResendOTPSerializer(data=request.data)
+        if not serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
+        user = User.objects.filter(phone_number=serializer.data.get('phone_number')).first()
+        if not user:
+            raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)
+        otp_key = otp_create(user_id=user.id)
+        return Response(data={'result': {'otp_key': otp_key}, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         request_body=UserLoginSerializer(),
@@ -54,9 +72,12 @@ class UserViewSet(ViewSet):
         serializer = UserLoginSerializer(data=request.data)
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
-        user = User.objects.filter(phone_number=serializer.data.get('phone_number')).first()
+        user = User.objects.filter(phone_number=serializer.data.get('phone_number'), active=True).first()
         if not user:
             raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)
+
+        if not user.is_verify:
+            raise CustomApiException(ErrorCodes.INVALID_INPUT, message='User is not verified')
 
         if not check_password(serializer.data.get('password'), user.password):
             raise CustomApiException(ErrorCodes.INCORRECT_PASSWORD)
@@ -77,11 +98,7 @@ class UserViewSet(ViewSet):
         tags=["User"],
     )
     def user_update(self, request):
-        data = request.data
-        if ('phone_number' in data and
-                User.objects.filter(phone_number=data.get('phone_number').exclude(id=request.user.id).exists())):
-            raise CustomApiException(ErrorCodes.ALREADY_EXISTS)
-
+        is_user_created(request)
         user = User.objects.filter(id=request.user.id).first()
         if not user:
             raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)

@@ -17,8 +17,8 @@ error_messages = {
     3: {"result": "Resource not found", "http_status": status.HTTP_404_NOT_FOUND},
     4: {"result": "Validate Error", "http_status": status.HTTP_400_BAD_REQUEST},
     5: {"result": "Permission denied", "http_status": status.HTTP_403_FORBIDDEN},
-    6: {"result": "User Already exists", "http_status": status.HTTP_400_BAD_REQUEST},
-    7: {"result": "User Does not exist", "http_status": status.HTTP_400_BAD_REQUEST},
+    6: {"result": "User already exists", "http_status": status.HTTP_400_BAD_REQUEST},
+    7: {"result": "User does not exist", "http_status": status.HTTP_400_BAD_REQUEST},
     8: {"result": "Incorrect password", "http_status": status.HTTP_400_BAD_REQUEST},
 }
 

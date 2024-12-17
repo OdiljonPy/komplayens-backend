@@ -170,7 +170,7 @@ class ViolationReportFileSerializer(serializers.ModelSerializer):
 class GuiltyPersonSerializer(serializers.ModelSerializer):
     class Meta:
         model = GuiltyPerson
-        fields = ('id', 'report', 'first_name', 'last_name', 'position', 'contact')
+        fields = ('id', 'report', 'full_name', 'position', 'contact')
 
 
 class TechnicalSupportSerializer(serializers.ModelSerializer):

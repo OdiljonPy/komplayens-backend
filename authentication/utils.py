@@ -4,7 +4,6 @@ from datetime import timedelta, datetime
 from exceptions.error_messages import ErrorCodes
 from exceptions.exception import CustomApiException
 from utils.send_otp_code import send_otp_code
-from .models import OTP, User
 
 
 def phone_number_validation(value):
@@ -13,6 +12,7 @@ def phone_number_validation(value):
 
 
 def is_user_created(request):
+    from .models import User
     data = request.data
     if ('phone_number' in data and
             User.objects.filter(phone_number=data.get('phone_number')).exclude(id=request.user.id).exists()):
@@ -24,13 +24,15 @@ def gen_otp_code():
 
 
 def check_block_user(user_id):
+    from .models import OTP
     otp = OTP.objects.filter(user_id=user_id).first()
-    if not otp.created_at < datetime.now() - timedelta(minutes=1):
+    if not otp.created_at < datetime.now() - timedelta(hours=5):
         return False
     return True
 
 
 def otp_create(user_id):
+    from .models import OTP
     otp_count = OTP.objects.filter(user_id=user_id).count()
     if otp_count and otp_count > 2 and not check_block_user(user_id):
         raise CustomApiException(ErrorCodes.INVALID_INPUT, message='Too many attempts, please try again later.')
@@ -43,6 +45,7 @@ def otp_create(user_id):
 
 
 def otp_verification(data):
+    from .models import OTP
     otp = OTP.objects.filter(otp_key=data.get('otp_key')).first()
     if not otp:
         raise CustomApiException(ErrorCodes.INVALID_INPUT, message='OTP key is invalid')

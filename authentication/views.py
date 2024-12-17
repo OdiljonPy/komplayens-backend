@@ -36,7 +36,7 @@ class UserViewSet(ViewSet):
 
     @swagger_auto_schema(
         request_body=OTPSerializer(),
-        responses={200: OTPSerializer()},
+        responses={200: ''},
         tags=["User"],
     )
     def verify_otp(self, request):
@@ -46,7 +46,7 @@ class UserViewSet(ViewSet):
         user_id = otp_verification(serializer.data)
         OTP.objects.filter(user_id=user_id).delete()
         User.objects.filter(id=user_id).update(is_verify=True)
-        return Response(data={'result': '', 'ok': True}, status=status.HTTP_200_OK)
+        return Response(data={'result': 'Successfully verified', 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         request_body=ResendOTPSerializer(),

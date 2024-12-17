@@ -13,15 +13,9 @@ class UserCreateSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
 
     def save(self, **kwargs):
-        print('save called')
         if 'password' in self.validated_data:
             self.validated_data['password'] = make_password(self.validated_data['password'])
         return super().save(**kwargs)
-
-    def validate(self, attrs):
-        if 'phone_number' in attrs:
-            phone_number_validation(attrs.get('phone_number'))
-        return super().validate(attrs)
 
 
 class UserSerializer(serializers.ModelSerializer):

@@ -198,9 +198,9 @@ class ViolationReportFileAdmin(admin.ModelAdmin):
 
 @admin.register(GuiltyPerson)
 class GuiltyPersonAdmin(admin.ModelAdmin):
-    list_display = ('id', 'first_name', 'last_name', 'position')
-    list_display_links = ('id', 'first_name', 'last_name')
-    search_fields = ('first_name', 'last_name', 'position')
+    list_display = ('id', 'full_name', 'position')
+    list_display_links = ('id', 'full_name')
+    search_fields = ('full_name', 'position')
 
 
 @admin.register(TechnicalSupport)

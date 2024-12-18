@@ -1,43 +1,47 @@
-from .models import Region, District, FAQ, AboutUs, CorruptionRisk, CorruptionCase
 from rest_framework import serializers
 from exceptions.exception import CustomApiException
 from exceptions.error_messages import ErrorCodes
 
-class RegionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Region
-        fields = ['id', 'name']
+
+class RegionSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField()
 
 
-class DistrictSerializer(serializers.ModelSerializer):
+class DistrictSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField()
+    region = serializers.PrimaryKeyRelatedField(read_only=True)
     region_name = serializers.CharField(source='region.name', read_only=True)
-    class Meta:
-        model = District
-        fields = ['id', 'name', 'region', 'region_name']
 
 
-class FAQSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FAQ
-        fields = ['id', 'question', 'answer', 'type']
+class FAQSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    question = serializers.CharField()
+    answer = serializers.CharField()
+    type = serializers.IntegerField()
 
 
-class AboutUsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AboutUs
-        fields = ['id', 'short_desc', 'link', 'type']
+class AboutUsSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    short_desc = serializers.CharField()
+    link = serializers.CharField()
+    type = serializers.IntegerField()
 
 
-class CorruptionRiskSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CorruptionRisk
-        fields = ['id', 'name', 'short_desc', 'more_desc', 'useful_advice', 'legal_document']
+class CorruptionRiskSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField()
+    short_desc = serializers.CharField()
+    more_desc = serializers.CharField()
+    useful_advice = serializers.CharField()
+    legal_document = serializers.FileField()
 
 
-class CorruptionCaseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CorruptionCase
-        fields = ['id', 'corruption', 'description']
+class CorruptionCaseSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    corruption = serializers.PrimaryKeyRelatedField(read_only=True)
+    description = serializers.CharField()
 
 
 class TypeSerializer(serializers.Serializer):

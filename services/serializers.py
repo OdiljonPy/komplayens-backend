@@ -140,7 +140,7 @@ class ProfessionSerializer(serializers.ModelSerializer):
 class ProfessionalEthicsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProfessionalEthics
-        fields = ('id', 'title', 'description', 'moral_dilemma', 'link', 'profession')
+        fields = ('id', 'title', 'description', 'profession')
 
 
 class OfficerAdviceSerializer(serializers.ModelSerializer):

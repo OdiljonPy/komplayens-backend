@@ -18,14 +18,17 @@ class UserCreateSerializer(serializers.ModelSerializer):
         return super().save(**kwargs)
 
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('id', 'first_name', 'last_name', 'phone_number', 'email', 'role')
+class UserSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    phone_number = serializers.CharField()
+    email = serializers.EmailField()
+    role = serializers.IntegerField()
 
 
 class UserLoginSerializer(serializers.Serializer):
-    phone_number = serializers.CharField(required=True)
+    phone_number = serializers.CharField(required=True, validators=[phone_number_validation])
     password = serializers.CharField(required=True)
 
 
@@ -35,4 +38,4 @@ class OTPSerializer(serializers.Serializer):
 
 
 class ResendOTPSerializer(serializers.Serializer):
-    phone_number = serializers.CharField(required=True, validators=[phone_number_validation])
+    otp_key = serializers.UUIDField(required=True)

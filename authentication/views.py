@@ -25,12 +25,23 @@ class UserViewSet(ViewSet):
         tags=["User"],
     )
     def create(self, request):
-        data = request.data
-        is_user_created(request)
-        serializer = UserCreateSerializer(data=data, context={'request': request})
+        user = is_user_created(request)
+        if user and user.is_verify:
+            raise CustomApiException(ErrorCodes.ALREADY_EXISTS)
+
+        if user is not None:
+            otp_key = otp_create(user.id)
+            serializer = UserCreateSerializer(user, data=request.data, partial=True, context={'request': request})
+            if not serializer.is_valid():
+                raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
+            serializer.save()
+            return Response(data={'result': {'otp_key': otp_key}, 'ok': True}, status=status.HTTP_201_CREATED)
+
+        serializer = UserCreateSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
         user = serializer.save()
+
         otp_key = otp_create(user.id)
         return Response(data={'result': {'otp_key': otp_key}, 'ok': True}, status=status.HTTP_201_CREATED)
 
@@ -44,7 +55,6 @@ class UserViewSet(ViewSet):
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
         user_id = otp_verification(serializer.data)
-        OTP.objects.filter(user_id=user_id).delete()
         User.objects.filter(id=user_id).update(is_verify=True)
         return Response(data={'result': 'Successfully verified', 'ok': True}, status=status.HTTP_200_OK)
 
@@ -57,10 +67,10 @@ class UserViewSet(ViewSet):
         serializer = ResendOTPSerializer(data=request.data)
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
-        user = User.objects.filter(phone_number=serializer.data.get('phone_number')).first()
-        if not user:
-            raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)
-        otp_key = otp_create(user_id=user.id)
+        otp = OTP.objects.filter(otp_key=serializer.data.get('otp_key')).first()
+        if not otp:
+            raise CustomApiException(ErrorCodes.INVALID_INPUT, message='OTP key is invalid')
+        otp_key = otp_create(user_id=otp.user_id)
         return Response(data={'result': {'otp_key': otp_key}, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
@@ -72,12 +82,23 @@ class UserViewSet(ViewSet):
         serializer = UserLoginSerializer(data=request.data)
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
-        user = User.objects.filter(phone_number=serializer.data.get('phone_number'), active=True).first()
+
+        user = User.objects.filter(phone_number=serializer.data.get('phone_number')).first()
         if not user:
             raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)
 
         if not user.is_verify:
             raise CustomApiException(ErrorCodes.INVALID_INPUT, message='User is not verified')
+
+        if not user.active:
+            raise CustomApiException(ErrorCodes.INVALID_INPUT, message='User is not active')
+
+        if user.role == 3 and user.status in (1, 3):
+            message = {
+                1: 'This user is being viewed',
+                3: 'This user has been canceled'
+            }.get(user.status)
+            raise CustomApiException(ErrorCodes.INVALID_INPUT, message=message)
 
         if not check_password(serializer.data.get('password'), user.password):
             raise CustomApiException(ErrorCodes.INCORRECT_PASSWORD)
@@ -98,10 +119,13 @@ class UserViewSet(ViewSet):
         tags=["User"],
     )
     def user_update(self, request):
-        is_user_created(request)
+        if is_user_created(request):
+            raise CustomApiException(ErrorCodes.ALREADY_EXISTS)
+
         user = User.objects.filter(id=request.user.id).first()
         if not user:
             raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)
+
         serializer = UserCreateSerializer(user, data=request.data, partial=True, context={'request': request})
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
@@ -113,7 +137,7 @@ class UserViewSet(ViewSet):
         tags=["User"],
     )
     def user_detail(self, request):
-        user = User.objects.filter(id=request.user.id).first()
+        user = User.objects.filter(id=request.user.id, status=2, active=True).first()
         if not user:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
         serializer = UserSerializer(user, context={'request': request})

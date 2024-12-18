@@ -18,6 +18,10 @@ REPORT_STATUS_CHOICES = (
     (3, 'Completed')
 )
 
+QUESTION_TYPE_CHOICES = (
+    (1, 'One answer'),
+    (2, 'Many answers'),
+)
 
 class CategoryOrganization(BaseModel):
     name = models.CharField(max_length=150, verbose_name="Название")
@@ -110,6 +114,7 @@ class TrainingMedia(BaseModel):
 class TrainingTest(BaseModel):
     training = models.ForeignKey(Training, on_delete=models.CASCADE, verbose_name='Обучение')
     question = models.CharField(max_length=120, verbose_name='Вопрос')
+    question_type = models.IntegerField(choices=QUESTION_TYPE_CHOICES, default=1)
 
     def __str__(self):
         return str(self.id)
@@ -166,7 +171,7 @@ class News(BaseModel):
     short_description = HTMLField(max_length=300, verbose_name="Краткое описание")
     description = HTMLField(verbose_name="Описание")
     image = models.ImageField(upload_to="news/", verbose_name="Изображение")
-    is_published = models.BooleanField(default=True, verbose_name="Опубликован")
+    is_published = models.BooleanField(default=False, verbose_name="Опубликован")
     is_published_date = models.DateField(verbose_name="Дата публикации")
 
     def __str__(self):
@@ -328,9 +333,7 @@ class Profession(BaseModel):
 
 class ProfessionalEthics(BaseModel):
     title = models.CharField(max_length=80, verbose_name='Название')
-    description = models.TextField(max_length=350, verbose_name='Описание')
-    moral_dilemma = models.CharField(max_length=80, verbose_name='Моральная дилемма')
-    link = models.CharField(max_length=30, verbose_name='Ссылка')
+    description = HTMLField(verbose_name='Описание')
     profession = models.ForeignKey(Profession, on_delete=models.CASCADE, verbose_name='Профессия')
 
     def __str__(self):
@@ -375,7 +378,7 @@ class ViolationReport(BaseModel):
     event_time = models.DateField(verbose_name='Время события')
     region = models.ForeignKey(to='base.Region', on_delete=models.SET_NULL, null=True, verbose_name='Область')
     district = models.ForeignKey(to='base.District', on_delete=models.SET_NULL, null=True, verbose_name='Округ')
-    status = models.IntegerField(choices=REPORT_STATUS_CHOICES, verbose_name='Статус')
+    status = models.IntegerField(choices=REPORT_STATUS_CHOICES, default=1, verbose_name='Статус')
     report_type = models.ForeignKey(ReportType, on_delete=models.SET_NULL, null=True, verbose_name='Тип отчета')
     comment = models.TextField(verbose_name='Комментарий')
 
@@ -402,25 +405,9 @@ class ViolationReportFile(BaseModel):
         ordering = ('-created_at',)
 
 
-class OrganizationSummary(BaseModel):
-    organization = models.ForeignKey(
-        to='services.Organization', on_delete=models.SET_NULL, null=True, verbose_name='Организация')
-    report = models.ForeignKey(ViolationReport, on_delete=models.CASCADE, verbose_name='Отчет о нарушении')
-    comment = models.TextField(max_length=350, verbose_name='Комментарий')
-
-    def __str__(self):
-        return str(self.id)
-
-    class Meta:
-        verbose_name = 'Краткое описание организации'
-        verbose_name_plural = 'Краткое описание организации'
-        ordering = ('-created_at',)
-
-
 class GuiltyPerson(BaseModel):
     report = models.ForeignKey(ViolationReport, on_delete=models.CASCADE, verbose_name='Отчет о нарушении')
-    first_name = models.CharField(max_length=80, verbose_name='Имя')
-    last_name = models.CharField(max_length=80, verbose_name='Фамилия')
+    full_name = models.CharField(max_length=160, verbose_name='Имя')
     position = models.CharField(max_length=150, verbose_name='Позиция')
     contact = models.CharField(max_length=80, verbose_name='Контакт')
 

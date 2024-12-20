@@ -7,22 +7,20 @@ from exceptions.exception import CustomApiException
 from exceptions.error_messages import ErrorCodes
 from .models import (
     CategoryOrganization, Organization, Service, Training,
-    TrainingTest, TrainingTestAnswer, ElectronLibraryCategory,
     ElectronLibrary, News, HonestyTest, HonestyTestAnswer,
     CorruptionType, Corruption, CitizenOversight, ConflictAlertType,
-    ConflictAlert, Profession, ProfessionalEthics,
-    OfficerAdvice, ReportType
+    ConflictAlert, Profession, ProfessionalEthics, OfficerAdvice,
+    ReportType, ElectronLibraryCategory
 )
 
 from .serializers import (
     CategoryOrganizationSerializer, OrganizationSerializer, ServiceSerializer,
-    TrainingSerializer, TrainingTestSerializer, TrainingTestAnswerSerializer,
     ElectronLibraryCategorySerializer, ElectronLibrarySerializer, NewsSerializer,
     HonestyTestSerializer, HonestyTestAnswerSerializer, CorruptionRatingSerializer,
     CorruptionTypeSerializer, CorruptionSerializer, CitizenOversightSerializer,
     ConflictAlertSerializer, ConflictAlertTypeSerializer, ProfessionSerializer,
     ProfessionalEthicsSerializer, OfficerAdviceSerializer, ReportTypeSerializer,
-    ViolationReportSerializer, TechnicalSupportSerializer
+    ViolationReportSerializer, TechnicalSupportSerializer, TrainingSerializer
 )
 
 
@@ -96,49 +94,6 @@ class TrainingViewSet(ViewSet):
         if not data:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
         serializer = TrainingSerializer(data, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                name='training_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Training ID'),
-        ],
-        responses={200: TrainingTestSerializer()},
-        tags=['Training']
-    )
-    def training_test_list(self, request):
-        training_id = request.query_params.get('training_id')
-        if not training_id or not training_id.isdigit():
-            raise CustomApiException(ErrorCodes.INVALID_INPUT, message='Training ID is required')
-        data = TrainingTest.objects.filter(training_id=training_id)
-        serializer = TrainingTestSerializer(data, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                name='training_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Training ID'),
-        ],
-        responses={200: TrainingTestSerializer()},
-        tags=['Training']
-    )
-    def training_test(self, request, pk):
-        training_id = request.query_params.get('training_id')
-        if not training_id or not training_id.isdigit():
-            raise CustomApiException(ErrorCodes.INVALID_INPUT, message='Training ID is required')
-        data = TrainingTest.objects.filter(id=pk, training_id=training_id).first()
-        if not data:
-            raise CustomApiException(ErrorCodes.NOT_FOUND)
-        serializer = TrainingTestSerializer(data, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        responses={200: TrainingTestAnswerSerializer()},
-        tags=['Training']
-    )
-    def training_test_answer(self, request, pk):
-        data = TrainingTestAnswer.objects.filter(question_id=pk)
-        serializer = TrainingTestAnswerSerializer(data, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 

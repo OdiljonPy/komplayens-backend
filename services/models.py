@@ -111,34 +111,6 @@ class TrainingMedia(BaseModel):
         ordering = ('-created_at',)
 
 
-class TrainingTest(BaseModel):
-    training = models.ForeignKey(Training, on_delete=models.CASCADE, verbose_name='Обучение')
-    question = models.CharField(max_length=120, verbose_name='Вопрос')
-    question_type = models.IntegerField(choices=QUESTION_TYPE_CHOICES, default=1)
-
-    def __str__(self):
-        return str(self.id)
-
-    class Meta:
-        verbose_name = 'Тест на обучение'
-        verbose_name_plural = 'Тесты по обучению'
-        ordering = ('-created_at',)
-
-
-class TrainingTestAnswer(BaseModel):
-    question = models.ForeignKey(TrainingTest, on_delete=models.CASCADE, verbose_name='Вопрос')
-    answer = models.CharField(max_length=120, verbose_name='Ответ')
-    is_true = models.BooleanField(default=False, verbose_name='Верно')
-
-    def __str__(self):
-        return str(self.id)
-
-    class Meta:
-        verbose_name = 'Ответ на тренировочный тест'
-        verbose_name_plural = 'Ответы на тренировочные тесты'
-        ordering = ('-created_at',)
-
-
 class ElectronLibraryCategory(BaseModel):
     name = models.CharField(max_length=40, verbose_name='Название')
 
@@ -153,7 +125,8 @@ class ElectronLibraryCategory(BaseModel):
 
 class ElectronLibrary(BaseModel):
     title = models.CharField(max_length=120, verbose_name='Название')
-    file = models.FileField(upload_to='electron_libraries/', verbose_name='Файл книги')
+    image = models.ImageField(upload_to='electron_library/images/', verbose_name='Книжная картинка')
+    file = models.FileField(upload_to='electron_library/files/', verbose_name='Файл книги')
     category = models.ForeignKey(
         ElectronLibraryCategory, on_delete=models.SET_NULL, null=True, verbose_name='Категория')
 
@@ -198,6 +171,7 @@ class HonestyTest(BaseModel):
 class HonestyTestAnswer(BaseModel):
     question = models.ForeignKey(HonestyTest, on_delete=models.CASCADE, verbose_name='Вопрос')
     answer = models.CharField(max_length=120, verbose_name='Отвечать')
+    response_indicator = models.PositiveIntegerField(verbose_name='Индикатор отклика')
 
     def __str__(self):
         return str(self.id)
@@ -269,8 +243,8 @@ class CitizenOversight(BaseModel):
         return str(self.id)
 
     class Meta:
-        verbose_name = 'Гражданский надзор'
-        verbose_name_plural = 'Гражданский надзор'
+        verbose_name = 'Помощь гражданам'
+        verbose_name_plural = 'Помощь гражданам'
 
 
 class ConflictAlertType(BaseModel):

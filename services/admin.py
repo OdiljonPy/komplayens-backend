@@ -1,13 +1,12 @@
 from django.contrib import admin
 from .models import (
     CategoryOrganization, Organization, Service, Training,
-    TrainingMedia, TrainingTest, TrainingTestAnswer,
     ElectronLibraryCategory, ElectronLibrary, News, HonestyTest,
     HonestyTestAnswer, CorruptionRating, CorruptionType, Corruption,
     CorruptionMaterial, CitizenOversight, ConflictAlertType,
     ConflictAlert, RelatedPerson, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType, ViolationReport, ViolationReportFile,
-    GuiltyPerson, TechnicalSupport
+    GuiltyPerson, TechnicalSupport, TrainingMedia
 )
 
 
@@ -48,26 +47,12 @@ class TrainingMediaAdmin(admin.ModelAdmin):
     list_filter = ('type',)
 
 
-@admin.register(TrainingTest)
-class TrainingTestAdmin(admin.ModelAdmin):
-    list_display = ('id', 'training', 'question')
-    list_display_links = ('id', 'training')
-    search_fields = ('training__name', 'question')
-
-
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'is_published', 'is_published_date')
     list_display_links = ('id', 'title')
     search_fields = ('title', 'description', 'short_description', 'is_published_date')
     list_filter = ('is_published',)
-
-
-@admin.register(TrainingTestAnswer)
-class TrainingTestAnswerAdmin(admin.ModelAdmin):
-    list_display = ('id', 'question', 'answer', 'is_true')
-    list_display_links = ('id', 'question')
-    search_fields = ('id', 'question__question', 'answer')
 
 
 @admin.register(ElectronLibraryCategory)
@@ -208,4 +193,3 @@ class TechnicalSupportAdmin(admin.ModelAdmin):
     list_display = ('id', 'comment')
     list_display_links = ('id', 'comment')
     search_fields = ('comment',)
-

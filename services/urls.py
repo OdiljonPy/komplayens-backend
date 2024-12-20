@@ -16,9 +16,6 @@ urlpatterns = [
 
     path('training/', TrainingViewSet.as_view({'get': 'training_list'})),
     path('training/<int:pk>/', TrainingViewSet.as_view({'get': 'training'})),
-    path('training/test/', TrainingViewSet.as_view({'get': 'training_test_list'})),
-    path('training/test/<int:pk>/', TrainingViewSet.as_view({'get': 'training_test'})),
-    path('training/test/answer/', TrainingViewSet.as_view({'get': 'training_test_answer'})),
 
     path('electron/library/', ElectronLibraryViewSet.as_view({'get': 'electron_library_list'})),
     path('electron/library/<int:pk>/', ElectronLibraryViewSet.as_view({'get': 'electron_library'})),

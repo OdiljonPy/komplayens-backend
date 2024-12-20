@@ -1,13 +1,12 @@
 from rest_framework import serializers
 from .models import (
     CategoryOrganization, Organization, Service, Training,
-    TrainingMedia, TrainingTest, TrainingTestAnswer,
-    ElectronLibraryCategory, ElectronLibrary, News, HonestyTest,
-    HonestyTestAnswer, CorruptionRating, CorruptionType, Corruption,
-    CorruptionMaterial, CitizenOversight, ConflictAlertType,
-    ConflictAlert, RelatedPerson, Profession, ProfessionalEthics,
-    OfficerAdvice, ReportType, ViolationReport, ViolationReportFile,
-    GuiltyPerson, TechnicalSupport
+    TrainingMedia, ElectronLibraryCategory, ElectronLibrary,
+    News, HonestyTest, HonestyTestAnswer, CorruptionRating,
+    CorruptionType, Corruption, CorruptionMaterial, CitizenOversight,
+    ConflictAlertType, ConflictAlert, RelatedPerson, Profession,
+    ProfessionalEthics, OfficerAdvice, ReportType, ViolationReport,
+    ViolationReportFile, GuiltyPerson, TechnicalSupport
 )
 
 
@@ -39,18 +38,6 @@ class TrainingMediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = TrainingMedia
         fields = ('id', 'training', 'file', 'order', 'type')
-
-
-class TrainingTestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TrainingTest
-        fields = ('id', 'training', 'question')
-
-
-class TrainingTestAnswerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TrainingTestAnswer
-        fields = ('id', 'question', 'answer', 'is_true')
 
 
 class ElectronLibraryCategorySerializer(serializers.ModelSerializer):

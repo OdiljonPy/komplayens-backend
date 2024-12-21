@@ -23,6 +23,11 @@ QUESTION_TYPE_CHOICES = (
     (2, 'Many answers'),
 )
 
+CONFLICT_PERSON_ROLE_CHOICES = (
+    (1, 'Stuff'),
+    (2, 'Related person'),
+)
+
 class CategoryOrganization(BaseModel):
     name = models.CharField(max_length=150, verbose_name="Название")
 
@@ -287,13 +292,15 @@ class ConflictAlertType(BaseModel):
 
 class ConflictAlert(BaseModel):
     organization_name = models.CharField(max_length=80, verbose_name='Название организации')
-    description = models.TextField(max_length=350, verbose_name='Описание')
+    organization_director_full_name = models.CharField(max_length=150, null=True, blank=True, verbose_name='ФИО директора организации')
+    organization_director_position = models.CharField(max_length=80, null=True, blank=True, verbose_name='Должность директора организации')
+    description = models.TextField(max_length=1000, verbose_name='Описание')
+    additional_description = models.TextField(max_length=1000, blank=True, null=True, verbose_name='Дополнительное описание')
     event_date = models.DateField(default=timezone.now, verbose_name='Дата события')
-    action_taken = models.CharField(max_length=150, verbose_name='Принятые меры')
     type = models.ForeignKey(ConflictAlertType, on_delete=models.CASCADE, verbose_name='Тип')
 
     def __str__(self):
-        return str(self.id)
+        return str(self.organization_name)
 
     class Meta:
         verbose_name = 'Оповещение о конфликте'
@@ -301,20 +308,24 @@ class ConflictAlert(BaseModel):
         ordering = ('-created_at',)
 
 
-class RelatedPerson(BaseModel):
+class InformantPerson(BaseModel):
     conflict_alert = models.ForeignKey(ConflictAlert, on_delete=models.CASCADE, verbose_name='Оповещение о конфликте')
-    first_name = models.CharField(max_length=60, verbose_name='Имя')
-    last_name = models.CharField(max_length=60, verbose_name='Фамилия')
+    full_name = models.CharField(max_length=150, verbose_name='Полное имя')
     position = models.CharField(max_length=120, verbose_name='Позиция информатора')
-    informant_jshshr = models.CharField(max_length=14, verbose_name='Информатор ЖШШР')
-    informant = models.BooleanField(default=False, verbose_name='Является ли информатором')
+    passport_number = models.CharField(max_length=14, verbose_name='Информатор ЖШШР', blank=True, null=True)
+    passport_series = models.CharField(max_length=9, verbose_name='Серия паспортов информатора', blank=True, null=True)
+    passport_taken_date = models.DateField(verbose_name='Дата получения паспорта', blank=True, null=True)
+    legal_entity_name = models.CharField(max_length=120, verbose_name='Название юридического лица', blank=True, null=True)
+    stir_number = models.CharField(max_length=120, verbose_name='Номер STIR', blank=True, null=True)
+    kinship_data = models.CharField(max_length=200, verbose_name='Данные о родстве', blank=True, null=True)
+    role = models.IntegerField(choices=CONFLICT_PERSON_ROLE_CHOICES, default=1, verbose_name='Роль информатора')
 
     def __str__(self):
-        return str(self.id)
+        return str(self.full_name)
 
     class Meta:
-        verbose_name = 'Связанное лицо'
-        verbose_name_plural = 'Связанное лицо'
+        verbose_name = 'Информатор'
+        verbose_name_plural = 'Информаторы'
         ordering = ('-created_at',)
 
 

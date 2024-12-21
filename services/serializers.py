@@ -5,7 +5,7 @@ from .models import (
     ElectronLibraryCategory, ElectronLibrary, News, HonestyTest,
     HonestyTestAnswer, CorruptionRating, CorruptionType, Corruption,
     CorruptionMaterial, CitizenOversight, ConflictAlertType,
-    ConflictAlert, RelatedPerson, Profession, ProfessionalEthics,
+    ConflictAlert, InformantPerson, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType, ViolationReport, ViolationReportFile,
     GuiltyPerson, TechnicalSupport
 )
@@ -122,13 +122,15 @@ class ConflictAlertTypeSerializer(serializers.ModelSerializer):
 class ConflictAlertSerializer(serializers.ModelSerializer):
     class Meta:
         model = ConflictAlert
-        fields = ('id', 'organization_name', 'description', 'event_date', 'action_taken', 'type')
+        fields = ('id', 'organization_name', 'organization_director_full_name', 'organization_director_position',
+                  'description', 'additional_description', 'event_date', 'type')
 
 
-class RelatedPersonSerializer(serializers.ModelSerializer):
+class InformantPersonSerializer(serializers.ModelSerializer):
     class Meta:
-        model = RelatedPerson
-        fields = ('id', 'conflict_alert', 'first_name', 'last_name', 'position', 'informant_jshshr', 'informant')
+        model = InformantPerson
+        fields = ('id', 'conflict_alert', 'full_name', 'position', 'passport_number', 'passport_series',
+                  'passport_taken_date', 'legal_entity_name', 'stir_number', 'kinship_data', 'role')
 
 
 class ProfessionSerializer(serializers.ModelSerializer):

@@ -5,7 +5,7 @@ from .models import (
     ElectronLibraryCategory, ElectronLibrary, News, HonestyTest,
     HonestyTestAnswer, CorruptionRating, CorruptionType, Corruption,
     CorruptionMaterial, CitizenOversight, ConflictAlertType,
-    ConflictAlert, RelatedPerson, Profession, ProfessionalEthics,
+    ConflictAlert, InformantPerson, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType, ViolationReport, ViolationReportFile,
     GuiltyPerson, TechnicalSupport
 )
@@ -141,16 +141,16 @@ class ConflictAlertTypeAdmin(admin.ModelAdmin):
 
 @admin.register(ConflictAlert)
 class ConflictAlertAdmin(admin.ModelAdmin):
-    list_display = ('id', 'organization_name', 'event_date', 'action_taken')
+    list_display = ('id', 'organization_name', 'organization_director_full_name', 'event_date', 'type')
     list_display_links = ('id', 'organization_name')
-    search_fields = ('organization_name', 'action_taken')
+    search_fields = ('organization_name',)
 
 
-@admin.register(RelatedPerson)
-class RelatedPersonAdmin(admin.ModelAdmin):
-    list_display = ('id', 'first_name', 'last_name', 'conflict_alert')
-    list_display_links = ('id', 'first_name', 'last_name')
-    search_fields = ('first_name', 'last_name')
+@admin.register(InformantPerson)
+class InformantPersonAdmin(admin.ModelAdmin):
+    list_display = ('id', 'full_name', 'conflict_alert', 'position', 'role')
+    list_display_links = ('id', 'full_name')
+    search_fields = ('full_name',)
 
 
 @admin.register(Profession)

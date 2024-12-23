@@ -4,8 +4,8 @@ from .models import (
     TrainingMedia, TrainingTest, TrainingTestAnswer,
     ElectronLibraryCategory, ElectronLibrary, News, HonestyTest,
     HonestyTestAnswer, CorruptionRating, CorruptionType, Corruption,
-    CorruptionMaterial, CitizenOversight, ConflictAlertType,
-    ConflictAlert, InformantPerson, Profession, ProfessionalEthics,
+    CorruptionMaterial, CitizenOversight,
+    ConflictAlert, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType, ViolationReport, ViolationReportFile,
     GuiltyPerson, TechnicalSupport
 )
@@ -114,24 +114,16 @@ class CitizenOversightSerializer(serializers.ModelSerializer):
         fields = ('id', 'control_method', 'control_result', 'description')
 
 
-class ConflictAlertTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ConflictAlertType
-        fields = ('id', 'name')
-
-
 class ConflictAlertSerializer(serializers.ModelSerializer):
     class Meta:
         model = ConflictAlert
         fields = ('id', 'organization_name', 'organization_director_full_name', 'organization_director_position',
-                  'description', 'additional_description', 'event_date', 'type')
-
-
-class InformantPersonSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = InformantPerson
-        fields = ('id', 'conflict_alert', 'full_name', 'position', 'passport_number', 'passport_series',
-                  'passport_taken_date', 'legal_entity_name', 'stir_number', 'kinship_data', 'role')
+                  'description', 'additional_description', 'type', 'employee_full_name', 'employee_position',
+                  'employee_passport_number', 'employee_passport_series', 'employee_passport_taken_date',
+                  'employee_legal_entity_name', 'employee_legal_entity_data', 'employee_stir_number',
+                  'related_persons_full_name', 'related_persons_passport_number', 'related_persons_passport_series',
+                  'related_persons_passport_taken_date', 'related_persons_legal_entity_name',
+                  'related_persons_stir_number', 'related_persons_kinship_data')
 
 
 class ProfessionSerializer(serializers.ModelSerializer):

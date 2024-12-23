@@ -43,8 +43,6 @@ urlpatterns = [
     path('conflict/alert/',
          ConflictAlertviewSet.as_view({'post': 'create_conflict_alert', 'delete': 'delete_conflict_alert'})),
     path('conflict/alert/<int:pk>/', ConflictAlertviewSet.as_view({'get': 'conflict_alert'})),
-    path('conflict/alert/types/', ConflictAlertviewSet.as_view({'get': 'conflict_alert_types'})),
-
     path('professional/', ProfessionalEthicsViewSet.as_view({'get': 'profession_list'})),
     path('professional/ethics/', ProfessionalEthicsViewSet.as_view({'get': 'professional_ethics_list'})),
     path('professional/ethics/<int:pk>/', ProfessionalEthicsViewSet.as_view({'get': 'professional_ethics'})),

@@ -23,9 +23,10 @@ QUESTION_TYPE_CHOICES = (
     (2, 'Many answers'),
 )
 
-CONFLICT_PERSON_ROLE_CHOICES = (
-    (1, 'Stuff'),
-    (2, 'Related person'),
+CONFLICT_ALERT_TYPE_CHOICES = (
+    (1, "About existing conflicts of interest (notification)"),
+    (2, "About the employee's possible conflict of interest (declaration)"),
+    (3, "About possible conflict of interests of related persons (declaration)"),
 )
 
 class CategoryOrganization(BaseModel):
@@ -284,54 +285,38 @@ class CitizenOversight(BaseModel):
         verbose_name_plural = 'Гражданский надзор'
 
 
-class ConflictAlertType(BaseModel):
-    name = models.CharField(max_length=60, verbose_name='Название')
-
-    def __str__(self):
-        return str(self.id)
-
-    class Meta:
-        verbose_name = 'Тип оповещения о конфликте'
-        verbose_name_plural = 'Тип оповещения о конфликте'
-        ordering = ('-created_at',)
-
-
 class ConflictAlert(BaseModel):
     organization_name = models.CharField(max_length=80, verbose_name='Название организации')
-    organization_director_full_name = models.CharField(max_length=150, null=True, blank=True, verbose_name='ФИО директора организации')
-    organization_director_position = models.CharField(max_length=80, null=True, blank=True, verbose_name='Должность директора организации')
-    description = models.TextField(max_length=1000, verbose_name='Описание')
-    additional_description = models.TextField(max_length=1000, blank=True, null=True, verbose_name='Дополнительное описание')
-    event_date = models.DateField(default=timezone.now, verbose_name='Дата события')
-    type = models.ForeignKey(ConflictAlertType, on_delete=models.CASCADE, verbose_name='Тип')
+    organization_director_full_name = models.CharField(max_length=150, verbose_name='ФИО директора организации', null=True, blank=True)
+    organization_director_position = models.CharField(max_length=80, verbose_name='Должность директора организации', null=True, blank=True)
+    description = models.TextField(max_length=1000, verbose_name='Описание', blank=True, null=True)
+    additional_description = models.TextField(max_length=1000, verbose_name='Дополнительное описание', blank=True, null=True)
+    type = models.PositiveSmallIntegerField(choices=CONFLICT_ALERT_TYPE_CHOICES, verbose_name='Тип')
+
+    employee_full_name = models.CharField(max_length=150, verbose_name='Полное имя')
+    employee_position = models.CharField(max_length=120, verbose_name='Позиция информатора')
+    employee_passport_number = models.CharField(max_length=14, verbose_name='Информатор ЖШШР')
+    employee_passport_series = models.CharField(max_length=9, verbose_name='Серия паспортов информатора')
+    employee_passport_taken_date = models.DateField(verbose_name='Дата получения паспорта')
+    employee_legal_entity_name = models.CharField(max_length=300, verbose_name='Название юридического лица', blank=True, null=True)
+    employee_legal_entity_data = models.CharField(max_length=300, verbose_name='Персональные данные сотрудников и юридических лиц')
+    employee_stir_number = models.CharField(max_length=120, verbose_name='Номер STIR', blank=True, null=True)
+
+    related_persons_full_name = models.CharField(max_length=150, verbose_name='Полное имя')
+    related_persons_passport_number = models.CharField(max_length=14, verbose_name='Информатор ЖШШР', blank=True, null=True)
+    related_persons_passport_series = models.CharField(max_length=9, verbose_name='Серия паспортов информатора', blank=True, null=True)
+    related_persons_passport_taken_date = models.DateField(verbose_name='Дата получения паспорта', blank=True, null=True)
+    related_persons_legal_entity_name = models.CharField(max_length=300, verbose_name='Название юридического лица', blank=True, null=True)
+    related_persons_stir_number = models.CharField(max_length=120, verbose_name='Номер STIR', blank=True, null=True)
+    related_persons_kinship_data = models.CharField(max_length=200, verbose_name='Данные о родстве', blank=True, null=True)
+
 
     def __str__(self):
-        return str(self.organization_name)
+        return str(self.employee_full_name)
 
     class Meta:
         verbose_name = 'Оповещение о конфликте'
         verbose_name_plural = 'Оповещение о конфликте'
-        ordering = ('-created_at',)
-
-
-class InformantPerson(BaseModel):
-    conflict_alert = models.ForeignKey(ConflictAlert, on_delete=models.CASCADE, verbose_name='Оповещение о конфликте')
-    full_name = models.CharField(max_length=150, verbose_name='Полное имя')
-    position = models.CharField(max_length=120, verbose_name='Позиция информатора')
-    passport_number = models.CharField(max_length=14, verbose_name='Информатор ЖШШР', blank=True, null=True)
-    passport_series = models.CharField(max_length=9, verbose_name='Серия паспортов информатора', blank=True, null=True)
-    passport_taken_date = models.DateField(verbose_name='Дата получения паспорта', blank=True, null=True)
-    legal_entity_name = models.CharField(max_length=120, verbose_name='Название юридического лица', blank=True, null=True)
-    stir_number = models.CharField(max_length=120, verbose_name='Номер STIR', blank=True, null=True)
-    kinship_data = models.CharField(max_length=200, verbose_name='Данные о родстве', blank=True, null=True)
-    role = models.IntegerField(choices=CONFLICT_PERSON_ROLE_CHOICES, default=1, verbose_name='Роль информатора')
-
-    def __str__(self):
-        return str(self.full_name)
-
-    class Meta:
-        verbose_name = 'Информатор'
-        verbose_name_plural = 'Информаторы'
         ordering = ('-created_at',)
 
 

@@ -9,7 +9,7 @@ from .models import (
     CategoryOrganization, Organization, Service, Training,
     TrainingTest, TrainingTestAnswer, ElectronLibraryCategory,
     ElectronLibrary, News, HonestyTest, HonestyTestAnswer,
-    CorruptionType, Corruption, CitizenOversight, ConflictAlertType,
+    CorruptionType, Corruption, CitizenOversight,
     ConflictAlert, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType
 )
@@ -20,9 +20,8 @@ from .serializers import (
     ElectronLibraryCategorySerializer, ElectronLibrarySerializer, NewsSerializer,
     HonestyTestSerializer, HonestyTestAnswerSerializer, CorruptionRatingSerializer,
     CorruptionTypeSerializer, CorruptionSerializer, CitizenOversightSerializer,
-    ConflictAlertSerializer, ConflictAlertTypeSerializer, ProfessionSerializer,
-    ProfessionalEthicsSerializer, OfficerAdviceSerializer, ReportTypeSerializer,
-    ViolationReportSerializer, TechnicalSupportSerializer
+    ConflictAlertSerializer, ProfessionSerializer, ProfessionalEthicsSerializer,
+    OfficerAdviceSerializer, ReportTypeSerializer, ViolationReportSerializer, TechnicalSupportSerializer,
 )
 
 
@@ -305,19 +304,7 @@ class ConflictAlertviewSet(ViewSet):
         serializer.save()
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_201_CREATED)
 
-    @swagger_auto_schema(
-        responses={200: ConflictAlertTypeSerializer()},
-        tags=['ConflictAlert']
-    )
-    def conflict_alert_types(self, request):
-        data = ConflictAlertType.objects.all()
-        serializer = ConflictAlertTypeSerializer(data, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        responses={200: ConflictAlertSerializer()},
-        tags=['ConflictAlert']
-    )
     def conflict_alert(self, request, pk):
         data = ConflictAlert.objects.filter(id=pk).first()
         if not data:

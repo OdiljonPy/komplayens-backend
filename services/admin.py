@@ -4,8 +4,8 @@ from .models import (
     TrainingMedia, TrainingTest, TrainingTestAnswer,
     ElectronLibraryCategory, ElectronLibrary, News, HonestyTest,
     HonestyTestAnswer, CorruptionRating, CorruptionType, Corruption,
-    CorruptionMaterial, CitizenOversight, ConflictAlertType,
-    ConflictAlert, InformantPerson, Profession, ProfessionalEthics,
+    CorruptionMaterial, CitizenOversight,
+    ConflictAlert, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType, ViolationReport, ViolationReportFile,
     GuiltyPerson, TechnicalSupport
 )
@@ -133,25 +133,11 @@ class CitizenOversightAdmin(admin.ModelAdmin):
     search_fields = ('control_method', 'control_result')
 
 
-@admin.register(ConflictAlertType)
-class ConflictAlertTypeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name')
-    list_display_links = ('id', 'name')
-    search_fields = ('name',)
-
-
 @admin.register(ConflictAlert)
 class ConflictAlertAdmin(admin.ModelAdmin):
-    list_display = ('id', 'organization_name', 'organization_director_full_name', 'event_date', 'type')
+    list_display = ('id', 'organization_name', 'organization_director_full_name', 'type')
     list_display_links = ('id', 'organization_name')
     search_fields = ('organization_name',)
-
-
-@admin.register(InformantPerson)
-class InformantPersonAdmin(admin.ModelAdmin):
-    list_display = ('id', 'full_name', 'conflict_alert', 'position', 'role')
-    list_display_links = ('id', 'full_name')
-    search_fields = ('full_name',)
 
 
 @admin.register(Profession)

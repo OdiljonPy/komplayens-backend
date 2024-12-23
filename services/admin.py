@@ -79,9 +79,10 @@ class ElectronLibraryCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(ElectronLibrary)
 class ElectronLibraryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'category')
-    list_display_links = ('id', 'title')
-    search_fields = ('title', 'category__name')
+    list_display = ('id', 'name', 'author', 'category', 'is_public')
+    list_display_links = ('id', 'name', 'author')
+    search_fields = ('name', 'author', 'category__name')
+    list_filter = ('is_public', 'category')
 
 
 @admin.register(HonestyTest)

@@ -152,10 +152,16 @@ class ElectronLibraryCategory(BaseModel):
 
 
 class ElectronLibrary(BaseModel):
-    title = models.CharField(max_length=120, verbose_name='Название')
+    name = models.CharField(max_length=80, verbose_name='Имя')
+    author = models.CharField(max_length=100, verbose_name='Автор')
+    edition_author = models.CharField(max_length=100, verbose_name='')
+    edition_type = models.CharField(max_length=100, verbose_name='')
+    edition_year = models.DateField(null=True, verbose_name='')
+    description = models.CharField(max_length=120, verbose_name='Название')
     file = models.FileField(upload_to='electron_libraries/', verbose_name='Файл книги')
     category = models.ForeignKey(
         ElectronLibraryCategory, on_delete=models.SET_NULL, null=True, verbose_name='Категория')
+    is_public = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.id)

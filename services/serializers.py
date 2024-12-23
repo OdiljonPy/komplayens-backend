@@ -62,7 +62,8 @@ class ElectronLibraryCategorySerializer(serializers.ModelSerializer):
 class ElectronLibrarySerializer(serializers.ModelSerializer):
     class Meta:
         model = ElectronLibrary
-        fields = ('id', 'title', 'file', 'category')
+        fields = ('id', 'name', 'author', 'edition_author', 'edition_type', 'edition_year', 'description',
+                  'file', 'category')
 
 
 class NewsSerializer(serializers.ModelSerializer):

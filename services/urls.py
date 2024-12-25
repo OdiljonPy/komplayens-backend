@@ -29,7 +29,7 @@ urlpatterns = [
 
     path('honesty/test/', HonestyViewSet.as_view({'get': 'honesty_test_list'})),
     path('honesty/test/<int:pk>/', HonestyViewSet.as_view({'get': 'honesty_test'})),
-    path('honesty/answer/', HonestyViewSet.as_view({'get': 'honesty_test_answer'})),
+    path('honesty/answer/', HonestyViewSet.as_view({'post': 'honesty_test_answer'})),
 
     path('corruption/', CorruptionViewSet.as_view({'get': 'corruption_list'})),
     path('corruption/<int:pk>/', CorruptionViewSet.as_view({'get': 'corruption'})),

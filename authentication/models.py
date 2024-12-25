@@ -51,3 +51,16 @@ class OTP(BaseModel):
         verbose_name = 'ОТП'
         verbose_name_plural = 'ОТП'
         ordering = ('-created_at',)
+
+
+class Customer(BaseModel):
+    user_agent = models.CharField(max_length=220, verbose_name='Пользовательский агент')
+    ip_address = models.CharField(max_length=15, verbose_name='IP-адрес')
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name = 'Клиент'
+        verbose_name_plural = 'Клиенты'
+        ordering = ('-created_at',)

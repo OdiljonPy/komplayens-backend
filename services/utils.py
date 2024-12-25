@@ -21,3 +21,7 @@ def validate_file_type_and_size(value):
     # Check file size
     if value.size > max_file_size:
         raise ValidationError(f"The file size exceeds the 5MB limit.")
+
+
+def honesty_result(data):
+    return data

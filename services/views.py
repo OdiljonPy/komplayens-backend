@@ -5,11 +5,12 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from exceptions.exception import CustomApiException
 from exceptions.error_messages import ErrorCodes
+from .utils import honesty_result
 from .models import (
     CategoryOrganization, Organization, Service, Training,
     TrainingTest, TrainingTestAnswer, ElectronLibraryCategory,
-    ElectronLibrary, News, HonestyTest, HonestyTestAnswer,
-    CorruptionType, Corruption, CitizenOversight, ConflictAlertType,
+    ElectronLibrary, News, HonestyTest, CorruptionType,
+    Corruption, CitizenOversight, ConflictAlertType,
     ConflictAlert, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType
 )
@@ -18,11 +19,11 @@ from .serializers import (
     CategoryOrganizationSerializer, OrganizationSerializer, ServiceSerializer,
     TrainingSerializer, TrainingTestSerializer, TrainingTestAnswerSerializer,
     ElectronLibraryCategorySerializer, ElectronLibrarySerializer, NewsSerializer,
-    HonestyTestSerializer, HonestyTestAnswerSerializer, CorruptionRatingSerializer,
-    CorruptionTypeSerializer, CorruptionSerializer, CitizenOversightSerializer,
-    ConflictAlertSerializer, ConflictAlertTypeSerializer, ProfessionSerializer,
-    ProfessionalEthicsSerializer, OfficerAdviceSerializer, ReportTypeSerializer,
-    ViolationReportSerializer, TechnicalSupportSerializer
+    HonestyTestSerializer, CorruptionRatingSerializer, CorruptionTypeSerializer,
+    CorruptionSerializer, CitizenOversightSerializer, ConflictAlertSerializer,
+    ConflictAlertTypeSerializer, ProfessionSerializer, ProfessionalEthicsSerializer,
+    OfficerAdviceSerializer, ReportTypeSerializer, ViolationReportSerializer,
+    TechnicalSupportSerializer, HonestyCreateAnswerSerializer
 )
 
 
@@ -201,7 +202,7 @@ class HonestyViewSet(ViewSet):
         tags=['HonestyTest']
     )
     def honesty_test_list(self, request):
-        data = HonestyTest.objects.all()
+        data = HonestyTest.objects.order_by('created_at')
         serializer = HonestyTestSerializer(data, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -217,13 +218,14 @@ class HonestyViewSet(ViewSet):
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
-        responses={200: HonestyTestAnswerSerializer()},
+        request_body=HonestyCreateAnswerSerializer(),
+        responses={200: openapi.TYPE_INTEGER},
         tags=['HonestyTest']
     )
-    def honesty_test_answer(self, request, pk):
-        data = HonestyTestAnswer.objects.filter(question_id=pk)
-        serializer = HonestyTestAnswerSerializer(data, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+    def honesty_test_answer(self, request):
+        serializer = HonestyCreateAnswerSerializer(request.data)
+        result = honesty_result(serializer.data)
+        return Response(data={'result': result, 'ok': True}, status=status.HTTP_200_OK)
 
 
 class CorruptionRiskRatingViewSet(ViewSet):

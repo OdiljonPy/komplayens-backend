@@ -154,9 +154,9 @@ class ElectronLibraryCategory(BaseModel):
 class ElectronLibrary(BaseModel):
     name = models.CharField(max_length=80, verbose_name='Имя')
     author = models.CharField(max_length=100, verbose_name='Автор')
-    edition_author = models.CharField(max_length=100, verbose_name='')
-    edition_type = models.CharField(max_length=100, verbose_name='')
-    edition_year = models.DateField(null=True, verbose_name='')
+    edition_author = models.CharField(max_length=100, verbose_name='Автор издания')
+    edition_type = models.CharField(max_length=100, verbose_name='Тип издания')
+    edition_year = models.DateField(null=True, verbose_name='Год издания')
     description = models.CharField(max_length=120, verbose_name='Название')
     file = models.FileField(upload_to='electron_libraries/', verbose_name='Файл книги')
     category = models.ForeignKey(
@@ -202,8 +202,9 @@ class HonestyTest(BaseModel):
 
 
 class HonestyTestAnswer(BaseModel):
-    question = models.ForeignKey(HonestyTest, on_delete=models.CASCADE, verbose_name='Вопрос')
+    question = models.ForeignKey(HonestyTest, on_delete=models.CASCADE, verbose_name='Вопрос', related_name='answers')
     answer = models.CharField(max_length=120, verbose_name='Отвечать')
+    grade = models.IntegerField(verbose_name='Оценка')
 
     def __str__(self):
         return str(self.id)

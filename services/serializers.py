@@ -77,11 +77,25 @@ class HonestyTestSerializer(serializers.ModelSerializer):
         model = HonestyTest
         fields = ('id', 'question')
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['answers'] = HonestyTestAnswerSerializer(instance.answers, many=True).data
+        return data
+
 
 class HonestyTestAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = HonestyTestAnswer
         fields = ('id', 'question', 'answer')
+
+
+class HonestyCreateAnswerSerializer(serializers.Serializer):
+    answers = serializers.ListField(
+        child=serializers.ListField(
+            child=serializers.IntegerField(),
+            required=True,
+        )
+    )
 
 
 class CorruptionRatingSerializer(serializers.ModelSerializer):

@@ -291,6 +291,7 @@ class ConflictAlert(BaseModel):
     organization_director_position = models.CharField(max_length=80, verbose_name='Должность директора организации', null=True, blank=True)
     description = models.TextField(max_length=1000, verbose_name='Описание', blank=True, null=True)
     additional_description = models.TextField(max_length=1000, verbose_name='Дополнительное описание', blank=True, null=True)
+    filled_date = models.DateField(null=True, blank=True)
     type = models.PositiveSmallIntegerField(choices=CONFLICT_ALERT_TYPE_CHOICES, verbose_name='Тип')
 
     employee_full_name = models.CharField(max_length=150, verbose_name='Полное имя')

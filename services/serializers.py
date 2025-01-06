@@ -4,11 +4,13 @@ from .models import (
     TrainingMedia, TrainingTest, TrainingTestAnswer,
     ElectronLibraryCategory, ElectronLibrary, News, HonestyTest,
     HonestyTestAnswer, CorruptionRating, CorruptionType, Corruption,
-    CorruptionMaterial, CitizenOversight, ConflictAlertType,
-    ConflictAlert, RelatedPerson, Profession, ProfessionalEthics,
+    CorruptionMaterial, CitizenOversight,
+    ConflictAlert, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType, ViolationReport, ViolationReportFile,
     GuiltyPerson, TechnicalSupport
 )
+from exceptions.exception import CustomApiException
+from exceptions.error_messages import ErrorCodes
 
 
 class CategoryOrganizationSerializer(serializers.ModelSerializer):
@@ -114,22 +116,40 @@ class CitizenOversightSerializer(serializers.ModelSerializer):
         fields = ('id', 'control_method', 'control_result', 'description')
 
 
-class ConflictAlertTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ConflictAlertType
-        fields = ('id', 'name')
+class TypeSerializer(serializers.Serializer):
+    type = serializers.IntegerField(required=True)
+
+    def validate(self, data):
+        if data.get('type') and data.get('type') not in [1, 2, 3]:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Type must be 1, 2, or 3')
+        return data
 
 
 class ConflictAlertSerializer(serializers.ModelSerializer):
     class Meta:
         model = ConflictAlert
-        fields = ('id', 'organization_name', 'description', 'event_date', 'action_taken', 'type')
+        fields = ('id', 'organization_name', 'organization_director_full_name', 'organization_director_position',
+                  'description', 'additional_description', 'type', 'employee_full_name', 'employee_position',
+                  'employee_passport_number', 'employee_passport_series', 'employee_passport_taken_date',
+                  'employee_legal_entity_name', 'employee_legal_entity_data', 'employee_stir_number',
+                  'related_persons_full_name', 'related_persons_passport_number', 'related_persons_passport_series',
+                  'related_persons_passport_taken_date', 'related_persons_legal_entity_name',
+                  'related_persons_stir_number', 'related_persons_kinship_data', 'filled_date')
 
-
-class RelatedPersonSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RelatedPerson
-        fields = ('id', 'conflict_alert', 'first_name', 'last_name', 'position', 'informant_jshshr', 'informant')
+    def validate(self, attrs):
+        if attrs.get('employee_passport_number') and len(attrs.get('employee_passport_number')) != 14:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED,
+                                    message='The employee passport number should be 14 characters long')
+        if attrs.get('related_persons_passport_number') and len(attrs.get('related_persons_passport_number')) != 14:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED,
+                                    message='The related persons passport number should be 14 characters long')
+        if attrs.get('employee_passport_series') and len(attrs.get('employee_passport_series')) != 9:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED,
+                                    message='The employee passport series should be 9 characters long')
+        if attrs.get('related_persons_passport_series') and len(attrs.get('related_persons_passport_series')) != 9:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED,
+                                    message='The related persons series should be 9 characters long')
+        return attrs
 
 
 class ProfessionSerializer(serializers.ModelSerializer):

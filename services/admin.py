@@ -4,8 +4,8 @@ from .models import (
     TrainingMedia, TrainingTest, TrainingTestAnswer,
     ElectronLibraryCategory, ElectronLibrary, News, HonestyTest,
     HonestyTestAnswer, CorruptionRating, CorruptionType, Corruption,
-    CorruptionMaterial, CitizenOversight, ConflictAlertType,
-    ConflictAlert, RelatedPerson, Profession, ProfessionalEthics,
+    CorruptionMaterial, CitizenOversight,
+    ConflictAlert, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType, ViolationReport, ViolationReportFile,
     GuiltyPerson, TechnicalSupport
 )
@@ -133,25 +133,11 @@ class CitizenOversightAdmin(admin.ModelAdmin):
     search_fields = ('control_method', 'control_result')
 
 
-@admin.register(ConflictAlertType)
-class ConflictAlertTypeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name')
-    list_display_links = ('id', 'name')
-    search_fields = ('name',)
-
-
 @admin.register(ConflictAlert)
 class ConflictAlertAdmin(admin.ModelAdmin):
-    list_display = ('id', 'organization_name', 'event_date', 'action_taken')
+    list_display = ('id', 'organization_name', 'organization_director_full_name', 'type')
     list_display_links = ('id', 'organization_name')
-    search_fields = ('organization_name', 'action_taken')
-
-
-@admin.register(RelatedPerson)
-class RelatedPersonAdmin(admin.ModelAdmin):
-    list_display = ('id', 'first_name', 'last_name', 'conflict_alert')
-    list_display_links = ('id', 'first_name', 'last_name')
-    search_fields = ('first_name', 'last_name')
+    search_fields = ('organization_name',)
 
 
 @admin.register(Profession)

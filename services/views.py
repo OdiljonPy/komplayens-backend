@@ -9,7 +9,7 @@ from .models import (
     CategoryOrganization, Organization, Service, Training,
     TrainingTest, TrainingTestAnswer, ElectronLibraryCategory,
     ElectronLibrary, News, HonestyTest, HonestyTestAnswer,
-    CorruptionType, Corruption, CitizenOversight, ConflictAlertType,
+    CorruptionType, Corruption, CitizenOversight,
     ConflictAlert, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType
 )
@@ -20,10 +20,11 @@ from .serializers import (
     ElectronLibraryCategorySerializer, ElectronLibrarySerializer, NewsSerializer,
     HonestyTestSerializer, HonestyTestAnswerSerializer, CorruptionRatingSerializer,
     CorruptionTypeSerializer, CorruptionSerializer, CitizenOversightSerializer,
-    ConflictAlertSerializer, ConflictAlertTypeSerializer, ProfessionSerializer,
-    ProfessionalEthicsSerializer, OfficerAdviceSerializer, ReportTypeSerializer,
-    ViolationReportSerializer, TechnicalSupportSerializer
+    ProfessionSerializer, ProfessionalEthicsSerializer, OfficerAdviceSerializer,
+    ReportTypeSerializer, ViolationReportSerializer, TechnicalSupportSerializer,
+    ConflictAlertSerializer, TypeSerializer,
 )
+from .utils import file_one_create, file_two_create, file_three_create
 
 
 class OrganizationViewSet(ViewSet):
@@ -292,32 +293,33 @@ class CitizenOversightViewSet(ViewSet):
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 
-class ConflictAlertviewSet(ViewSet):
+class ConflictAlertViewSet(ViewSet):
     @swagger_auto_schema(
-        request_body=ConflictAlertSerializer(),
+        manual_parameters=[openapi.Parameter(
+            name='type', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Type of ConflictAlert'
+        )],
+        request_body=ConflictAlertSerializer,
         responses={200: ConflictAlertSerializer()},
         tags=['ConflictAlert']
     )
     def create_conflict_alert(self, request):
+        param_serializer = TypeSerializer(data=request.query_params, context={'request': request})
+        if not param_serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=param_serializer.errors)
+        file_type = param_serializer.validated_data.get('type')
         serializer = ConflictAlertSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
         serializer.save()
+        if file_type == 1:
+            file_one_create(serialized_data=serializer.data)
+        elif file_type == 2:
+            file_two_create(serialized_data=serializer.data)
+        elif file_type == 3:
+            file_three_create(serialized_data=serializer.data)
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_201_CREATED)
 
-    @swagger_auto_schema(
-        responses={200: ConflictAlertTypeSerializer()},
-        tags=['ConflictAlert']
-    )
-    def conflict_alert_types(self, request):
-        data = ConflictAlertType.objects.all()
-        serializer = ConflictAlertTypeSerializer(data, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        responses={200: ConflictAlertSerializer()},
-        tags=['ConflictAlert']
-    )
     def conflict_alert(self, request, pk):
         data = ConflictAlert.objects.filter(id=pk).first()
         if not data:

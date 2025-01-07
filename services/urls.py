@@ -1,8 +1,7 @@
 from django.urls import path
 from .views import (
     OrganizationViewSet, TrainingViewSet, ElectronLibraryViewSet,
-    NewsViewSet, HonestyViewSet, CorruptionRiskRatingViewSet,
-    CorruptionViewSet, CitizenOversightViewSet, ConflictAlertViewSet,
+    NewsViewSet, HonestyViewSet, ConflictAlertViewSet,
     ProfessionalEthicsViewSet, OfficerAdviceViewSet, ViolationReportViewSet,
     TechnicalSupportViewSet
 )
@@ -16,9 +15,6 @@ urlpatterns = [
 
     path('training/', TrainingViewSet.as_view({'get': 'training_list'})),
     path('training/<int:pk>/', TrainingViewSet.as_view({'get': 'training'})),
-    path('training/test/', TrainingViewSet.as_view({'get': 'training_test_list'})),
-    path('training/test/<int:pk>/', TrainingViewSet.as_view({'get': 'training_test'})),
-    path('training/test/answer/', TrainingViewSet.as_view({'get': 'training_test_answer'})),
 
     path('electron/library/', ElectronLibraryViewSet.as_view({'get': 'electron_library_list'})),
     path('electron/library/<int:pk>/', ElectronLibraryViewSet.as_view({'get': 'electron_library'})),
@@ -30,15 +26,6 @@ urlpatterns = [
     path('honesty/test/', HonestyViewSet.as_view({'get': 'honesty_test_list'})),
     path('honesty/test/<int:pk>/', HonestyViewSet.as_view({'get': 'honesty_test'})),
     path('honesty/answer/', HonestyViewSet.as_view({'get': 'honesty_test_answer'})),
-
-    path('corruption/', CorruptionViewSet.as_view({'get': 'corruption_list'})),
-    path('corruption/<int:pk>/', CorruptionViewSet.as_view({'get': 'corruption'})),
-    path('corruption/types/', CorruptionViewSet.as_view({'get': 'corruption_types'})),
-
-    path('corruption/risk/rating/', CorruptionRiskRatingViewSet.as_view({'post': 'create_rating'})),
-
-    path('citizen/oversight/', CitizenOversightViewSet.as_view({'get': 'citizen_oversight_list'})),
-    path('citizen/oversight/<int:pk>/', CitizenOversightViewSet.as_view({'get': 'citizen_oversight'})),
 
     path('conflict/alert/',
          ConflictAlertViewSet.as_view({'post': 'create_conflict_alert', 'delete': 'delete_conflict_alert'})),

@@ -42,10 +42,11 @@ def center_cell_text(cell, left_indent=4.0, right_indent=4.0):
     vAlign.set(qn('w:val'), 'center')
     tcPr.append(vAlign)
 
+
 def center_left_paragraph(paragraph, left_indent=4.0, right_indent=4.0):
-        paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
-        paragraph.paragraph_format.left_indent = Pt(left_indent)
-        paragraph.paragraph_format.right_indent = Pt(right_indent)
+    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
+    paragraph.paragraph_format.left_indent = Pt(left_indent)
+    paragraph.paragraph_format.right_indent = Pt(right_indent)
 
 
 def file_one_create(serialized_data):
@@ -54,7 +55,6 @@ def file_one_create(serialized_data):
 
     paragraph1 = document.paragraphs[0]
     paragraph2 = document.paragraphs[1]
-
 
     paragraph1.text = f'{serialized_data.get('organization_director_position')} {serialized_data.get('organization_director_full_name')}гa'
     paragraph2.text = f'{serialized_data.get('employee_position')} {serialized_data.get('employee_full_name')}дан\n'
@@ -65,10 +65,8 @@ def file_one_create(serialized_data):
     run1.font.size = Pt(14)
     run2.font.size = Pt(14)
 
-
     center_left_paragraph(paragraph=paragraph1, left_indent=300, right_indent=2)
     center_left_paragraph(paragraph=paragraph2, left_indent=300, right_indent=2)
-
 
     table1 = document.tables[0]
     table2 = document.tables[1]
@@ -90,7 +88,8 @@ def file_one_create(serialized_data):
     table3.cell(0, 2).text = serialized_data.get('description') or ''
     table4.cell(0, 0).text = serialized_data.get('employee_position') or ''
     table4.cell(0, 1).text = f"________________________\n Шахсий имзо ёки электрон рақамли имзоси"
-    table4.cell(0, 2).text = f"{serialized_data.get('employee_full_name') or ''} \n {serialized_data.get('filled_date') or ''}"
+    table4.cell(0,
+                2).text = f"{serialized_data.get('employee_full_name') or ''} \n {serialized_data.get('filled_date') or ''}"
     table5.cell(0, 0).text = serialized_data.get('organization_director_position') or ''
     table5.cell(0, 1).text = f"\n_______________________\n Шахсий имзо ёки электрон рақамли имзоси"
     table5.cell(0, 2).text = (f"{serialized_data.get('organization_director_full_name') or ''}"
@@ -163,7 +162,8 @@ def file_two_create(serialized_data):
     table2.cell(9, 2).text = serialized_data.get('related_persons_stir_number') or ''
     table3.cell(0, 0).text = serialized_data.get('employee_position') or ''
     table3.cell(0, 1).text = f"________________________\n Шахсий имзо ёки электрон рақамли имзоси"
-    table3.cell(0, 2).text = f"{serialized_data.get('employee_full_name') or ''} \n {serialized_data.get('filled_date') or ''}"
+    table3.cell(0,
+                2).text = f"{serialized_data.get('employee_full_name') or ''} \n {serialized_data.get('filled_date') or ''}"
 
     center_cell_text(table1.cell(0, 2))
     center_cell_text(table1.cell(1, 2))
@@ -185,6 +185,7 @@ def file_two_create(serialized_data):
     subprocess.run(['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', output_dir, docx_output_path],
                    check=True)
     return serialized_data
+
 
 def file_three_create(serialized_data):
     file_path = '/home/otabek/Desktop/3-variant uchun shakl.docx'
@@ -212,7 +213,7 @@ def file_three_create(serialized_data):
     table1.cell(1, 2).text = serialized_data.get('employee_legal_entity_name') or ''
     table1.cell(2, 2).text = serialized_data.get('employee_stir_number') or ''
     table1.cell(3, 2).text = (serialized_data.get('employee_full_name') or ''
-                              + serialized_data.get('employee_position')  or '')
+                              + serialized_data.get('employee_position') or '')
     table1.cell(4, 2).text = serialized_data.get('related_persons_kinship_data') or ''
     table1.cell(5, 2).text = serialized_data.get('employee_legal_entity_data') or ''
 
@@ -233,5 +234,6 @@ def file_three_create(serialized_data):
     document.save(docx_output_path)
     pdf_output_path = docx_output_path.replace('.docx', '.pdf')
     output_dir = '/'.join(pdf_output_path.split('/')[:-1])
-    subprocess.run(['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', output_dir, docx_output_path], check=True)
+    subprocess.run(['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', output_dir, docx_output_path],
+                   check=True)
     return serialized_data

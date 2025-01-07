@@ -7,19 +7,17 @@ from exceptions.exception import CustomApiException
 from exceptions.error_messages import ErrorCodes
 from .models import (
     CategoryOrganization, Organization, Service, Training,
-    TrainingTest, TrainingTestAnswer, ElectronLibraryCategory,
+    ElectronLibraryCategory,
     ElectronLibrary, News, HonestyTest, HonestyTestAnswer,
-    CorruptionType, Corruption, CitizenOversight,
     ConflictAlert, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType
 )
 
 from .serializers import (
     CategoryOrganizationSerializer, OrganizationSerializer, ServiceSerializer,
-    TrainingSerializer, TrainingTestSerializer, TrainingTestAnswerSerializer,
+    TrainingSerializer,
     ElectronLibraryCategorySerializer, ElectronLibrarySerializer, NewsSerializer,
-    HonestyTestSerializer, HonestyTestAnswerSerializer, CorruptionRatingSerializer,
-    CorruptionTypeSerializer, CorruptionSerializer, CitizenOversightSerializer,
+    HonestyTestSerializer, HonestyTestAnswerSerializer,
     ProfessionSerializer, ProfessionalEthicsSerializer, OfficerAdviceSerializer,
     ReportTypeSerializer, ViolationReportSerializer, TechnicalSupportSerializer,
     ConflictAlertSerializer, ConflictAlertTypeSerializer,
@@ -97,49 +95,6 @@ class TrainingViewSet(ViewSet):
         if not data:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
         serializer = TrainingSerializer(data, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                name='training_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Training ID'),
-        ],
-        responses={200: TrainingTestSerializer()},
-        tags=['Training']
-    )
-    def training_test_list(self, request):
-        training_id = request.query_params.get('training_id')
-        if not training_id or not training_id.isdigit():
-            raise CustomApiException(ErrorCodes.INVALID_INPUT, message='Training ID is required')
-        data = TrainingTest.objects.filter(training_id=training_id)
-        serializer = TrainingTestSerializer(data, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                name='training_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Training ID'),
-        ],
-        responses={200: TrainingTestSerializer()},
-        tags=['Training']
-    )
-    def training_test(self, request, pk):
-        training_id = request.query_params.get('training_id')
-        if not training_id or not training_id.isdigit():
-            raise CustomApiException(ErrorCodes.INVALID_INPUT, message='Training ID is required')
-        data = TrainingTest.objects.filter(id=pk, training_id=training_id).first()
-        if not data:
-            raise CustomApiException(ErrorCodes.NOT_FOUND)
-        serializer = TrainingTestSerializer(data, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        responses={200: TrainingTestAnswerSerializer()},
-        tags=['Training']
-    )
-    def training_test_answer(self, request, pk):
-        data = TrainingTestAnswer.objects.filter(question_id=pk)
-        serializer = TrainingTestAnswerSerializer(data, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 
@@ -227,72 +182,6 @@ class HonestyViewSet(ViewSet):
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 
-class CorruptionRiskRatingViewSet(ViewSet):
-    @swagger_auto_schema(
-        responses={201: CorruptionRatingSerializer()},
-        tags=['CorruptionRating']
-    )
-    def create_rating(self, request):
-        serializer = CorruptionRatingSerializer(data=request.data, context={'request': request})
-        if not serializer.is_valid():
-            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
-        serializer.save()
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_201_CREATED)
-
-
-class CorruptionViewSet(ViewSet):
-    @swagger_auto_schema(
-        responses={200: CorruptionSerializer()},
-        tags=['Corruption']
-    )
-    def corruption_list(self, request):
-        data = Corruption.objects.all()
-        serializer = CorruptionSerializer(data, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        responses={200: CorruptionSerializer()},
-        tags=['Corruption']
-    )
-    def corruption(self, request, pk):
-        data = Corruption.objects.filter(id=pk).first()
-        if not data:
-            raise CustomApiException(ErrorCodes.NOT_FOUND)
-        serializer = CorruptionSerializer(data, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        responses={200: CorruptionTypeSerializer()},
-        tags=['Corruption']
-    )
-    def corruption_types(self, request):
-        data = CorruptionType.objects.all()
-        serializer = CorruptionTypeSerializer(data, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-
-class CitizenOversightViewSet(ViewSet):
-    @swagger_auto_schema(
-        responses={200: CitizenOversightSerializer()},
-        tags=['CitizenOversight']
-    )
-    def citizen_oversight_list(self, request):
-        data = CitizenOversight.objects.all()
-        serializer = CitizenOversightSerializer(data, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        responses={200: CitizenOversightSerializer()},
-        tags=['CitizenOversight']
-    )
-    def citizen_oversight(self, request, pk):
-        data = CitizenOversight.objects.filter(id=pk).first()
-        if not data:
-            raise CustomApiException(ErrorCodes.NOT_FOUND)
-        serializer = CitizenOversightSerializer(data, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-
 class ConflictAlertViewSet(ViewSet):
     @swagger_auto_schema(
         manual_parameters=[openapi.Parameter(
@@ -318,7 +207,6 @@ class ConflictAlertViewSet(ViewSet):
         elif file_type == 3:
             file_three_create(serialized_data=serializer.data)
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_201_CREATED)
-
 
     def conflict_alert(self, request, pk):
         data = ConflictAlert.objects.filter(id=pk).first()

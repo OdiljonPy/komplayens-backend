@@ -1,7 +1,6 @@
 import os
 from tinymce.models import HTMLField
 from django.db import models
-from django.utils import timezone
 from abstarct_model.base_model import BaseModel
 from base.models import Region, District
 from .utils import validate_file_type_and_size
@@ -10,12 +9,6 @@ MEDIA_TYPE_CHOICES = (
     ('PDF', 'PDF'),
     ('MP4', 'MP4'),
     ('PPT', 'PPT'),
-)
-
-REPORT_STATUS_CHOICES = (
-    (1, 'Viewing'),
-    (2, 'Checking'),
-    (3, 'Completed')
 )
 
 QUESTION_TYPE_CHOICES = (
@@ -28,6 +21,12 @@ CONFLICT_ALERT_TYPE_CHOICES = (
     (2, "About the employee's possible conflict of interest (declaration)"),
     (3, "About possible conflict of interests of related persons (declaration)"),
 )
+
+Corruption_Risk_STATUS = (
+    (1, 'In Progress'),
+    (2, 'Closed')
+)
+
 
 class CategoryOrganization(BaseModel):
     name = models.CharField(max_length=150, verbose_name="Название")
@@ -44,12 +43,18 @@ class CategoryOrganization(BaseModel):
 class Organization(BaseModel):
     category = models.ForeignKey(CategoryOrganization, on_delete=models.PROTECT, verbose_name="Категория")
     name = models.CharField(max_length=255, verbose_name="Название")
-    phone_number = models.CharField(max_length=255, verbose_name="Номер телефона")
+    phone_number = models.CharField(max_length=15, verbose_name="Номер телефона")
+    phone_number2 = models.CharField(max_length=15, verbose_name='Номер телефона 2', blank=True, null=True)
     email = models.CharField(max_length=255, verbose_name="Электронная почта")
     region = models.ForeignKey(Region, on_delete=models.PROTECT, verbose_name="Регион")
     district = models.ForeignKey(District, on_delete=models.PROTECT, verbose_name="Область")
     address = models.CharField(max_length=255, verbose_name="Адрес")
-    link = models.CharField(max_length=40, default='https://murojaat.gov.uz/', verbose_name='Ссылка')
+    weblink = models.CharField(max_length=40, default='https://murojaat.gov.uz/', verbose_name='Ссылка')
+    instagram = models.URLField(default='https://instagram.com', verbose_name='')
+    telegram = models.URLField(default='https://telegram.org', verbose_name='')
+    facebook = models.URLField(default='https://facebook.com', verbose_name='')
+    twitter = models.URLField(default='https://twitter.com', verbose_name='')
+    youtube = models.URLField(default='https://www.youtube.com', verbose_name='')
 
     def __str__(self):
         return self.name
@@ -73,12 +78,25 @@ class Service(BaseModel):
         ordering = ('-created_at',)
 
 
+class TrainingCategory(BaseModel):
+    name = models.CharField(max_length=40, verbose_name='')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = ''
+        verbose_name_plural = ''
+        ordering = ('-created_at',)
+
+
 class Training(BaseModel):
-    author = models.CharField(max_length=150, verbose_name="Автор")
     name = models.CharField(max_length=255, verbose_name="Название")
     image = models.ImageField(upload_to="trainings/", verbose_name="Изображение")
-    description = models.TextField(verbose_name="описание")
-    number_participants = models.IntegerField(default=0, verbose_name="Количество участников")
+    description = HTMLField(verbose_name="описание")
+    video = models.URLField(default='https://www.youtube.com/', verbose_name='')
+    category = models.ForeignKey(to='TrainingCategory', on_delete=models.SET_NULL, null=True)
+    is_public = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -91,7 +109,12 @@ class Training(BaseModel):
 
 class TrainingMedia(BaseModel):
     training = models.ForeignKey(Training, on_delete=models.SET_NULL, null=True, verbose_name="Урок")
-    file = models.FileField(upload_to="trainings/media/", validators=[validate_file_type_and_size], verbose_name="Файл")
+    filename = models.CharField(max_length=100, verbose_name='')
+    file = models.FileField(
+        upload_to="trainings/media/", validators=[validate_file_type_and_size],
+        verbose_name="Файл", blank=True, null=True)
+    video = models.URLField(default='https://www.youtube.com/', verbose_name='', blank=True, null=True)
+    video_title = models.CharField(verbose_name='', blank=True, null=True)
     order = models.IntegerField(verbose_name="Очередь")
     type = models.CharField(max_length=5, choices=MEDIA_TYPE_CHOICES, editable=False, verbose_name="Тип")
 
@@ -101,8 +124,6 @@ class TrainingMedia(BaseModel):
 
             if ext == '.pdf':
                 self.type = 'PDF'
-            elif ext in ['.mp4', '.mov', '.avi', '.mkv', '.flv']:
-                self.type = 'MP4'
             elif ext in ['.ppt', '.pptx']:
                 self.type = 'PPT'
 
@@ -114,34 +135,6 @@ class TrainingMedia(BaseModel):
     class Meta:
         verbose_name = 'Видео урока'
         verbose_name_plural = 'Видео уроков'
-        ordering = ('-created_at',)
-
-
-class TrainingTest(BaseModel):
-    training = models.ForeignKey(Training, on_delete=models.CASCADE, verbose_name='Обучение')
-    question = models.CharField(max_length=120, verbose_name='Вопрос')
-    question_type = models.IntegerField(choices=QUESTION_TYPE_CHOICES, default=1)
-
-    def __str__(self):
-        return str(self.id)
-
-    class Meta:
-        verbose_name = 'Тест на обучение'
-        verbose_name_plural = 'Тесты по обучению'
-        ordering = ('-created_at',)
-
-
-class TrainingTestAnswer(BaseModel):
-    question = models.ForeignKey(TrainingTest, on_delete=models.CASCADE, verbose_name='Вопрос')
-    answer = models.CharField(max_length=120, verbose_name='Ответ')
-    is_true = models.BooleanField(default=False, verbose_name='Верно')
-
-    def __str__(self):
-        return str(self.id)
-
-    class Meta:
-        verbose_name = 'Ответ на тренировочный тест'
-        verbose_name_plural = 'Ответы на тренировочные тесты'
         ordering = ('-created_at',)
 
 
@@ -163,7 +156,6 @@ class ElectronLibrary(BaseModel):
     edition_author = models.CharField(max_length=100, verbose_name='')
     edition_type = models.CharField(max_length=100, verbose_name='')
     edition_year = models.DateField(null=True, verbose_name='')
-    description = models.CharField(max_length=120, verbose_name='Название')
     file = models.FileField(upload_to='electron_libraries/', verbose_name='Файл книги')
     category = models.ForeignKey(
         ElectronLibraryCategory, on_delete=models.SET_NULL, null=True, verbose_name='Категория')
@@ -178,13 +170,26 @@ class ElectronLibrary(BaseModel):
         ordering = ('-created_at',)
 
 
+class NewsCategory(BaseModel):
+    name = models.CharField(max_length=30, verbose_name='')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = ''
+        verbose_name_plural = ''
+        ordering = ('-created_at',)
+
+
 class News(BaseModel):
-    title = models.CharField(max_length=150, verbose_name="Заголовок")
-    short_description = HTMLField(max_length=300, verbose_name="Краткое описание")
+    title = models.CharField(max_length=300, verbose_name="Заголовок")
     description = HTMLField(verbose_name="Описание")
     image = models.ImageField(upload_to="news/", verbose_name="Изображение")
+    category = models.ForeignKey(to='NewsCategory', on_delete=models.SET_NULL, null=True)
     is_published = models.BooleanField(default=False, verbose_name="Опубликован")
     is_published_date = models.DateField(verbose_name="Дата публикации")
+    view_count = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.title
@@ -195,8 +200,24 @@ class News(BaseModel):
         ordering = ('-created_at',)
 
 
+class HonestyTestCategory(BaseModel):
+    name = models.CharField(max_length=40, verbose_name='')
+    image = models.ImageField(upload_to='honesty_test/category', verbose_name='')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = ''
+        verbose_name_plural = ''
+        ordering = ('-created_at',)
+
+
 class HonestyTest(BaseModel):
     question = models.CharField(max_length=120, verbose_name='Вопрос')
+    image = models.ImageField(upload_to='honesty_test/question', verbose_name='')
+    advice = models.CharField(max_length=300, verbose_name='')
+    category = models.ForeignKey(to='HonestyTestCategory', on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return str(self.id)
@@ -210,6 +231,8 @@ class HonestyTest(BaseModel):
 class HonestyTestAnswer(BaseModel):
     question = models.ForeignKey(HonestyTest, on_delete=models.CASCADE, verbose_name='Вопрос')
     answer = models.CharField(max_length=120, verbose_name='Отвечать')
+    image = models.ImageField(upload_to='honesty_test/answer', verbose_name='')
+    is_true = models.BooleanField(default=False, verbose_name='')
 
     def __str__(self):
         return str(self.id)
@@ -220,16 +243,40 @@ class HonestyTestAnswer(BaseModel):
         ordering = ('-created_at',)
 
 
-class CorruptionRating(BaseModel):
-    corruption = models.ForeignKey(to='base.CorruptionRisk', on_delete=models.CASCADE, verbose_name='Коррупция')
-    rating = models.IntegerField(default=0, verbose_name='Рейтинг')
+class HonestyTestResult(BaseModel):
+    customer = models.ForeignKey(to='authentication.Customer', on_delete=models.CASCADE, verbose_name='')
+    test = models.ForeignKey(to='HonestyTest', on_delete=models.CASCADE, verbose_name='')
+    answer = models.ForeignKey(to='HonestyTestAnswer', on_delete=models.CASCADE, verbose_name='')
+    result = models.BooleanField(default=False, verbose_name='')
 
     def __str__(self):
         return str(self.id)
 
     class Meta:
-        verbose_name = 'Рейтинг клиентов'
-        verbose_name_plural = 'Рейтинг клиентов'
+        verbose_name = ''
+        verbose_name_plural = ''
+        ordering = ('-created_at',)
+
+
+class CorruptionRisk(BaseModel):
+    name = models.CharField(max_length=80, verbose_name='Название')
+    short_desc = models.TextField(max_length=120, verbose_name='Краткое описание')
+    image = models.ImageField(upload_to='corruption_risk/', verbose_name='')
+
+    form_url = models.URLField(verbose_name='')
+    excel_url = models.URLField(verbose_name='')
+
+    start_date = models.DateField(verbose_name='')
+    end_date = models.DateField(verbose_name='')
+    result = HTMLField(blank=True, verbose_name='Результат')
+    status = models.IntegerField(choices=Corruption_Risk_STATUS, default=1, verbose_name='')
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name = 'Риск коррупции'
+        verbose_name_plural = 'Риск коррупции'
         ordering = ('-created_at',)
 
 
@@ -245,6 +292,7 @@ class CorruptionType(BaseModel):
         ordering = ('-created_at',)
 
 
+#  Bu kerakmi ?
 class Corruption(BaseModel):
     title = models.CharField(max_length=120, verbose_name='Заголовок')
     description = models.TextField(verbose_name='Описание', max_length=350)
@@ -272,25 +320,15 @@ class CorruptionMaterial(BaseModel):
         ordering = ('-created_at',)
 
 
-class CitizenOversight(BaseModel):
-    control_method = models.CharField(max_length=140, verbose_name='Метод контроля')
-    control_result = models.CharField(max_length=140, verbose_name='Результат контроля')
-    description = models.TextField(max_length=350, verbose_name='Описание')
-
-    def __str__(self):
-        return str(self.id)
-
-    class Meta:
-        verbose_name = 'Гражданский надзор'
-        verbose_name_plural = 'Гражданский надзор'
-
-
 class ConflictAlert(BaseModel):
     organization_name = models.CharField(max_length=80, verbose_name='Название организации')
-    organization_director_full_name = models.CharField(max_length=150, verbose_name='ФИО директора организации', null=True, blank=True)
-    organization_director_position = models.CharField(max_length=80, verbose_name='Должность директора организации', null=True, blank=True)
+    organization_director_full_name = models.CharField(max_length=150, verbose_name='ФИО директора организации',
+                                                       null=True, blank=True)
+    organization_director_position = models.CharField(max_length=80, verbose_name='Должность директора организации',
+                                                      null=True, blank=True)
     description = models.TextField(max_length=1000, verbose_name='Описание', blank=True, null=True)
-    additional_description = models.TextField(max_length=1000, verbose_name='Дополнительное описание', blank=True, null=True)
+    additional_description = models.TextField(max_length=1000, verbose_name='Дополнительное описание', blank=True,
+                                              null=True)
     filled_date = models.DateField(null=True, blank=True)
     type = models.PositiveSmallIntegerField(choices=CONFLICT_ALERT_TYPE_CHOICES, verbose_name='Тип')
 
@@ -299,18 +337,24 @@ class ConflictAlert(BaseModel):
     employee_passport_number = models.CharField(max_length=14, verbose_name='Информатор ЖШШР')
     employee_passport_series = models.CharField(max_length=9, verbose_name='Серия паспортов информатора')
     employee_passport_taken_date = models.DateField(verbose_name='Дата получения паспорта')
-    employee_legal_entity_name = models.CharField(max_length=300, verbose_name='Название юридического лица', blank=True, null=True)
-    employee_legal_entity_data = models.CharField(max_length=300, verbose_name='Персональные данные сотрудников и юридических лиц')
+    employee_legal_entity_name = models.CharField(max_length=300, verbose_name='Название юридического лица', blank=True,
+                                                  null=True)
+    employee_legal_entity_data = models.CharField(max_length=300,
+                                                  verbose_name='Персональные данные сотрудников и юридических лиц')
     employee_stir_number = models.CharField(max_length=120, verbose_name='Номер STIR', blank=True, null=True)
 
     related_persons_full_name = models.CharField(max_length=150, verbose_name='Полное имя')
-    related_persons_passport_number = models.CharField(max_length=14, verbose_name='Информатор ЖШШР', blank=True, null=True)
-    related_persons_passport_series = models.CharField(max_length=9, verbose_name='Серия паспортов информатора', blank=True, null=True)
-    related_persons_passport_taken_date = models.DateField(verbose_name='Дата получения паспорта', blank=True, null=True)
-    related_persons_legal_entity_name = models.CharField(max_length=300, verbose_name='Название юридического лица', blank=True, null=True)
+    related_persons_passport_number = models.CharField(max_length=14, verbose_name='Информатор ЖШШР', blank=True,
+                                                       null=True)
+    related_persons_passport_series = models.CharField(max_length=9, verbose_name='Серия паспортов информатора',
+                                                       blank=True, null=True)
+    related_persons_passport_taken_date = models.DateField(verbose_name='Дата получения паспорта', blank=True,
+                                                           null=True)
+    related_persons_legal_entity_name = models.CharField(max_length=300, verbose_name='Название юридического лица',
+                                                         blank=True, null=True)
     related_persons_stir_number = models.CharField(max_length=120, verbose_name='Номер STIR', blank=True, null=True)
-    related_persons_kinship_data = models.CharField(max_length=200, verbose_name='Данные о родстве', blank=True, null=True)
-
+    related_persons_kinship_data = models.CharField(max_length=200, verbose_name='Данные о родстве', blank=True,
+                                                    null=True)
 
     def __str__(self):
         return str(self.employee_full_name)
@@ -323,7 +367,6 @@ class ConflictAlert(BaseModel):
 
 class Profession(BaseModel):
     name = models.CharField(max_length=80, verbose_name='Название')
-    description = models.TextField(max_length=300, verbose_name='Описание')
 
     def __str__(self):
         return str(self.id)
@@ -335,8 +378,9 @@ class Profession(BaseModel):
 
 
 class ProfessionalEthics(BaseModel):
-    title = models.CharField(max_length=80, verbose_name='Название')
+    title = models.CharField(max_length=300, verbose_name='Название')
     description = HTMLField(verbose_name='Описание')
+    case = models.CharField(max_length=300, verbose_name='')
     profession = models.ForeignKey(Profession, on_delete=models.CASCADE, verbose_name='Профессия')
 
     def __str__(self):
@@ -378,12 +422,20 @@ class ReportType(BaseModel):
 class ViolationReport(BaseModel):
     organization = models.ForeignKey(
         to='services.Organization', on_delete=models.SET_NULL, null=True, verbose_name='Организация')
-    event_time = models.DateField(verbose_name='Время события')
+    event_time = models.DateTimeField(verbose_name='Время события')
     region = models.ForeignKey(to='base.Region', on_delete=models.SET_NULL, null=True, verbose_name='Область')
     district = models.ForeignKey(to='base.District', on_delete=models.SET_NULL, null=True, verbose_name='Округ')
-    status = models.IntegerField(choices=REPORT_STATUS_CHOICES, default=1, verbose_name='Статус')
     report_type = models.ForeignKey(ReportType, on_delete=models.SET_NULL, null=True, verbose_name='Тип отчета')
+    file = models.FileField(upload_to='violation_report/', verbose_name='Файл')
     comment = models.TextField(verbose_name='Комментарий')
+
+    related_person_full_name = models.CharField(max_length=100, verbose_name='')
+    related_person_position = models.CharField(max_length=100, verbose_name='')
+    related_person_phone_number = models.CharField(max_length=100, verbose_name='')
+
+    informant_full_name = models.CharField(max_length=100, blank=True, null=True, verbose_name='')
+    informant_phone_number = models.CharField(max_length=100, blank=True, null=True, verbose_name='')
+    informant_email = models.EmailField(blank=True, null=True, verbose_name='')
 
     def __str__(self):
         return str(self.id)
@@ -391,35 +443,6 @@ class ViolationReport(BaseModel):
     class Meta:
         verbose_name = 'Отчет о нарушении'
         verbose_name_plural = 'Отчет о нарушении'
-        ordering = ('-created_at',)
-
-
-class ViolationReportFile(BaseModel):
-    report = models.ForeignKey(ViolationReport, on_delete=models.CASCADE, verbose_name='Отчет о нарушении')
-    file = models.FileField(upload_to='violation_report/', verbose_name='Файл')
-    comment = models.TextField(max_length=350, verbose_name='Комментарий')
-
-    def __str__(self):
-        return str(self.id)
-
-    class Meta:
-        verbose_name = 'Файл отчета о нарушении'
-        verbose_name_plural = 'Файл отчета о нарушении'
-        ordering = ('-created_at',)
-
-
-class GuiltyPerson(BaseModel):
-    report = models.ForeignKey(ViolationReport, on_delete=models.CASCADE, verbose_name='Отчет о нарушении')
-    full_name = models.CharField(max_length=160, verbose_name='Имя')
-    position = models.CharField(max_length=150, verbose_name='Позиция')
-    contact = models.CharField(max_length=80, verbose_name='Контакт')
-
-    def __str__(self):
-        return str(self.id)
-
-    class Meta:
-        verbose_name = 'Виновное лицо'
-        verbose_name_plural = 'Виновное лицо'
         ordering = ('-created_at',)
 
 

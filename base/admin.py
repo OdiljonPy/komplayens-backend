@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Region, District, FAQ, AboutUs, CorruptionRisk, CorruptionCase
+from .models import Region, District, FAQ, AboutUs
 
 
 @admin.register(Region)
@@ -26,15 +26,3 @@ class FAQAdmin(admin.ModelAdmin):
 class AboutUsAdmin(admin.ModelAdmin):
     list_display = ('id', 'link', 'type')
     list_display_links = ('id', 'link')
-
-
-@admin.register(CorruptionRisk)
-class CorruptionRiskAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'short_desc')
-    list_display_links = ('id', 'name')
-    search_fields = ('name',)
-
-
-@admin.register(CorruptionCase)
-class CorruptionCaseAdmin(admin.ModelAdmin):
-    list_display = ('id', 'corruption')

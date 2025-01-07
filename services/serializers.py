@@ -1,121 +1,139 @@
 from rest_framework import serializers
 from exceptions.exception import CustomApiException
 from exceptions.error_messages import ErrorCodes
-from .models import (
-    CategoryOrganization, Organization, Service, Training,
-    TrainingMedia, ElectronLibraryCategory, ElectronLibrary,
-    News, HonestyTest, HonestyTestAnswer, CorruptionType,
-    ConflictAlert, Profession, ProfessionalEthics, OfficerAdvice,
-    ReportType, ViolationReport, TechnicalSupport
+from .models import (HonestyTest, HonestyTestAnswer, GuiltyPerson,
+                     ViolationFile, ConflictAlert, OfficerAdvice,
+                     ViolationReport, TechnicalSupport, HonestyTestResult
 )
 
 
-class CategoryOrganizationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CategoryOrganization
-        fields = ('id', 'name')
+class CategoryOrganizationSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField()
 
 
-class OrganizationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Organization
-        fields = (
-            'id', 'category', 'name', 'phone_number', 'phone_number2', 'email', 'region', 'district', 'address',
-            'weblink', 'instagram', 'telegram', 'facebook', 'twitter', 'youtube')
+class OrganizationSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    category = serializers.PrimaryKeyRelatedField(read_only=True)
+    name = serializers.CharField()
+    phone_number = serializers.CharField(max_length=15)
+    phone_number_2 = serializers.CharField(max_length=15)
+    email = serializers.EmailField()
+    region = serializers.PrimaryKeyRelatedField(read_only=True)
+    district = serializers.PrimaryKeyRelatedField(read_only=True)
+    address = serializers.CharField()
+    weblink = serializers.URLField()
+    instagram = serializers.URLField()
+    telegram = serializers.URLField()
+    facebook = serializers.URLField()
+    twitter = serializers.URLField()
+    youtube = serializers.URLField()
 
 
-class ServiceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Service
-        fields = ('id', 'name', 'organization')
+class ServiceSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField()
+    organization = serializers.PrimaryKeyRelatedField(read_only=True)
 
 
-class TrainingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Training
-        fields = ('id', 'author', 'name', 'image', 'description', 'number_participants')
+class  TrainingCategorySerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField()
 
 
-class TrainingMediaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TrainingMedia
-        fields = ('id', 'training', 'file', 'order', 'type')
+class TrainingSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField()
+    image = serializers.ImageField()
+    description = serializers.CharField()
+    video = serializers.URLField()
+    category = serializers.PrimaryKeyRelatedField(read_only=True)
+    is_published = serializers.BooleanField()
 
 
-class TrainingTestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TrainingTest
-        fields = ('id', 'training', 'question')
+class TrainingMediaSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    training = serializers.PrimaryKeyRelatedField(read_only=True)
+    filename = serializers.CharField()
+    file = serializers.FileField()
+    video = serializers.URLField()
+    video_title = serializers.CharField()
+    order = serializers.IntegerField()
+    type = serializers.CharField()
 
 
-class TrainingTestAnswerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TrainingTestAnswer
-        fields = ('id', 'question', 'answer', 'is_true')
+class ElectronLibraryCategorySerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField(max_length=40)
 
 
-class ElectronLibraryCategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ElectronLibraryCategory
-        fields = ('id', 'name')
+class ElectronLibrarySerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField(max_length=80)
+    author =serializers.CharField(max_length=100)
+    edition_author = serializers.CharField(max_length=100)
+    edition_type = serializers.CharField(max_length=100)
+    edition_year = serializers.DateField()
+    file = serializers.FileField()
+    category = serializers.PrimaryKeyRelatedField(read_only=True)
+    is_published = serializers.BooleanField()
 
 
-class ElectronLibrarySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ElectronLibrary
-        fields = ('id', 'name', 'author', 'edition_author', 'edition_type', 'edition_year', 'description',
-                  'file', 'category')
+class NewsCategorySerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField()
 
 
-class NewsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = News
-        fields = ('id', 'title', 'short_description', 'description', 'image', 'is_published', 'is_published_date')
+class NewsSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    title = serializers.CharField()
+    short_description = serializers.CharField()
+    description = serializers.CharField()
+    image = serializers.ImageField()
+    category = serializers.PrimaryKeyRelatedField(read_only=True)
+    is_published = serializers.BooleanField()
+    published_date = serializers.DateField()
+    view_count = serializers.IntegerField()
+
+
+class HonestyTestCategorySerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField()
+    image = serializers.ImageField()
 
 
 class HonestyTestSerializer(serializers.ModelSerializer):
     class Meta:
         model = HonestyTest
-        fields = ('id', 'question')
+        fields = ('id', 'question', 'advice', 'category')
 
 
 class HonestyTestAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = HonestyTestAnswer
-        fields = ('id', 'question', 'answer')
+        fields = ('id', 'question', 'answer', 'image', 'is_true')
 
 
-class CorruptionRatingSerializer(serializers.ModelSerializer):
+class HonestyTestResultSerializer(serializers.ModelSerializer):
     class Meta:
-        model = CorruptionRating
-        fields = ('id', 'corruption', 'rating')
+        model = HonestyTestResult
+        fields = ('id', 'customer', 'test', 'answer', 'result')
 
 
-class CorruptionTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CorruptionType
-        fields = ('id', 'name')
+class CorruptionRiskSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField()
+    short_desc = serializers.CharField()
+    image = serializers.ImageField()
+    form_url = serializers.URLField()
+    excel_url = serializers.URLField()
+    start_date = serializers.DateField()
+    end_date = serializers.DateField()
+    result = serializers.CharField()
+    status = serializers.IntegerField()
 
 
-class CorruptionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Corruption
-        fields = ('id', 'title', 'description', 'type')
-
-
-class CorruptionMaterialSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CorruptionMaterial
-        fields = ('id', 'corruption', 'file')
-
-
-class CitizenOversightSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CitizenOversight
-        fields = ('id', 'control_method', 'control_result', 'description')
-
-
-class TypeSerializer(serializers.Serializer):
+class ConflictAlertTypeSerializer(serializers.Serializer):
     type = serializers.IntegerField(required=True)
 
     def validate(self, data):
@@ -151,16 +169,16 @@ class ConflictAlertSerializer(serializers.ModelSerializer):
         return attrs
 
 
-class ProfessionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Profession
-        fields = ('id', 'name', 'description')
+class ProfessionSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField()
 
 
-class ProfessionalEthicsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProfessionalEthics
-        fields = ('id', 'title', 'description', 'profession')
+class ProfessionalEthicsSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    title = serializers.CharField()
+    case = serializers.CharField()
+    profession = serializers.PrimaryKeyRelatedField(read_only=True)
 
 
 class OfficerAdviceSerializer(serializers.ModelSerializer):
@@ -169,31 +187,31 @@ class OfficerAdviceSerializer(serializers.ModelSerializer):
         fields = ('id', 'officer', 'professional_ethics', 'comment')
 
 
-class ReportTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ReportType
-        fields = ('id', 'name')
+class ReportTypeSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField()
 
 
 class ViolationReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = ViolationReport
-        fields = ('id', 'organization', 'event_time', 'region', 'district', 'status', 'report_type', 'comment')
-
-
-class ViolationReportFileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ViolationReportFile
-        fields = ('id', 'report', 'file', 'comment')
+        fields = ('id', 'organization', 'event_time', 'region', 'district', 'report_type', 'comment',
+                  'informant_full_name', 'informant_phone_number', 'informant_email', 'is_anonim')
 
 
 class GuiltyPersonSerializer(serializers.ModelSerializer):
     class Meta:
         model = GuiltyPerson
-        fields = ('id', 'report', 'full_name', 'position', 'contact')
+        fields = ('id', 'report', 'full_name', 'position', 'phone_number')
 
 
-class TechnicalSupportSerializer(serializers.ModelSerializer):
+class ViolationFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ViolationFile
+        fields = ('id', 'report', 'file')
+
+
+class TechnicalSupportSerializer(serializers.Serializer):
     class Meta:
         model = TechnicalSupport
         fields = ('id', 'image', 'comment')

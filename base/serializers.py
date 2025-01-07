@@ -29,21 +29,6 @@ class AboutUsSerializer(serializers.Serializer):
     type = serializers.IntegerField()
 
 
-class CorruptionRiskSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField()
-    short_desc = serializers.CharField()
-    more_desc = serializers.CharField()
-    useful_advice = serializers.CharField()
-    legal_document = serializers.FileField()
-
-
-class CorruptionCaseSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    corruption = serializers.PrimaryKeyRelatedField(read_only=True)
-    description = serializers.CharField()
-
-
 class TypeSerializer(serializers.Serializer):
     type = serializers.IntegerField(required=False, default=1)
 

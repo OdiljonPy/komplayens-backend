@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (
     CategoryOrganization, Organization, Service, Training,
     TrainingMedia, ElectronLibraryCategory, ElectronLibrary, News,
-    HonestyTest, HonestyTestAnswer, CorruptionType, ConflictAlert,
+    HonestyTest, HonestyTestAnswer, ConflictAlert,
     Profession, ProfessionalEthics, OfficerAdvice, ReportType,
     ViolationReport, TechnicalSupport
 )
@@ -47,9 +47,9 @@ class TrainingMediaAdmin(admin.ModelAdmin):
 
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'is_published', 'is_published_date')
+    list_display = ('id', 'title', 'is_published')
     list_display_links = ('id', 'title')
-    search_fields = ('title', 'description', 'is_published_date')
+    search_fields = ('title', 'description',)
     list_filter = ('is_published',)
 
 
@@ -62,10 +62,10 @@ class ElectronLibraryCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(ElectronLibrary)
 class ElectronLibraryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'author', 'category', 'is_public')
+    list_display = ('id', 'name', 'author', 'category', 'is_published')
     list_display_links = ('id', 'name', 'author')
     search_fields = ('name', 'author', 'category__name')
-    list_filter = ('is_public', 'category')
+    list_filter = ('is_published', 'category')
 
 
 @admin.register(HonestyTest)
@@ -80,13 +80,6 @@ class HonestyTestAnswerAdmin(admin.ModelAdmin):
     list_display = ('id', 'question', 'answer')
     list_display_links = ('id', 'question')
     search_fields = ('question__question', 'answer')
-
-
-@admin.register(CorruptionType)
-class CorruptionTypeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name')
-    list_display_links = ('id', 'name')
-    search_fields = ('name',)
 
 
 @admin.register(ConflictAlert)

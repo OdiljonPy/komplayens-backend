@@ -1,11 +1,10 @@
 from .models import (
     Region, District, FAQ,
-    AboutUs, CorruptionRisk, CorruptionCase
+    AboutUs,
 )
 from .serializers import (
     RegionSerializer, DistrictSerializer,
     FAQSerializer, AboutUsSerializer,
-    CorruptionRiskSerializer, CorruptionCaseSerializer,
     TypeSerializer, AboutUsTypeSerializer
 )
 from exceptions.exception import CustomApiException
@@ -80,56 +79,4 @@ class AboutUsViewSet(ViewSet):
         about_us_type = param_serializer.validated_data.get('type')
         about_us = AboutUs.objects.filter(type=about_us_type).order_by('-created_at').first()
         serializer = AboutUsSerializer(about_us, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-
-class CorruptionRiskViewSet(ViewSet):
-    @swagger_auto_schema(
-        operation_summary='Corruption Risk',
-        operation_description='Corruption Risk List',
-        responses={200: CorruptionRiskSerializer(many=True)},
-        tags=['CorruptionRisk']
-    )
-    def list(self, request):
-        corruption_risk = CorruptionRisk.objects.all()
-        serializer = CorruptionRiskSerializer(corruption_risk, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        operation_summary='Corruption Risk',
-        operation_description='Corruption Risk Details',
-        responses={200: CorruptionRiskSerializer()},
-        tags=['CorruptionRisk']
-    )
-    def detail_(self, request, pk=None):
-        corruption_risk = CorruptionRisk.objects.filter(id=pk).first()
-        if corruption_risk is None:
-            raise CustomApiException(ErrorCodes.NOT_FOUND, message='CorruptionRisk not found')
-        serializer = CorruptionRiskSerializer(corruption_risk, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-
-class CorruptionCaseViewSet(ViewSet):
-    @swagger_auto_schema(
-        operation_summary='Corruption Case',
-        operation_description='Corruption Case List',
-        responses={200: CorruptionCaseSerializer(many=True)},
-        tags=['CorruptionCase']
-    )
-    def list(self, request):
-        corruption_case = CorruptionCase.objects.all()
-        serializer = CorruptionCaseSerializer(corruption_case, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        operation_summary='Corruption Case',
-        operation_description='Corruption Case Details',
-        responses={200: CorruptionCaseSerializer()},
-        tags=['CorruptionCase']
-    )
-    def detail_(self, request, pk=None):
-        corruption_case = CorruptionCase.objects.filter(id=pk).first()
-        if corruption_case is None:
-            raise CustomApiException(ErrorCodes.NOT_FOUND, message='Corruption Case not found')
-        serializer = CorruptionCaseSerializer(corruption_case, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)

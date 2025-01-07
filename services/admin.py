@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (
-    CategoryOrganization, Organization, Service, Training,
+    CategoryOrganization, Organization, Training,
     TrainingMedia, ElectronLibraryCategory, ElectronLibrary, News,
     HonestyTest, HonestyTestAnswer, ConflictAlert,
     Profession, ProfessionalEthics, OfficerAdvice, ReportType,
@@ -21,13 +21,6 @@ class OrganizationAdmin(admin.ModelAdmin):
     list_display_links = ('id', 'name')
     search_fields = ('name', 'phone_number', 'address', 'district__name', 'region__name', 'email')
     list_filter = ('region', 'district')
-
-
-@admin.register(Service)
-class ServiceAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'organization')
-    list_display_links = ('id', 'name')
-    search_fields = ('name', 'organization__name')
 
 
 @admin.register(Training)

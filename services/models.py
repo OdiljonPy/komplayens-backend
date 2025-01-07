@@ -215,8 +215,7 @@ class HonestyTestCategory(BaseModel):
 
 
 class HonestyTest(BaseModel):
-    question = models.CharField(max_length=120, verbose_name='Вопрос')
-    image = models.ImageField(upload_to='honesty_test/question', verbose_name='')
+    question = HTMLField(verbose_name='Вопрос')
     advice = models.CharField(max_length=300, verbose_name='')
     category = models.ForeignKey(to='HonestyTestCategory', on_delete=models.SET_NULL, null=True)
 
@@ -267,8 +266,8 @@ class CorruptionRisk(BaseModel):
     form_url = models.URLField(verbose_name='')
     excel_url = models.URLField(verbose_name='')
 
-    start_date = models.DateField(verbose_name='')
-    end_date = models.DateField(verbose_name='')
+    start_date = models.DateTimeField(verbose_name='')
+    end_date = models.DateTimeField(verbose_name='')
     result = HTMLField(blank=True, verbose_name='Результат')
     status = models.IntegerField(choices=Corruption_Risk_STATUS, default=1, verbose_name='')
 
@@ -290,34 +289,6 @@ class CorruptionType(BaseModel):
     class Meta:
         verbose_name = 'Вид коррупции',
         verbose_name_plural = 'коррупции'
-        ordering = ('-created_at',)
-
-
-#  Bu kerakmi ?
-class Corruption(BaseModel):
-    title = models.CharField(max_length=120, verbose_name='Заголовок')
-    description = models.TextField(verbose_name='Описание', max_length=350)
-    type = models.ForeignKey(CorruptionType, on_delete=models.SET_NULL, null=True, verbose_name='Тип')
-
-    def __str__(self):
-        return str(self.id)
-
-    class Meta:
-        verbose_name = 'Коррупция'
-        verbose_name_plural = 'Коррупция'
-        ordering = ('-created_at',)
-
-
-class CorruptionMaterial(BaseModel):
-    corruption = models.ForeignKey(Corruption, on_delete=models.CASCADE, verbose_name='Коррупция')
-    file = models.FileField(upload_to='corruption/material', verbose_name='Файл о коррупции')
-
-    def __str__(self):
-        return str(self.id)
-
-    class Meta:
-        verbose_name = 'Коррупционный материал'
-        verbose_name_plural = 'Коррупционный материал'
         ordering = ('-created_at',)
 
 

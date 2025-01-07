@@ -1,16 +1,13 @@
 from rest_framework import serializers
-from .models import (
-    CategoryOrganization, Organization, Service, Training,
-    TrainingMedia, TrainingTest, TrainingTestAnswer,
-    ElectronLibraryCategory, ElectronLibrary, News, HonestyTest,
-    HonestyTestAnswer, CorruptionRating, CorruptionType, Corruption,
-    CorruptionMaterial, CitizenOversight,
-    ConflictAlert, Profession, ProfessionalEthics,
-    OfficerAdvice, ReportType, ViolationReport, ViolationReportFile,
-    GuiltyPerson, TechnicalSupport
-)
 from exceptions.exception import CustomApiException
 from exceptions.error_messages import ErrorCodes
+from .models import (
+    CategoryOrganization, Organization, Service, Training,
+    TrainingMedia, ElectronLibraryCategory, ElectronLibrary,
+    News, HonestyTest, HonestyTestAnswer, CorruptionType,
+    ConflictAlert, Profession, ProfessionalEthics, OfficerAdvice,
+    ReportType, ViolationReport, TechnicalSupport
+)
 
 
 class CategoryOrganizationSerializer(serializers.ModelSerializer):
@@ -22,7 +19,9 @@ class CategoryOrganizationSerializer(serializers.ModelSerializer):
 class OrganizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organization
-        fields = ('id', 'category', 'name', 'phone_number', 'email', 'region', 'district', 'address', 'link')
+        fields = (
+            'id', 'category', 'name', 'phone_number', 'phone_number2', 'email', 'region', 'district', 'address',
+            'weblink', 'instagram', 'telegram', 'facebook', 'twitter', 'youtube')
 
 
 class ServiceSerializer(serializers.ModelSerializer):
@@ -139,16 +138,16 @@ class ConflictAlertSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if attrs.get('employee_passport_number') and len(attrs.get('employee_passport_number')) != 14:
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED,
-                                    message='The employee passport number should be 14 characters long')
+                                     message='The employee passport number should be 14 characters long')
         if attrs.get('related_persons_passport_number') and len(attrs.get('related_persons_passport_number')) != 14:
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED,
-                                    message='The related persons passport number should be 14 characters long')
+                                     message='The related persons passport number should be 14 characters long')
         if attrs.get('employee_passport_series') and len(attrs.get('employee_passport_series')) != 9:
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED,
-                                    message='The employee passport series should be 9 characters long')
+                                     message='The employee passport series should be 9 characters long')
         if attrs.get('related_persons_passport_series') and len(attrs.get('related_persons_passport_series')) != 9:
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED,
-                                    message='The related persons series should be 9 characters long')
+                                     message='The related persons series should be 9 characters long')
         return attrs
 
 

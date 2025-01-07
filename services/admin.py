@@ -1,13 +1,10 @@
 from django.contrib import admin
 from .models import (
     CategoryOrganization, Organization, Service, Training,
-    TrainingMedia, TrainingTest, TrainingTestAnswer,
-    ElectronLibraryCategory, ElectronLibrary, News, HonestyTest,
-    HonestyTestAnswer, CorruptionRating, CorruptionType, Corruption,
-    CorruptionMaterial, CitizenOversight,
-    ConflictAlert, Profession, ProfessionalEthics,
-    OfficerAdvice, ReportType, ViolationReport, ViolationReportFile,
-    GuiltyPerson, TechnicalSupport
+    TrainingMedia, ElectronLibraryCategory, ElectronLibrary, News,
+    HonestyTest, HonestyTestAnswer, CorruptionType, ConflictAlert,
+    Profession, ProfessionalEthics, OfficerAdvice, ReportType,
+    ViolationReport, TechnicalSupport
 )
 
 
@@ -35,7 +32,7 @@ class ServiceAdmin(admin.ModelAdmin):
 
 @admin.register(Training)
 class TrainingAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'number_participants')
+    list_display = ('id', 'name')
     list_display_links = ('id', 'name')
     search_fields = ('name', 'description')
 
@@ -48,26 +45,12 @@ class TrainingMediaAdmin(admin.ModelAdmin):
     list_filter = ('type',)
 
 
-@admin.register(TrainingTest)
-class TrainingTestAdmin(admin.ModelAdmin):
-    list_display = ('id', 'training', 'question')
-    list_display_links = ('id', 'training')
-    search_fields = ('training__name', 'question')
-
-
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'is_published', 'is_published_date')
     list_display_links = ('id', 'title')
-    search_fields = ('title', 'description', 'short_description', 'is_published_date')
+    search_fields = ('title', 'description', 'is_published_date')
     list_filter = ('is_published',)
-
-
-@admin.register(TrainingTestAnswer)
-class TrainingTestAnswerAdmin(admin.ModelAdmin):
-    list_display = ('id', 'question', 'answer', 'is_true')
-    list_display_links = ('id', 'question')
-    search_fields = ('id', 'question__question', 'answer')
 
 
 @admin.register(ElectronLibraryCategory)
@@ -99,38 +82,11 @@ class HonestyTestAnswerAdmin(admin.ModelAdmin):
     search_fields = ('question__question', 'answer')
 
 
-@admin.register(CorruptionRating)
-class CorruptionRatingAdmin(admin.ModelAdmin):
-    list_display = ('id', 'corruption', 'rating')
-    list_display_links = ('id', 'corruption',)
-
-
 @admin.register(CorruptionType)
 class CorruptionTypeAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     list_display_links = ('id', 'name')
     search_fields = ('name',)
-
-
-@admin.register(Corruption)
-class CorruptionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'type')
-    list_display_links = ('id', 'title')
-    search_fields = ('title', 'description')
-    list_filter = ('type',)
-
-
-@admin.register(CorruptionMaterial)
-class CorruptionMaterialAdmin(admin.ModelAdmin):
-    list_display = ('id', 'corruption')
-    list_display_links = ('id', 'corruption',)
-
-
-@admin.register(CitizenOversight)
-class CitizenOversightAdmin(admin.ModelAdmin):
-    list_display = ('id', 'control_method', 'control_result')
-    list_display_links = ('id', 'control_method', 'control_result')
-    search_fields = ('control_method', 'control_result')
 
 
 @admin.register(ConflictAlert)
@@ -144,7 +100,7 @@ class ConflictAlertAdmin(admin.ModelAdmin):
 class ProfessionAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     list_display_links = ('id', 'name')
-    search_fields = ('name', 'description')
+    search_fields = ('name',)
 
 
 @admin.register(ProfessionalEthics)
@@ -170,24 +126,10 @@ class ReportTypeAdmin(admin.ModelAdmin):
 
 @admin.register(ViolationReport)
 class ViolationReportAdmin(admin.ModelAdmin):
-    list_display = ('id', 'organization', 'event_time', 'status', 'report_type')
+    list_display = ('id', 'organization', 'event_time', 'report_type')
     list_display_links = ('id', 'organization')
-    list_filter = ('report_type', 'status')
+    list_filter = ('report_type',)
     search_fields = ('comment',)
-
-
-@admin.register(ViolationReportFile)
-class ViolationReportFileAdmin(admin.ModelAdmin):
-    list_display = ('id', 'report')
-    list_display_links = ('id', 'report')
-    search_fields = ('comment',)
-
-
-@admin.register(GuiltyPerson)
-class GuiltyPersonAdmin(admin.ModelAdmin):
-    list_display = ('id', 'full_name', 'position')
-    list_display_links = ('id', 'full_name')
-    search_fields = ('full_name', 'position')
 
 
 @admin.register(TechnicalSupport)
@@ -195,4 +137,3 @@ class TechnicalSupportAdmin(admin.ModelAdmin):
     list_display = ('id', 'comment')
     list_display_links = ('id', 'comment')
     search_fields = ('comment',)
-

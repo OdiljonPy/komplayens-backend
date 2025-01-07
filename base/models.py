@@ -67,32 +67,3 @@ class AboutUs(BaseModel):
         verbose_name = 'О нас'
         verbose_name_plural = 'О нас'
         ordering = ('-created_at',)
-
-
-class CorruptionRisk(BaseModel):
-    name = models.CharField(max_length=80, verbose_name='Название')
-    short_desc = models.TextField(max_length=120, verbose_name='Краткое описание')
-    more_desc = models.TextField(max_length=350, verbose_name='больше описания')
-    useful_advice = models.TextField(max_length=350, verbose_name='Полезный совет')
-    legal_document = models.FileField(upload_to='corruption_risk/legal_documents/', verbose_name='Юридический документ')
-
-    def __str__(self):
-        return str(self.id)
-
-    class Meta:
-        verbose_name = 'Риск коррупции'
-        verbose_name_plural = 'Риск коррупции'
-        ordering = ('-created_at',)
-
-
-class CorruptionCase(BaseModel):
-    corruption = models.ForeignKey(CorruptionRisk, on_delete=models.CASCADE, verbose_name='Коррупция')
-    description = HTMLField(verbose_name='Описание')
-
-    def __str__(self):
-        return str(self.id)
-
-    class Meta:
-        verbose_name = 'Дело о коррупции'
-        verbose_name_plural = 'Дело о коррупции'
-        ordering = ('-created_at',)

@@ -22,7 +22,7 @@ from .serializers import (
     CorruptionTypeSerializer, CorruptionSerializer, CitizenOversightSerializer,
     ProfessionSerializer, ProfessionalEthicsSerializer, OfficerAdviceSerializer,
     ReportTypeSerializer, ViolationReportSerializer, TechnicalSupportSerializer,
-    ConflictAlertSerializer, TypeSerializer,
+    ConflictAlertSerializer, ConflictAlertTypeSerializer,
 )
 from .utils import file_one_create, file_two_create, file_three_create
 
@@ -303,7 +303,7 @@ class ConflictAlertViewSet(ViewSet):
         tags=['ConflictAlert']
     )
     def create_conflict_alert(self, request):
-        param_serializer = TypeSerializer(data=request.query_params, context={'request': request})
+        param_serializer = ConflictAlertTypeSerializer(data=request.query_params, context={'request': request})
         if not param_serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=param_serializer.errors)
         file_type = param_serializer.validated_data.get('type')

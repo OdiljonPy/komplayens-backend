@@ -45,7 +45,7 @@ class Organization(BaseModel):
     name = models.CharField(max_length=255, verbose_name="Название")
     phone_number = models.CharField(max_length=15, verbose_name="Номер телефона")
     phone_number2 = models.CharField(max_length=15, verbose_name='Номер телефона 2', blank=True, null=True)
-    email = models.CharField(max_length=255, verbose_name="Электронная почта")
+    email = models.EmailField(blank=True, null=True, verbose_name="Электронная почта")
     region = models.ForeignKey(Region, on_delete=models.PROTECT, verbose_name="Регион")
     district = models.ForeignKey(District, on_delete=models.PROTECT, verbose_name="Область")
     address = models.CharField(max_length=255, verbose_name="Адрес")
@@ -96,7 +96,7 @@ class Training(BaseModel):
     description = HTMLField(verbose_name="описание")
     video = models.URLField(default='https://www.youtube.com/', verbose_name='')
     category = models.ForeignKey(to='TrainingCategory', on_delete=models.SET_NULL, null=True)
-    is_public = models.BooleanField(default=False)
+    is_published = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -159,7 +159,7 @@ class ElectronLibrary(BaseModel):
     file = models.FileField(upload_to='electron_libraries/', verbose_name='Файл книги')
     category = models.ForeignKey(
         ElectronLibraryCategory, on_delete=models.SET_NULL, null=True, verbose_name='Категория')
-    is_public = models.BooleanField(default=False)
+    is_published = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.id)
@@ -189,7 +189,7 @@ class News(BaseModel):
     image = models.ImageField(upload_to="news/", verbose_name="Изображение")
     category = models.ForeignKey(to='NewsCategory', on_delete=models.SET_NULL, null=True)
     is_published = models.BooleanField(default=False, verbose_name="Опубликован")
-    is_published_date = models.DateField(verbose_name="Дата публикации")
+    published_date = models.DateField(null=True, blank=True, verbose_name="Дата публикации")
     view_count = models.PositiveIntegerField(default=0)
 
     def __str__(self):
@@ -277,18 +277,6 @@ class CorruptionRisk(BaseModel):
     class Meta:
         verbose_name = 'Риск коррупции'
         verbose_name_plural = 'Риск коррупции'
-        ordering = ('-created_at',)
-
-
-class CorruptionType(BaseModel):
-    name = models.CharField(max_length=80, verbose_name='Название коррупции')
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = 'Вид коррупции',
-        verbose_name_plural = 'коррупции'
         ordering = ('-created_at',)
 
 
@@ -429,7 +417,7 @@ class GuiltyPerson(BaseModel):
         ordering = ('-created_at',)
 
 
-class ViolationFiles(BaseModel):
+class ViolationFile(BaseModel):
     report = models.ForeignKey(to='ViolationReport', on_delete=models.CASCADE, verbose_name='')
     file = models.FileField(upload_to='violation_report/', verbose_name='Файл')
 

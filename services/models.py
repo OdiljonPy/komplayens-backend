@@ -184,6 +184,7 @@ class NewsCategory(BaseModel):
 
 class News(BaseModel):
     title = models.CharField(max_length=300, verbose_name="Заголовок")
+    short_description = models.CharField(max_length=150, verbose_name='')
     description = HTMLField(verbose_name="Описание")
     image = models.ImageField(upload_to="news/", verbose_name="Изображение")
     category = models.ForeignKey(to='NewsCategory', on_delete=models.SET_NULL, null=True)

@@ -398,16 +398,12 @@ class ViolationReport(BaseModel):
     region = models.ForeignKey(to='base.Region', on_delete=models.SET_NULL, null=True, verbose_name='Область')
     district = models.ForeignKey(to='base.District', on_delete=models.SET_NULL, null=True, verbose_name='Округ')
     report_type = models.ForeignKey(ReportType, on_delete=models.SET_NULL, null=True, verbose_name='Тип отчета')
-    file = models.FileField(upload_to='violation_report/', verbose_name='Файл')
     comment = models.TextField(verbose_name='Комментарий')
-
-    related_person_full_name = models.CharField(max_length=100, verbose_name='')
-    related_person_position = models.CharField(max_length=100, verbose_name='')
-    related_person_phone_number = models.CharField(max_length=100, verbose_name='')
 
     informant_full_name = models.CharField(max_length=100, blank=True, null=True, verbose_name='')
     informant_phone_number = models.CharField(max_length=100, blank=True, null=True, verbose_name='')
     informant_email = models.EmailField(blank=True, null=True, verbose_name='')
+    is_anonim = models.BooleanField(default=False, verbose_name='')
 
     def __str__(self):
         return str(self.id)
@@ -415,6 +411,34 @@ class ViolationReport(BaseModel):
     class Meta:
         verbose_name = 'Отчет о нарушении'
         verbose_name_plural = 'Отчет о нарушении'
+        ordering = ('-created_at',)
+
+
+class GuiltyPerson(BaseModel):
+    report = models.ForeignKey(to='ViolationReport', on_delete=models.CASCADE)
+    full_name = models.CharField(max_length=100, verbose_name='')
+    position = models.CharField(max_length=100, verbose_name='')
+    phone_number = models.CharField(max_length=100, verbose_name='')
+
+    def __str__(self):
+        return self.full_name
+
+    class Meta:
+        verbose_name = ''
+        verbose_name_plural = ''
+        ordering = ('-created_at',)
+
+
+class ViolationFiles(BaseModel):
+    report = models.ForeignKey(to='ViolationReport', on_delete=models.CASCADE, verbose_name='')
+    file = models.FileField(upload_to='violation_report/', verbose_name='Файл')
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name = ''
+        verbose_name_plural = ''
         ordering = ('-created_at',)
 
 

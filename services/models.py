@@ -49,12 +49,12 @@ class Organization(BaseModel):
     region = models.ForeignKey(Region, on_delete=models.PROTECT, verbose_name="Регион")
     district = models.ForeignKey(District, on_delete=models.PROTECT, verbose_name="Область")
     address = models.CharField(max_length=255, verbose_name="Адрес")
-    weblink = models.CharField(max_length=40, default='https://murojaat.gov.uz/', verbose_name='Ссылка')
-    instagram = models.URLField(default='https://instagram.com', verbose_name='')
-    telegram = models.URLField(default='https://telegram.org', verbose_name='')
-    facebook = models.URLField(default='https://facebook.com', verbose_name='')
-    twitter = models.URLField(default='https://twitter.com', verbose_name='')
-    youtube = models.URLField(default='https://www.youtube.com', verbose_name='')
+    weblink = models.URLField(blank=True, null=True, verbose_name='Ссылка')
+    instagram = models.URLField(blank=True, null=True, verbose_name='')
+    telegram = models.URLField(blank=True, null=True, verbose_name='')
+    facebook = models.URLField(blank=True, null=True, verbose_name='')
+    twitter = models.URLField(blank=True, null=True, verbose_name='')
+    youtube = models.URLField(blank=True, null=True, verbose_name='')
 
     def __str__(self):
         return self.name

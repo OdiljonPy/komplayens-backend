@@ -4,9 +4,9 @@ from exceptions.error_messages import ErrorCodes
 from .models import (
     CategoryOrganization, Organization, Service, Training,
     TrainingMedia, ElectronLibraryCategory, ElectronLibrary,
-    News, HonestyTest, HonestyTestAnswer, CorruptionType, Corruption,
-    CorruptionMaterial, ConflictAlert, Profession, ProfessionalEthics,
-    OfficerAdvice, ReportType, ViolationReport, TechnicalSupport
+    News, HonestyTest, HonestyTestAnswer, CorruptionType,
+    ConflictAlert, Profession, ProfessionalEthics, OfficerAdvice,
+    ReportType, ViolationReport, TechnicalSupport
 )
 
 

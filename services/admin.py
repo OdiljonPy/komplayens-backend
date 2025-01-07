@@ -2,9 +2,9 @@ from django.contrib import admin
 from .models import (
     CategoryOrganization, Organization, Service, Training,
     TrainingMedia, ElectronLibraryCategory, ElectronLibrary, News,
-    HonestyTest, HonestyTestAnswer, CorruptionType, Corruption,
-    CorruptionMaterial, ConflictAlert, Profession, ProfessionalEthics,
-    OfficerAdvice, ReportType, ViolationReport, TechnicalSupport
+    HonestyTest, HonestyTestAnswer, CorruptionType, ConflictAlert,
+    Profession, ProfessionalEthics, OfficerAdvice, ReportType,
+    ViolationReport, TechnicalSupport
 )
 
 
@@ -89,21 +89,6 @@ class CorruptionTypeAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
-@admin.register(Corruption)
-class CorruptionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'type')
-    list_display_links = ('id', 'title')
-    search_fields = ('title', 'description')
-    list_filter = ('type',)
-
-
-@admin.register(CorruptionMaterial)
-class CorruptionMaterialAdmin(admin.ModelAdmin):
-    list_display = ('id', 'corruption')
-    list_display_links = ('id', 'corruption',)
-
-
-
 @admin.register(ConflictAlert)
 class ConflictAlertAdmin(admin.ModelAdmin):
     list_display = ('id', 'organization_name', 'organization_director_full_name', 'type')
@@ -152,4 +137,3 @@ class TechnicalSupportAdmin(admin.ModelAdmin):
     list_display = ('id', 'comment')
     list_display_links = ('id', 'comment')
     search_fields = ('comment',)
-

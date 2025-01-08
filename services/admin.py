@@ -4,7 +4,7 @@ from .models import (
     TrainingMedia, ElectronLibraryCategory, ElectronLibrary, News,
     HonestyTest, HonestyTestAnswer, ConflictAlert,
     Profession, ProfessionalEthics, OfficerAdvice, ReportType,
-    ViolationReport, TechnicalSupport
+    ViolationReport, TechnicalSupport, TrainingCategory
 )
 
 
@@ -123,3 +123,10 @@ class TechnicalSupportAdmin(admin.ModelAdmin):
     list_display = ('id', 'comment')
     list_display_links = ('id', 'comment')
     search_fields = ('comment',)
+
+
+@admin.register(TrainingCategory)
+class TrainingCategoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    list_display_links = ('id', 'name')
+    search_fields = ('name',)

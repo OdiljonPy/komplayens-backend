@@ -3,11 +3,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from django.db.models import Q
 from exceptions.exception import CustomApiException
 from exceptions.error_messages import ErrorCodes
 from .models import (
     CategoryOrganization, Organization, Training,
-    ElectronLibraryCategory,
+    ElectronLibraryCategory, TrainingCategory,
     ElectronLibrary, News, HonestyTest, HonestyTestAnswer,
     ConflictAlert, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType
@@ -15,16 +16,17 @@ from .models import (
 
 from .serializers import (
     CategoryOrganizationSerializer, OrganizationSerializer,
-    TrainingSerializer, ParamValidateSerializer,
+    TrainingSerializer, TrainingDetailSerializer, TrainingCategorySerializer,
     ElectronLibraryCategorySerializer, ElectronLibrarySerializer, NewsSerializer,
     HonestyTestSerializer, HonestyTestAnswerSerializer,
     ProfessionSerializer, ProfessionalEthicsSerializer, OfficerAdviceSerializer,
     ReportTypeSerializer, ViolationReportSerializer, TechnicalSupportSerializer,
-    ConflictAlertSerializer, ConflictAlertTypeSerializer,
+    ConflictAlertSerializer, ConflictAlertTypeSerializer, TrainingParamValidator,
+    ParamValidateSerializer
 )
 from .utils import file_one_create, file_two_create, file_three_create
+from .repository.training_paginator import training_paginator
 from .repository.organization_paginator import get_paginated_organizations
-from django.db.models import Q
 
 
 class OrganizationViewSet(ViewSet):
@@ -56,11 +58,10 @@ class OrganizationViewSet(ViewSet):
             filter_ |= Q(name__icontains=request.query_params.get('q'))
         organizations = Organization.objects.filter(filter_)
         response = get_paginated_organizations(request_data=organizations, context={'request': request},
-                                 page=param_serializer.validated_data.get('page'),
-                                 page_size=param_serializer.validated_data.get('page_size')
-                                 )
+                                               page=param_serializer.validated_data.get('page'),
+                                               page_size=param_serializer.validated_data.get('page_size')
+                                               )
         return Response(data={'result': response, 'ok': True}, status=status.HTTP_200_OK)
-
 
     @swagger_auto_schema(
         operation_summary='Organization Categories',
@@ -76,13 +77,31 @@ class OrganizationViewSet(ViewSet):
 
 class TrainingViewSet(ViewSet):
     @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Page number'),
+            openapi.Parameter(
+                name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Page size number'),
+            openapi.Parameter(
+                name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, description='search parameter'),
+            openapi.Parameter(
+                name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='search parameter'),
+        ],
         responses={200: TrainingSerializer()},
         tags=['Training']
     )
     def training_list(self, request):
-        data = Training.objects.all()
-        serializer = TrainingSerializer(data, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+        serializer = TrainingParamValidator(data=request.query_params)
+        if not serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
+        params = serializer.data
+        filter_ = Q(name__icontains=params.get('q')) | Q(description__icontains=params.get('q'))
+        if params.get('category_id'):
+            filter_ &= Q(category_id=params.get('category_id'))
+        data = Training.objects.filter(filter_, is_published=True)
+        result = training_paginator(
+            data, context={'request': request}, page=params.get('page'), page_size=params.get('page_size'))
+        return Response(data={'result': result, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         responses={200: TrainingSerializer()},
@@ -92,7 +111,16 @@ class TrainingViewSet(ViewSet):
         data = Training.objects.filter(id=pk).first()
         if not data:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
-        serializer = TrainingSerializer(data, context={'request': request})
+        serializer = TrainingDetailSerializer(data, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        responses={200: TrainingSerializer()},
+        tags=['Training']
+    )
+    def training_category(self, request):
+        data = TrainingCategory.objects.all()
+        serializer = TrainingCategorySerializer(data, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 

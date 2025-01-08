@@ -11,7 +11,7 @@ class ParamValidateSerializer(serializers.Serializer):
     page = serializers.IntegerField(required=False, default=1)
     page_size = serializers.IntegerField(required=False, default=10)
     category_id = serializers.IntegerField(required=False)
-    print(category_id, '3' * 30)
+    q = serializers.CharField(required=False)
 
     def validate(self, data):
         if data.get('page_size') < 1 or data.get('page') < 1:
@@ -19,7 +19,6 @@ class ParamValidateSerializer(serializers.Serializer):
                                      message='page and page_size must be positive integer')
         if data.get('category_id') is not None and data.get('category_id') < 1:
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Category id must be positive integer')
-        print(data.get('category_id'), '4' * 30)
         return data
 
 

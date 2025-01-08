@@ -36,6 +36,8 @@ class OrganizationViewSet(ViewSet):
                               description="Page size"),
             openapi.Parameter(name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
                               description="Category id"),
+            openapi.Parameter(name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING,
+                              description="Search term"),
         ],
         operation_summary='Organization List',
         operation_description='List of all organizations',
@@ -43,16 +45,15 @@ class OrganizationViewSet(ViewSet):
         tags=['Organization']
     )
     def organization_list(self, request):
-        print(request.query_params, '-' * 30)
         param_serializer = ParamValidateSerializer(data=request.query_params, context={'request': request})
         if not param_serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=param_serializer.errors)
-        print(param_serializer.validated_data, '/' * 30)
         cat_id = param_serializer.validated_data.get('category_id')
-        print(cat_id, '*' * 30)
         filter_ = Q()
         if cat_id:
             filter_ |= Q(category_id=cat_id)
+        if request.query_params.get('q'):
+            filter_ |= Q(name__icontains=request.query_params.get('q'))
         organizations = Organization.objects.filter(filter_)
         response = get_paginated_organizations(request_data=organizations, context={'request': request},
                                  page=param_serializer.validated_data.get('page'),

@@ -18,7 +18,7 @@ class CategoryOrganizationAdmin(admin.ModelAdmin):
 @admin.register(Organization)
 class OrganizationAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'phone_number', 'address')
-    list_display_links = ('id', 'name')
+    list_display_links = ('id', 'name', 'phone_number')
     search_fields = ('name', 'phone_number', 'address', 'district__name', 'region__name', 'email')
     list_filter = ('region', 'district')
 

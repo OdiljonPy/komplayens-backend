@@ -7,7 +7,7 @@ from django.db.models import Q
 from exceptions.exception import CustomApiException
 from exceptions.error_messages import ErrorCodes
 from .models import (
-    CategoryOrganization, Organization, Service, Training,
+    CategoryOrganization, Organization, Training,
     ElectronLibraryCategory, TrainingCategory,
     ElectronLibrary, News, HonestyTest, HonestyTestAnswer,
     ConflictAlert, Profession, ProfessionalEthics,
@@ -15,18 +15,18 @@ from .models import (
 )
 
 from .serializers import (
-    CategoryOrganizationSerializer, OrganizationSerializer, ServiceSerializer,
+    CategoryOrganizationSerializer, OrganizationSerializer,
     TrainingSerializer, TrainingDetailSerializer, TrainingCategorySerializer,
     ElectronLibraryCategorySerializer, ElectronLibrarySerializer, NewsSerializer,
     HonestyTestSerializer, HonestyTestAnswerSerializer,
     ProfessionSerializer, ProfessionalEthicsSerializer, OfficerAdviceSerializer,
     ReportTypeSerializer, ViolationReportSerializer, TechnicalSupportSerializer,
-    ConflictAlertSerializer, ConflictAlertTypeSerializer, TrainingParamValidator
+    ConflictAlertSerializer, ConflictAlertTypeSerializer, TrainingParamValidator,
+    ParamValidateSerializer
 )
 from .utils import file_one_create, file_two_create, file_three_create
 from .repository.training_paginator import training_paginator
 from .repository.organization_paginator import get_paginated_organizations
-from django.db.models import Q
 
 
 class OrganizationViewSet(ViewSet):
@@ -58,11 +58,10 @@ class OrganizationViewSet(ViewSet):
             filter_ |= Q(name__icontains=request.query_params.get('q'))
         organizations = Organization.objects.filter(filter_)
         response = get_paginated_organizations(request_data=organizations, context={'request': request},
-                                 page=param_serializer.validated_data.get('page'),
-                                 page_size=param_serializer.validated_data.get('page_size')
-                                 )
+                                               page=param_serializer.validated_data.get('page'),
+                                               page_size=param_serializer.validated_data.get('page_size')
+                                               )
         return Response(data={'result': response, 'ok': True}, status=status.HTTP_200_OK)
-
 
     @swagger_auto_schema(
         operation_summary='Organization Categories',

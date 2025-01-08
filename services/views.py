@@ -11,7 +11,7 @@ from .models import (
     ElectronLibraryCategory, TrainingCategory,
     ElectronLibrary, News, HonestyTest, HonestyTestAnswer,
     ConflictAlert, Profession, ProfessionalEthics,
-    OfficerAdvice, ReportType
+    OfficerAdvice, ReportType, NewsCategory
 )
 
 from .serializers import (
@@ -79,6 +79,8 @@ class OrganizationViewSet(ViewSet):
 
 class TrainingViewSet(ViewSet):
     @swagger_auto_schema(
+        operation_summary='Training list with filter',
+        operation_description='List of all trainings with filter',
         manual_parameters=[
             openapi.Parameter(
                 name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Page number'),
@@ -106,6 +108,8 @@ class TrainingViewSet(ViewSet):
         return Response(data={'result': result, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
+        operation_summary='Training detail',
+        operation_description='Training detail',
         responses={200: TrainingSerializer()},
         tags=['Training']
     )
@@ -117,6 +121,8 @@ class TrainingViewSet(ViewSet):
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
+        operation_summary='List of all training categories',
+        operation_description='List of all training categories',
         responses={200: TrainingSerializer()},
         tags=['Training']
     )
@@ -186,6 +192,8 @@ class NewsViewSet(ViewSet):
         return Response(data={'result': result, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
+        operation_summary='News detail with pk',
+        operation_description='News detail with pk',
         responses={200: NewsSerializer()},
         tags=['News']
     )
@@ -194,6 +202,16 @@ class NewsViewSet(ViewSet):
         if not data:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
         serializer = NewsDetailSerializer(data, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_summary='News category list',
+        operation_description='News category list',
+        tags=['News']
+    )
+    def news_category(self, request):
+        data = NewsCategory.objects.all()
+        serializer = NewsCategorySerializer(data, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 

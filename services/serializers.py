@@ -113,7 +113,8 @@ class NewsDetailSerializer(NewsSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['additional'] = NewsSerializer(
-            News.objects.filter(is_published=True).order_by('-view_count'), many=True).data
+            News.objects.filter(is_published=True).order_by('-view_count'),
+            many=True, context=self.context).data
         return data
 
 

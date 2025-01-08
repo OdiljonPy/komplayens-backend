@@ -8,10 +8,9 @@ from .views import (
 
 urlpatterns = [
     path('organization/', OrganizationViewSet.as_view({'get': 'organization_list'})),
-    path('organization/<int:pk>/', OrganizationViewSet.as_view({'get': 'organization'})),
-    path('organization/category/', OrganizationViewSet.as_view({'get': 'organization_category_list'})),
-    path('organization/service/', OrganizationViewSet.as_view({'get': 'service_list'})),
-    path('organization/service/<int:pk>/', OrganizationViewSet.as_view({'get': 'service'})),
+
+    path('organization/category/', OrganizationViewSet.as_view({'get': 'organization_categories'})),
+
 
     path('training/', TrainingViewSet.as_view({'get': 'training_list'})),
     path('training/<int:pk>/', TrainingViewSet.as_view({'get': 'training'})),

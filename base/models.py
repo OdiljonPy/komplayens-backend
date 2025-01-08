@@ -36,8 +36,8 @@ class District(BaseModel):
         return self.name
 
     class Meta:
-        verbose_name = "Область"
-        verbose_name_plural = "Области"
+        verbose_name = "Округ"
+        verbose_name_plural = "Округи"
         ordering = ('-created_at',)
 
 

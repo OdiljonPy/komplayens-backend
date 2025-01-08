@@ -7,6 +7,21 @@ from .models import (HonestyTest, HonestyTestAnswer, GuiltyPerson,
 )
 
 
+class ParamValidateSerializer(serializers.Serializer):
+    page = serializers.IntegerField(required=False, default=1)
+    page_size = serializers.IntegerField(required=False, default=10)
+    category_id = serializers.IntegerField(required=False)
+    q = serializers.CharField(required=False)
+
+    def validate(self, data):
+        if data.get('page_size') < 1 or data.get('page') < 1:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED,
+                                     message='page and page_size must be positive integer')
+        if data.get('category_id') is not None and data.get('category_id') < 1:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Category id must be positive integer')
+        return data
+
+
 class CategoryOrganizationSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
@@ -17,7 +32,7 @@ class OrganizationSerializer(serializers.Serializer):
     category = serializers.PrimaryKeyRelatedField(read_only=True)
     name = serializers.CharField()
     phone_number = serializers.CharField(max_length=15)
-    phone_number_2 = serializers.CharField(max_length=15)
+    phone_number2 = serializers.CharField(max_length=15)
     email = serializers.EmailField()
     region = serializers.PrimaryKeyRelatedField(read_only=True)
     district = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -28,12 +43,6 @@ class OrganizationSerializer(serializers.Serializer):
     facebook = serializers.URLField()
     twitter = serializers.URLField()
     youtube = serializers.URLField()
-
-
-class ServiceSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    name = serializers.CharField()
-    organization = serializers.PrimaryKeyRelatedField(read_only=True)
 
 
 class  TrainingCategorySerializer(serializers.Serializer):

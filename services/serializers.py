@@ -1,9 +1,10 @@
 from rest_framework import serializers
 from exceptions.exception import CustomApiException
 from exceptions.error_messages import ErrorCodes
-from .models import (HonestyTest, HonestyTestAnswer, GuiltyPerson,
-                     ViolationFile, ConflictAlert, OfficerAdvice,
-                     ViolationReport, TechnicalSupport, HonestyTestResult
+from .models import (
+    HonestyTest, HonestyTestAnswer, GuiltyPerson,
+    ViolationFile, ConflictAlert, OfficerAdvice,
+    ViolationReport, TechnicalSupport, HonestyTestResult
 )
 
 
@@ -36,7 +37,7 @@ class ServiceSerializer(serializers.Serializer):
     organization = serializers.PrimaryKeyRelatedField(read_only=True)
 
 
-class  TrainingCategorySerializer(serializers.Serializer):
+class TrainingCategorySerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
 
@@ -48,7 +49,6 @@ class TrainingSerializer(serializers.Serializer):
     description = serializers.CharField()
     video = serializers.URLField()
     category = serializers.PrimaryKeyRelatedField(read_only=True)
-    is_published = serializers.BooleanField()
 
 
 class TrainingMediaSerializer(serializers.Serializer):
@@ -62,6 +62,10 @@ class TrainingMediaSerializer(serializers.Serializer):
     type = serializers.CharField()
 
 
+class TrainingDetailSerializer(TrainingSerializer):
+    materials = TrainingMediaSerializer(many=True, source='training_materials')
+
+
 class ElectronLibraryCategorySerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(max_length=40)
@@ -70,7 +74,7 @@ class ElectronLibraryCategorySerializer(serializers.Serializer):
 class ElectronLibrarySerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(max_length=80)
-    author =serializers.CharField(max_length=100)
+    author = serializers.CharField(max_length=100)
     edition_author = serializers.CharField(max_length=100)
     edition_type = serializers.CharField(max_length=100)
     edition_year = serializers.DateField()
@@ -215,3 +219,23 @@ class TechnicalSupportSerializer(serializers.Serializer):
     class Meta:
         model = TechnicalSupport
         fields = ('id', 'image', 'comment')
+
+
+class PaginatorValidator(serializers.Serializer):
+    page = serializers.IntegerField(required=False, default=1)
+    page_size = serializers.IntegerField(required=False, default=10)
+
+    def validate(self, attrs):
+        if attrs.get('page', 0) < 1 or attrs.get('page_size', 0) < 1:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='page and page_size must be greater than 1')
+        return super().validate(attrs)
+
+
+class TrainingParamValidator(PaginatorValidator):
+    category_id = serializers.IntegerField(required=False)
+    q = serializers.CharField(required=False, default='')
+
+    def validate(self, attrs):
+        if attrs.get('category_id') is not None and attrs.get('category_id') < 1:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='category_id must be greater than 1')
+        return super().validate(attrs)

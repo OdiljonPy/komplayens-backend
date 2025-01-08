@@ -79,14 +79,14 @@ class Service(BaseModel):
 
 
 class TrainingCategory(BaseModel):
-    name = models.CharField(max_length=40, verbose_name='')
+    name = models.CharField(max_length=40, verbose_name='Название категории')
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name = ''
-        verbose_name_plural = ''
+        verbose_name = 'Категория обучения'
+        verbose_name_plural = 'Категория обучения'
         ordering = ('-created_at',)
 
 
@@ -94,9 +94,10 @@ class Training(BaseModel):
     name = models.CharField(max_length=255, verbose_name="Название")
     image = models.ImageField(upload_to="trainings/", verbose_name="Изображение")
     description = HTMLField(verbose_name="описание")
-    video = models.URLField(default='https://www.youtube.com/', verbose_name='')
-    category = models.ForeignKey(to='TrainingCategory', on_delete=models.SET_NULL, null=True)
-    is_published = models.BooleanField(default=False)
+    video = models.URLField(default='https://www.youtube.com/', verbose_name='URL-адрес видео на YouTube')
+    category = models.ForeignKey(
+        to='TrainingCategory', on_delete=models.SET_NULL, null=True, verbose_name='Название категории')
+    is_published = models.BooleanField(default=False, verbose_name='Опубликовано')
 
     def __str__(self):
         return self.name
@@ -108,13 +109,15 @@ class Training(BaseModel):
 
 
 class TrainingMedia(BaseModel):
-    training = models.ForeignKey(Training, on_delete=models.SET_NULL, null=True, verbose_name="Урок")
-    filename = models.CharField(max_length=100, verbose_name='')
+    training = models.ForeignKey(
+        Training, on_delete=models.SET_NULL, related_name='training_materials', null=True, verbose_name="Урок")
+    filename = models.CharField(max_length=100, verbose_name='Имя файла')
     file = models.FileField(
         upload_to="trainings/media/", validators=[validate_file_type_and_size],
         verbose_name="Файл", blank=True, null=True)
-    video = models.URLField(default='https://www.youtube.com/', verbose_name='', blank=True, null=True)
-    video_title = models.CharField(verbose_name='', blank=True, null=True)
+    video = models.URLField(
+        default='https://www.youtube.com/', verbose_name='URL-адрес видео на YouTube', blank=True, null=True)
+    video_title = models.CharField(verbose_name='Название видео', blank=True, null=True)
     order = models.IntegerField(verbose_name="Очередь")
     type = models.CharField(max_length=5, choices=MEDIA_TYPE_CHOICES, editable=False, verbose_name="Тип")
 

@@ -51,11 +51,11 @@ class Organization(BaseModel):
     district = models.ForeignKey(District, on_delete=models.PROTECT, verbose_name="Область")
     address = models.CharField(max_length=255, verbose_name="Адрес")
     weblink = models.URLField(blank=True, null=True, verbose_name='Ссылка')
-    instagram = models.URLField(blank=True, null=True, verbose_name='')
-    telegram = models.URLField(blank=True, null=True, verbose_name='')
-    facebook = models.URLField(blank=True, null=True, verbose_name='')
-    twitter = models.URLField(blank=True, null=True, verbose_name='')
-    youtube = models.URLField(blank=True, null=True, verbose_name='')
+    instagram = models.URLField(blank=True, null=True, verbose_name='Инстаграм')
+    telegram = models.URLField(blank=True, null=True, verbose_name='Телеграм')
+    facebook = models.URLField(blank=True, null=True, verbose_name='Фейсбук')
+    twitter = models.URLField(blank=True, null=True, verbose_name='Твиттер')
+    youtube = models.URLField(blank=True, null=True, verbose_name='Ютуб')
 
     def __str__(self):
         return self.name
@@ -144,14 +144,14 @@ class ElectronLibraryCategory(BaseModel):
 class ElectronLibrary(BaseModel):
     name = models.CharField(max_length=80, verbose_name='Имя')
     author = models.CharField(max_length=100, verbose_name='Автор')
-    edition_author = models.CharField(max_length=100, verbose_name='')
-    edition_type = models.CharField(max_length=100, verbose_name='')
-    edition_year = models.DateField(null=True, verbose_name='')
+    edition_author = models.CharField(max_length=100, verbose_name='Автор издания')
+    edition_type = models.CharField(max_length=100, verbose_name='Тип издания')
+    edition_year = models.DateField(null=True, verbose_name='Год издания')
     file = models.FileField(upload_to='electron_libraries/', validators=[FileExtensionValidator(['pdf', ])],
                             verbose_name='Файл книги')
     category = models.ForeignKey(
         ElectronLibraryCategory, on_delete=models.SET_NULL, null=True, verbose_name='Категория')
-    is_published = models.BooleanField(default=False)
+    is_published = models.BooleanField(default=False, verbose_name='Опубликовано')
 
     def __str__(self):
         return str(self.name)

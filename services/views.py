@@ -342,6 +342,8 @@ class ProfessionalEthicsViewSet(ViewSet):
         return Response(data={'result': result, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
+        operation_summary='Detail Professional Ethics',
+        operation_description='Detail Professional Ethics',
         responses={200: ProfessionalEthicsSerializer()},
         tags=['ProfessionalEthics']
     )
@@ -353,6 +355,8 @@ class ProfessionalEthicsViewSet(ViewSet):
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
+        operation_summary='Category Profession Ethics',
+        operation_description='Category Profession Ethics',
         responses={200: ProfessionSerializer()},
         tags=['ProfessionalEthics']
     )

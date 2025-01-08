@@ -21,6 +21,7 @@ urlpatterns = [
 
     path('news/', NewsViewSet.as_view({'get': 'news_list'})),
     path('news/<int:pk>/', NewsViewSet.as_view({'get': 'news'})),
+    path('news/category/', NewsViewSet.as_view({'get': 'news_category'})),
 
     path('honesty/test/', HonestyViewSet.as_view({'get': 'honesty_test_list'})),
     path('honesty/test/<int:pk>/', HonestyViewSet.as_view({'get': 'honesty_test'})),

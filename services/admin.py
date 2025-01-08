@@ -4,7 +4,8 @@ from .models import (
     TrainingMedia, ElectronLibraryCategory, ElectronLibrary, News,
     HonestyTest, HonestyTestAnswer, ConflictAlert,
     Profession, ProfessionalEthics, OfficerAdvice, ReportType,
-    ViolationReport, TechnicalSupport, TrainingCategory
+    ViolationReport, TechnicalSupport, TrainingCategory,
+    NewsCategory
 )
 
 
@@ -130,3 +131,9 @@ class TrainingCategoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     list_display_links = ('id', 'name')
     search_fields = ('name',)
+
+
+@admin.register(NewsCategory)
+class NewsCategoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    list_display_links = ('id', 'name')

@@ -4,7 +4,8 @@ from exceptions.error_messages import ErrorCodes
 from .models import (
     HonestyTest, HonestyTestAnswer, GuiltyPerson,
     ViolationFile, ConflictAlert, OfficerAdvice,
-    ViolationReport, TechnicalSupport, HonestyTestResult
+    ViolationReport, TechnicalSupport, HonestyTestResult,
+    News
 )
 
 
@@ -46,7 +47,7 @@ class OrganizationSerializer(serializers.Serializer):
     youtube = serializers.URLField()
 
 
-class  TrainingCategorySerializer(serializers.Serializer):
+class TrainingCategorySerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
 
@@ -104,9 +105,17 @@ class NewsSerializer(serializers.Serializer):
     description = serializers.CharField()
     image = serializers.ImageField()
     category = serializers.PrimaryKeyRelatedField(read_only=True)
-    is_published = serializers.BooleanField()
     published_date = serializers.DateField()
     view_count = serializers.IntegerField()
+
+
+class NewsDetailSerializer(NewsSerializer):
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['additional'] = NewsSerializer(
+            News.objects.filter(is_published=True).order_by('-view_count'),
+            many=True, context=self.context).data
+        return data
 
 
 class HonestyTestCategorySerializer(serializers.Serializer):
@@ -243,6 +252,15 @@ class PaginatorValidator(serializers.Serializer):
 class TrainingParamValidator(PaginatorValidator):
     category_id = serializers.IntegerField(required=False)
     q = serializers.CharField(required=False, default='')
+
+    def validate(self, attrs):
+        if attrs.get('category_id') is not None and attrs.get('category_id') < 1:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='category_id must be greater than 1')
+        return super().validate(attrs)
+
+
+class NewsParamValidator(PaginatorValidator):
+    category_id = serializers.IntegerField(required=False)
 
     def validate(self, attrs):
         if attrs.get('category_id') is not None and attrs.get('category_id') < 1:

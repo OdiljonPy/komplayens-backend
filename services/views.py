@@ -27,6 +27,8 @@ from .serializers import (
 from .utils import file_one_create, file_two_create, file_three_create
 from .repository.training_paginator import training_paginator
 from .repository.organization_paginator import get_paginated_organizations
+from .repository.electron_library_paginator import get_paginated_e_library
+
 
 
 class OrganizationViewSet(ViewSet):
@@ -50,10 +52,10 @@ class OrganizationViewSet(ViewSet):
         param_serializer = ParamValidateSerializer(data=request.query_params, context={'request': request})
         if not param_serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=param_serializer.errors)
-        cat_id = param_serializer.validated_data.get('category_id')
+        category_id = param_serializer.validated_data.get('category_id')
         filter_ = Q()
-        if cat_id:
-            filter_ |= Q(category_id=cat_id)
+        if category_id:
+            filter_ |= Q(category_id=category_id)
         if request.query_params.get('q'):
             filter_ |= Q(name__icontains=request.query_params.get('q'))
         organizations = Organization.objects.filter(filter_)
@@ -126,27 +128,42 @@ class TrainingViewSet(ViewSet):
 
 class ElectronLibraryViewSet(ViewSet):
     @swagger_auto_schema(
-        responses={200: ElectronLibrarySerializer()},
+        manual_parameters=[
+            openapi.Parameter(name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                              description="Page number"),
+            openapi.Parameter(name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                              description="Page size"),
+            openapi.Parameter(name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING,
+                              description="Search term"),
+            openapi.Parameter(name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                              description="Category id"),
+        ],
+        operation_summary='ElectronLibrary List',
+        operation_description='List of electron libraries',
+        responses={200: ElectronLibrarySerializer(many=True)},
         tags=['ElectronLibrary']
     )
     def electron_library_list(self, request):
-        data = ElectronLibrary.objects.all()
-        serializer = ElectronLibrarySerializer(data, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+        param_serializer = ParamValidateSerializer(data=request.query_params, context={'request': request})
+        if not param_serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=param_serializer.errors)
+        category_id = param_serializer.validated_data.get('category_id')
+        filter_ = Q()
+        if request.query_params.get('q'):
+            filter_ |= Q(name__icontains=request.query_params.get('q'))
+        if category_id:
+            filter_ |= Q(category_id=category_id)
+        data = ElectronLibrary.objects.filter(filter_, is_published=True)
+        result = get_paginated_e_library(request_data=data, context={'request': request},
+                                            page=param_serializer.validated_data.get('page'),
+                                            page_size=param_serializer.validated_data.get('page_size'))
+        return Response(data={'result': result, 'ok': True}, status=status.HTTP_200_OK)
+
 
     @swagger_auto_schema(
-        responses={200: ElectronLibrarySerializer()},
-        tags=['ElectronLibrary']
-    )
-    def electron_library(self, request, pk):
-        data = ElectronLibrary.objects.filter(id=pk).first()
-        if not data:
-            raise CustomApiException(ErrorCodes.NOT_FOUND)
-        serializer = ElectronLibrarySerializer(data, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        responses={200: ElectronLibraryCategorySerializer()},
+        operation_summary='ElectronLibrary Categories',
+        operation_description='List of all electron library categories',
+        responses={200: ElectronLibraryCategorySerializer(many=True)},
         tags=['ElectronLibrary']
     )
     def electron_library_category(self, request):

@@ -209,6 +209,13 @@ class OfficerAdviceSerializer(serializers.ModelSerializer):
         model = OfficerAdvice
         fields = ('id', 'officer', 'professional_ethics', 'comment')
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['created_at'] = instance.created_at
+        data['officer_full_name'] = getattr(
+            instance.officer, 'first_name', '') + getattr(instance.officer, 'last_name', '')
+        return data
+
 
 class ReportTypeSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
@@ -276,4 +283,13 @@ class ProfessionalEthicsParamValidator(PaginatorValidator):
     def validate(self, attrs):
         if attrs.get('profession_id') is not None and attrs.get('profession_id') < 1:
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='profession_id must be greater than 1')
+        return super().validate(attrs)
+
+
+class OfficerAdviceParamValidator(PaginatorValidator):
+    professional_ethics = serializers.IntegerField(required=True)
+
+    def validate(self, attrs):
+        if attrs.get('professional_ethics', 0) < 1:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='professional_ethics must be greater than 1')
         return super().validate(attrs)

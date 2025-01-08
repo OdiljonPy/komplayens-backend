@@ -23,7 +23,7 @@ from .serializers import (
     ReportTypeSerializer, ViolationReportSerializer, TechnicalSupportSerializer,
     ConflictAlertSerializer, ConflictAlertTypeSerializer, TrainingParamValidator,
     ParamValidateSerializer, NewsParamValidator, NewsCategorySerializer,
-    NewsDetailSerializer, ProfessionalEthicsParamValidator
+    NewsDetailSerializer, ProfessionalEthicsParamValidator, OfficerAdviceParamValidator
 )
 from .utils import file_one_create, file_two_create, file_three_create
 from .repository.training_paginator import training_paginator
@@ -31,6 +31,7 @@ from .repository.organization_paginator import get_paginated_organizations
 from .repository.news_paginator import news_paginator
 from .repository.electron_library_paginator import get_paginated_e_library
 from .repository.profession_paginator import profession_paginator
+from .repository.officer_advice_paginator import officer_advice_paginator
 
 
 class OrganizationViewSet(ViewSet):
@@ -368,25 +369,47 @@ class ProfessionalEthicsViewSet(ViewSet):
 
 class OfficerAdviceViewSet(ViewSet):
     @swagger_auto_schema(
+        operation_summary='Create Officer Advices',
+        operation_description='Create Officer Advices',
         request_body=OfficerAdviceSerializer(),
         responses={201: OfficerAdviceSerializer()},
         tags=['OfficerAdvice']
     )
     def create_officer_advice(self, request):
-        serializer = OfficerAdviceSerializer(data=request.data, context={'request': request})
+        data = request.data
+        data.update({'officer': request.user.id})
+        serializer = OfficerAdviceSerializer(data=data, context={'request': request})
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
         serializer.save()
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(
+        operation_summary='Get Officer Advices',
+        operation_description='Get Officer Advices',
+        manual_parameters=[
+            openapi.Parameter(
+                name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='page number'),
+            openapi.Parameter(
+                name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='page size number'),
+            openapi.Parameter(
+                name='professional_ethics', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                description='Professional ethics id'),
+        ],
         responses={200: OfficerAdviceSerializer()},
         tags=['OfficerAdvice']
     )
     def officer_advice_list(self, request):
-        data = OfficerAdvice.objects.all()
-        serializer = OfficerAdviceSerializer(data, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+        serializer = OfficerAdviceParamValidator(data=request.query_params)
+        if not serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
+        params = serializer.data
+        data = OfficerAdvice.objects.filter(
+            is_published=True, professional_ethics=params.get('professional_ethics')).order_by('created_at')
+        result = officer_advice_paginator(
+            data, context={'request': request}, page=params.get('page'), page_size=params.get('page_size')
+        )
+        return Response(data={'result': result, 'ok': True}, status=status.HTTP_200_OK)
 
 
 class ViolationReportViewSet(ViewSet):

@@ -349,6 +349,7 @@ class OfficerAdvice(BaseModel):
     professional_ethics = models.ForeignKey(
         ProfessionalEthics, on_delete=models.CASCADE, verbose_name='Профессиональная этика')
     comment = models.TextField(max_length=350, verbose_name='Комментарий')
+    is_published = models.BooleanField(default=True)
 
     def __str__(self):
         return str(self.id)

@@ -34,8 +34,8 @@ urlpatterns = [
     path('professional/ethics/', ProfessionalEthicsViewSet.as_view({'get': 'professional_ethics_list'})),
     path('professional/ethics/<int:pk>/', ProfessionalEthicsViewSet.as_view({'get': 'professional_ethics'})),
 
-    path('officer/advice/', OfficerAdviceViewSet.as_view({'post': 'create_officer_advice'})),
-    path('officer/advice/', OfficerAdviceViewSet.as_view({'post': 'officer_advice_list'})),
+    path('officer/advice/', OfficerAdviceViewSet.as_view({'post': 'create_officer_advice'}), name='create_officer_advice'),
+    path('officer/advice/list/', OfficerAdviceViewSet.as_view({'get': 'officer_advice_list'}), name='list_officer_advice'),
 
     path('violation/report/', ViolationReportViewSet.as_view({'post': 'create_violation_report'})),
     path('violation/report/types/', ViolationReportViewSet.as_view({'post': 'report_types'})),

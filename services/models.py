@@ -4,6 +4,7 @@ from django.db import models
 from abstarct_model.base_model import BaseModel
 from base.models import Region, District
 from .utils import validate_file_type_and_size
+from django.core.validators import FileExtensionValidator
 
 MEDIA_TYPE_CHOICES = (
     ('PDF', 'PDF'),
@@ -132,7 +133,7 @@ class ElectronLibraryCategory(BaseModel):
     name = models.CharField(max_length=40, verbose_name='Название')
 
     def __str__(self):
-        return str(self.id)
+        return str(self.name)
 
     class Meta:
         verbose_name = 'Категория Электронная библиотека'
@@ -146,13 +147,14 @@ class ElectronLibrary(BaseModel):
     edition_author = models.CharField(max_length=100, verbose_name='')
     edition_type = models.CharField(max_length=100, verbose_name='')
     edition_year = models.DateField(null=True, verbose_name='')
-    file = models.FileField(upload_to='electron_libraries/', verbose_name='Файл книги')
+    file = models.FileField(upload_to='electron_libraries/', validators=[FileExtensionValidator(['pdf',])],
+                            verbose_name='Файл книги')
     category = models.ForeignKey(
         ElectronLibraryCategory, on_delete=models.SET_NULL, null=True, verbose_name='Категория')
     is_published = models.BooleanField(default=False)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.name)
 
     class Meta:
         verbose_name = 'Электронная библиотека'

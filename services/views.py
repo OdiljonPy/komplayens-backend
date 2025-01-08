@@ -11,7 +11,7 @@ from .models import (
     ElectronLibraryCategory, TrainingCategory,
     ElectronLibrary, News, HonestyTest, HonestyTestAnswer,
     ConflictAlert, Profession, ProfessionalEthics,
-    OfficerAdvice, ReportType, NewsCategory
+    OfficerAdvice, ReportType, NewsCategory, HonestyTestCategory, HonestyTestResult
 )
 
 from .serializers import (
@@ -23,14 +23,15 @@ from .serializers import (
     ReportTypeSerializer, ViolationReportSerializer, TechnicalSupportSerializer,
     ConflictAlertSerializer, ConflictAlertTypeSerializer, TrainingParamValidator,
     ParamValidateSerializer, NewsParamValidator, NewsCategorySerializer,
-    NewsDetailSerializer
+    NewsDetailSerializer, HonestyTestCategorySerializer, HonestyTestResultSerializer,
+    HonestyTestResultRequestSerializer
 )
 from .utils import file_one_create, file_two_create, file_three_create
 from .repository.training_paginator import training_paginator
 from .repository.organization_paginator import get_paginated_organizations
 from .repository.news_paginator import news_paginator
 from .repository.electron_library_paginator import get_paginated_e_library
-
+from authentication.utils import create_customer
 
 
 class OrganizationViewSet(ViewSet):
@@ -234,32 +235,45 @@ class NewsViewSet(ViewSet):
 
 class HonestyViewSet(ViewSet):
     @swagger_auto_schema(
-        responses={200: HonestyTestSerializer()},
+        operation_summary='Honesty test categories',
+        operation_description='List of all honest test categories',
+        responses={200: HonestyTestCategorySerializer(many=True)},
         tags=['HonestyTest']
     )
-    def honesty_test_list(self, request):
-        data = HonestyTest.objects.all()
-        serializer = HonestyTestSerializer(data, many=True, context={'request': request})
+    def honesty_test_categories(self, request):
+        data = HonestyTestCategory.objects.all()
+        serializer = HonestyTestCategorySerializer(data, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
+        operation_summary='Honesty tests by category id',
+        operation_description='List of all honesty test by category id',
         responses={200: HonestyTestSerializer()},
         tags=['HonestyTest']
     )
-    def honesty_test(self, request, pk):
-        data = HonestyTest.objects.filter(id=pk).first()
-        if not data:
-            raise CustomApiException(ErrorCodes.NOT_FOUND)
-        serializer = HonestyTestSerializer(data, context={'request': request})
+    def honesty_test_list(self, request, pk):
+        questions = HonestyTest.objects.filter(category_id=pk)
+        serializer = HonestyTestSerializer(questions, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
-        responses={200: HonestyTestAnswerSerializer()},
+        request_body=HonestyTestResultRequestSerializer(many=True),
+        responses={200: HonestyTestResultSerializer(many=True)},
         tags=['HonestyTest']
     )
-    def honesty_test_answer(self, request, pk):
-        data = HonestyTestAnswer.objects.filter(question_id=pk)
-        serializer = HonestyTestAnswerSerializer(data, context={'request': request})
+    def honesty_test_result(self, request):
+        data = request.data
+        user = create_customer(request)
+        result = []
+        for i in range(len(data)):
+            answer = HonestyTestAnswer.objects.filter(id=data[i].get('answer')).first()
+            data[i].update({'is_true': answer.is_true})
+            data[i].update({'customer': user})
+            result.append(data[i])
+        serializer = HonestyTestResultSerializer(data=result, many=True, context={'request': request})
+        if not serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
+        serializer.save()
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 

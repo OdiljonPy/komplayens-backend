@@ -124,22 +124,34 @@ class HonestyTestCategorySerializer(serializers.Serializer):
     image = serializers.ImageField()
 
 
-class HonestyTestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = HonestyTest
-        fields = ('id', 'question', 'advice', 'category')
-
-
 class HonestyTestAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = HonestyTestAnswer
-        fields = ('id', 'question', 'answer', 'image', 'is_true')
+        fields = ('id', 'question', 'answer', 'is_true')
+
+
+class HonestyTestSerializer(serializers.ModelSerializer):
+    answers = HonestyTestAnswerSerializer(many=True, read_only=True, source='test_honest')
+    class Meta:
+        model = HonestyTest
+        fields = ('id', 'question', 'advice', 'category', 'answers')
 
 
 class HonestyTestResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = HonestyTestResult
         fields = ('id', 'customer', 'test', 'answer', 'result')
+
+
+class HonestyTestResultRequestSerializer(serializers.Serializer):
+    test = serializers.IntegerField()
+    answer = serializers.IntegerField()
+
+    def validate(self, data):
+        if data.get('question') is not None and data.get('question') < 1:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Question id must be positive integer')
+        if data.get('answer') is not None and data.get('answer') < 1:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Answer id must be positive integer')
 
 
 class CorruptionRiskSerializer(serializers.Serializer):

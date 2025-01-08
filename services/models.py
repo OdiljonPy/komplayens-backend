@@ -194,21 +194,21 @@ class News(BaseModel):
 
 
 class HonestyTestCategory(BaseModel):
-    name = models.CharField(max_length=40, verbose_name='')
+    name = models.CharField(max_length=40, verbose_name='Название категории')
     image = models.ImageField(upload_to='honesty_test/category', verbose_name='')
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name = ''
-        verbose_name_plural = ''
+        verbose_name = 'Категория тест на честность'
+        verbose_name_plural = 'Категория тест на честность'
         ordering = ('-created_at',)
 
 
 class HonestyTest(BaseModel):
     question = HTMLField(verbose_name='Вопрос')
-    advice = models.CharField(max_length=300, verbose_name='')
+    advice = models.CharField(max_length=300, verbose_name='Cовет')
     category = models.ForeignKey(to='HonestyTestCategory', on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
@@ -221,9 +221,8 @@ class HonestyTest(BaseModel):
 
 
 class HonestyTestAnswer(BaseModel):
-    question = models.ForeignKey(HonestyTest, on_delete=models.CASCADE, verbose_name='Вопрос')
+    question = models.ForeignKey(HonestyTest, on_delete=models.CASCADE, related_name='test_honest', verbose_name='Вопрос')
     answer = models.CharField(max_length=120, verbose_name='Отвечать')
-    image = models.ImageField(upload_to='honesty_test/answer', verbose_name='')
     is_true = models.BooleanField(default=False, verbose_name='')
 
     def __str__(self):

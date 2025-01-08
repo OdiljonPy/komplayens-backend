@@ -65,19 +65,6 @@ class Organization(BaseModel):
         ordering = ('-created_at',)
 
 
-class Service(BaseModel):
-    name = models.CharField(max_length=255, verbose_name="Название")
-    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True, verbose_name="Организация")
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = 'Сервис'
-        verbose_name_plural = 'Сервисы'
-        ordering = ('-created_at',)
-
-
 class TrainingCategory(BaseModel):
     name = models.CharField(max_length=40, verbose_name='Название категории')
 

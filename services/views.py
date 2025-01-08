@@ -25,56 +25,54 @@ from .serializers import (
 )
 from .utils import file_one_create, file_two_create, file_three_create
 from .repository.training_paginator import training_paginator
+from .repository.organization_paginator import get_paginated_organizations
+from django.db.models import Q
 
 
 class OrganizationViewSet(ViewSet):
     @swagger_auto_schema(
-        responses={200: OrganizationSerializer()},
+        manual_parameters=[
+            openapi.Parameter(name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                              description="Page number"),
+            openapi.Parameter(name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                              description="Page size"),
+            openapi.Parameter(name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                              description="Category id"),
+            openapi.Parameter(name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING,
+                              description="Search term"),
+        ],
+        operation_summary='Organization List',
+        operation_description='List of all organizations',
+        responses={200: OrganizationSerializer(many=True)},
         tags=['Organization']
     )
     def organization_list(self, request):
-        data = Organization.objects.all()
-        serializer = OrganizationSerializer(data, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+        param_serializer = ParamValidateSerializer(data=request.query_params, context={'request': request})
+        if not param_serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=param_serializer.errors)
+        cat_id = param_serializer.validated_data.get('category_id')
+        filter_ = Q()
+        if cat_id:
+            filter_ |= Q(category_id=cat_id)
+        if request.query_params.get('q'):
+            filter_ |= Q(name__icontains=request.query_params.get('q'))
+        organizations = Organization.objects.filter(filter_)
+        response = get_paginated_organizations(request_data=organizations, context={'request': request},
+                                 page=param_serializer.validated_data.get('page'),
+                                 page_size=param_serializer.validated_data.get('page_size')
+                                 )
+        return Response(data={'result': response, 'ok': True}, status=status.HTTP_200_OK)
+
 
     @swagger_auto_schema(
-        responses={200: OrganizationSerializer()},
-        tags=['Organization']
-    )
-    def organization(self, request, pk):
-        data = Organization.objects.filter(id=pk).first()
-        if not data:
-            raise CustomApiException(ErrorCodes.NOT_FOUND)
-        serializer = OrganizationSerializer(data, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
+        operation_summary='Organization Categories',
+        operation_description='List of all organization categories',
         responses={200: CategoryOrganizationSerializer()},
         tags=['Organization']
     )
-    def organization_category_list(self, request):
+    def organization_categories(self, request):
         data = CategoryOrganization.objects.all()
         serializer = CategoryOrganizationSerializer(data, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        responses={200: ServiceSerializer()},
-        tags=['Organization']
-    )
-    def service_list(self, request):
-        data = Service.objects.all()
-        serializer = ServiceSerializer(data, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        responses={200: ServiceSerializer()},
-        tags=['Organization']
-    )
-    def service(self, request, pk):
-        data = Service.objects.filter(id=pk).first()
-        if not data:
-            raise CustomApiException(ErrorCodes.NOT_FOUND)
-        serializer = ServiceSerializer(data, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 

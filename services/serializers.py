@@ -113,7 +113,7 @@ class NewsDetailSerializer(NewsSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['additional'] = NewsSerializer(
-            News.objects.filter(is_published=True).order_by('-view_count'),
+            News.objects.filter(is_published=True).order_by('-view_count')[:3],
             many=True, context=self.context).data
         return data
 
@@ -199,6 +199,7 @@ class ProfessionSerializer(serializers.Serializer):
 class ProfessionalEthicsSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     title = serializers.CharField()
+    description = serializers.CharField()
     case = serializers.CharField()
     profession = serializers.PrimaryKeyRelatedField(read_only=True)
 
@@ -265,4 +266,14 @@ class NewsParamValidator(PaginatorValidator):
     def validate(self, attrs):
         if attrs.get('category_id') is not None and attrs.get('category_id') < 1:
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='category_id must be greater than 1')
+        return super().validate(attrs)
+
+
+class ProfessionalEthicsParamValidator(PaginatorValidator):
+    q = serializers.CharField(required=False, default='')
+    profession_id = serializers.IntegerField(required=False)
+
+    def validate(self, attrs):
+        if attrs.get('profession_id') is not None and attrs.get('profession_id') < 1:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='profession_id must be greater than 1')
         return super().validate(attrs)

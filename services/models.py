@@ -332,7 +332,7 @@ class Profession(BaseModel):
 class ProfessionalEthics(BaseModel):
     title = models.CharField(max_length=300, verbose_name='Название')
     description = HTMLField(verbose_name='Описание')
-    case = models.CharField(max_length=300, verbose_name='')
+    case = models.CharField(max_length=300, verbose_name='Дилемма')
     profession = models.ForeignKey(Profession, on_delete=models.CASCADE, verbose_name='Профессия')
 
     def __str__(self):

@@ -22,11 +22,13 @@ from .serializers import (
     ProfessionSerializer, ProfessionalEthicsSerializer, OfficerAdviceSerializer,
     ReportTypeSerializer, ViolationReportSerializer, TechnicalSupportSerializer,
     ConflictAlertSerializer, ConflictAlertTypeSerializer, TrainingParamValidator,
-    ParamValidateSerializer
+    ParamValidateSerializer, NewsParamValidator, NewsCategorySerializer,
+    NewsDetailSerializer
 )
 from .utils import file_one_create, file_two_create, file_three_create
 from .repository.training_paginator import training_paginator
 from .repository.organization_paginator import get_paginated_organizations
+from .repository.news_paginator import news_paginator
 
 
 class OrganizationViewSet(ViewSet):
@@ -157,13 +159,31 @@ class ElectronLibraryViewSet(ViewSet):
 
 class NewsViewSet(ViewSet):
     @swagger_auto_schema(
+        operation_summary='News list with filters',
+        operation_description='News list with filters',
+        manual_parameters=[
+            openapi.Parameter(
+                name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='page number'),
+            openapi.Parameter(
+                name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='page_size number'),
+            openapi.Parameter(
+                name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='category id'),
+        ],
         responses={200: NewsSerializer()},
         tags=['News']
     )
     def news_list(self, request):
-        data = News.objects.all()
-        serializer = NewsSerializer(data, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+        serializer = NewsParamValidator(data=request.query_params)
+        if not serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
+        params = serializer.data
+        filter_ = Q()
+        if params.get('category_id'):
+            filter_ &= Q(category_id=params.get('category_id'))
+        data = News.objects.filter(filter_, is_published=True)
+        result = news_paginator(
+            data, context={'request': request}, page=params.get('page'), page_size=params.get('page_size'))
+        return Response(data={'result': result, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         responses={200: NewsSerializer()},
@@ -173,7 +193,7 @@ class NewsViewSet(ViewSet):
         data = News.objects.filter(id=pk).first()
         if not data:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
-        serializer = NewsSerializer(data, context={'request': request})
+        serializer = NewsDetailSerializer(data, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 

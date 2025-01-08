@@ -161,26 +161,26 @@ class ElectronLibrary(BaseModel):
 
 
 class NewsCategory(BaseModel):
-    name = models.CharField(max_length=30, verbose_name='')
+    name = models.CharField(max_length=30, verbose_name='Название категории')
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name = ''
-        verbose_name_plural = ''
+        verbose_name = 'Категория новостей'
+        verbose_name_plural = 'Категория новостей'
         ordering = ('-created_at',)
 
 
 class News(BaseModel):
     title = models.CharField(max_length=300, verbose_name="Заголовок")
-    short_description = models.CharField(max_length=150, verbose_name='')
+    short_description = models.CharField(max_length=150, verbose_name='Краткое описание')
     description = HTMLField(verbose_name="Описание")
     image = models.ImageField(upload_to="news/", verbose_name="Изображение")
-    category = models.ForeignKey(to='NewsCategory', on_delete=models.SET_NULL, null=True)
+    category = models.ForeignKey(to='NewsCategory', on_delete=models.SET_NULL, null=True, verbose_name='Категория')
     is_published = models.BooleanField(default=False, verbose_name="Опубликован")
     published_date = models.DateField(null=True, blank=True, verbose_name="Дата публикации")
-    view_count = models.PositiveIntegerField(default=0)
+    view_count = models.PositiveIntegerField(default=0, verbose_name='Количество просмотров')
 
     def __str__(self):
         return self.title

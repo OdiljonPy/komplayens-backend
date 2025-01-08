@@ -147,7 +147,7 @@ class ElectronLibrary(BaseModel):
     edition_author = models.CharField(max_length=100, verbose_name='')
     edition_type = models.CharField(max_length=100, verbose_name='')
     edition_year = models.DateField(null=True, verbose_name='')
-    file = models.FileField(upload_to='electron_libraries/', validators=[FileExtensionValidator(['pdf',])],
+    file = models.FileField(upload_to='electron_libraries/', validators=[FileExtensionValidator(['pdf', ])],
                             verbose_name='Файл книги')
     category = models.ForeignKey(
         ElectronLibraryCategory, on_delete=models.SET_NULL, null=True, verbose_name='Категория')
@@ -349,7 +349,7 @@ class OfficerAdvice(BaseModel):
     professional_ethics = models.ForeignKey(
         ProfessionalEthics, on_delete=models.CASCADE, verbose_name='Профессиональная этика')
     comment = models.TextField(max_length=350, verbose_name='Комментарий')
-    is_published = models.BooleanField(default=True)
+    is_published = models.BooleanField(default=True, verbose_name='Опубликовано')
 
     def __str__(self):
         return str(self.id)

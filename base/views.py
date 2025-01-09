@@ -91,6 +91,6 @@ class BannerViewSet(ViewSet):
         tags=['Banner']
     )
     def banner_list(self, request):
-        banners = Banner.objects.filter(is_published=True)
+        banners = Banner.objects.filter(is_published=True)[:3]
         serializer = BannerSerializer(banners, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)

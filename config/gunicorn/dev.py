@@ -1,4 +1,4 @@
-project_name = '/komplayens-backend'
+project_name = 'komplayens-backend'
 
 wsgi_app = "config.wsgi:application"
 loglevel = 'debug'

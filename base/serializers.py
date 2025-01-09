@@ -43,3 +43,11 @@ class AboutUsTypeSerializer(TypeSerializer):
         if data.get('type') and data.get('type') not in [1, 2, 3, 4]:
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='AboutUs type must be 1, 2, 3 or 4')
         return data
+
+
+class BannerSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    title = serializers.CharField()
+    short_description = serializers.CharField()
+    image = serializers.ImageField()
+    is_published = serializers.BooleanField()

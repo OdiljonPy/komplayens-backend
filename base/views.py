@@ -1,11 +1,12 @@
 from .models import (
     Region, District, FAQ,
-    AboutUs,
+    AboutUs, Banner
 )
 from .serializers import (
     RegionSerializer, DistrictSerializer,
     FAQSerializer, AboutUsSerializer,
-    TypeSerializer, AboutUsTypeSerializer
+    TypeSerializer, AboutUsTypeSerializer,
+    BannerSerializer
 )
 from exceptions.exception import CustomApiException
 from exceptions.error_messages import ErrorCodes
@@ -79,4 +80,17 @@ class AboutUsViewSet(ViewSet):
         about_us_type = param_serializer.validated_data.get('type')
         about_us = AboutUs.objects.filter(type=about_us_type).order_by('-created_at').first()
         serializer = AboutUsSerializer(about_us, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+
+class BannerViewSet(ViewSet):
+    @swagger_auto_schema(
+        operation_summary='Banner list',
+        operation_description='List of Banners',
+        responses={200: BannerSerializer(many=True)},
+        tags=['Banner']
+    )
+    def banner_list(self, request):
+        banners = Banner.objects.filter(is_published=True)
+        serializer = BannerSerializer(banners, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)

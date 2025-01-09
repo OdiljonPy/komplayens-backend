@@ -194,21 +194,21 @@ class News(BaseModel):
 
 
 class HonestyTestCategory(BaseModel):
-    name = models.CharField(max_length=40, verbose_name='')
+    name = models.CharField(max_length=40, verbose_name='Название категории')
     image = models.ImageField(upload_to='honesty_test/category', verbose_name='')
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name = ''
-        verbose_name_plural = ''
+        verbose_name = 'Категория тест на честность'
+        verbose_name_plural = 'Категория тест на честность'
         ordering = ('-created_at',)
 
 
 class HonestyTest(BaseModel):
     question = HTMLField(verbose_name='Вопрос')
-    advice = models.CharField(max_length=300, verbose_name='')
+    advice = models.CharField(max_length=300, verbose_name='Cовет')
     category = models.ForeignKey(to='HonestyTestCategory', on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
@@ -221,9 +221,8 @@ class HonestyTest(BaseModel):
 
 
 class HonestyTestAnswer(BaseModel):
-    question = models.ForeignKey(HonestyTest, on_delete=models.CASCADE, verbose_name='Вопрос')
+    question = models.ForeignKey(HonestyTest, on_delete=models.CASCADE, related_name='test_honest', verbose_name='Вопрос')
     answer = models.CharField(max_length=120, verbose_name='Отвечать')
-    image = models.ImageField(upload_to='honesty_test/answer', verbose_name='')
     is_true = models.BooleanField(default=False, verbose_name='')
 
     def __str__(self):
@@ -236,17 +235,32 @@ class HonestyTestAnswer(BaseModel):
 
 
 class HonestyTestResult(BaseModel):
-    customer = models.ForeignKey(to='authentication.Customer', on_delete=models.CASCADE, verbose_name='')
-    test = models.ForeignKey(to='HonestyTest', on_delete=models.CASCADE, verbose_name='')
-    answer = models.ForeignKey(to='HonestyTestAnswer', on_delete=models.CASCADE, verbose_name='')
-    result = models.BooleanField(default=False, verbose_name='')
+    customer = models.ForeignKey(to='authentication.Customer', on_delete=models.CASCADE, verbose_name='Клиент')
+    test = models.ForeignKey(to='HonestyTest', on_delete=models.CASCADE, verbose_name='Тест')
+    answer = models.ForeignKey(to='HonestyTestAnswer', on_delete=models.CASCADE, verbose_name='Ответ')
+    result = models.BooleanField(default=False, verbose_name='Результат')
+    percent = models.FloatField(default=0, verbose_name='процент')
 
     def __str__(self):
         return str(self.id)
 
     class Meta:
-        verbose_name = ''
-        verbose_name_plural = ''
+        verbose_name = 'Результат честного теста'
+        verbose_name_plural = 'Результаты честного теста'
+        ordering = ('-created_at',)
+
+
+class HonestyTestStatistic(BaseModel):
+    test_type = models.ForeignKey(to='HonestyTest', on_delete=models.SET_NULL, null=True, related_name='stats_test_type', verbose_name='Тип теста')
+    customer = models.ForeignKey(to='authentication.Customer', on_delete=models.SET_NULL, null=True, verbose_name='Клиент')
+    organization = models.ForeignKey(to='HonestyTest', on_delete=models.SET_NULL, null=True, verbose_name='Организация')
+
+    def __str__(self):
+        return f'{self.organization} - {self.customer}'
+
+    class Meta:
+        verbose_name = 'Статистика честного теста'
+        verbose_name_plural = 'Статистики честного теста'
         ordering = ('-created_at',)
 
 

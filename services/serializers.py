@@ -5,7 +5,7 @@ from .models import (
     HonestyTest, HonestyTestAnswer, GuiltyPerson,
     ViolationFile, ConflictAlert, OfficerAdvice,
     ViolationReport, TechnicalSupport, HonestyTestResult,
-    News
+    News, HonestyTestStatistic
 )
 
 
@@ -21,6 +21,18 @@ class ParamValidateSerializer(serializers.Serializer):
                                      message='page and page_size must be positive integer')
         if data.get('category_id') is not None and data.get('category_id') < 1:
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Category id must be positive integer')
+        return data
+
+
+class HonestyParamSerializer(serializers.Serializer):
+    category_id = serializers.IntegerField()
+    organization_id = serializers.IntegerField()
+
+    def validate(self, data):
+        if data.get('category_id') < 1:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Category id must be positive integer')
+        if data.get('organization_id') < 1:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Organization id must be positive integer')
         return data
 
 
@@ -124,22 +136,65 @@ class HonestyTestCategorySerializer(serializers.Serializer):
     image = serializers.ImageField()
 
 
-class HonestyTestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = HonestyTest
-        fields = ('id', 'question', 'advice', 'category')
-
-
 class HonestyTestAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = HonestyTestAnswer
-        fields = ('id', 'question', 'answer', 'image', 'is_true')
+        fields = ('id', 'question', 'answer', 'is_true')
+
+
+class HonestyTestSerializer(serializers.ModelSerializer):
+    answers = HonestyTestAnswerSerializer(many=True, read_only=True, source='test_honest')
+    class Meta:
+        model = HonestyTest
+        fields = ('id', 'question', 'advice', 'category', 'answers')
 
 
 class HonestyTestResultSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = HonestyTestResult
-        fields = ('id', 'customer', 'test', 'answer', 'result')
+        fields = ('id', 'test', 'answer', 'result', 'customer', 'percent')
+        extra_kwargs = {'customer': {'required': False}, 'result': {'required': False}, 'percent': {'required': False}}
+
+    def validate(self, data):
+        test = data.get('test')
+        answer = data.get('answer')
+
+        if not HonestyTest.objects.filter(id=test.id):
+            raise CustomApiException(ErrorCodes.NOT_FOUND, message=f"Test ID {test.id} not found.")
+
+        if not HonestyTestAnswer.objects.filter(id=answer.id, question_id=test.id):
+            raise CustomApiException(ErrorCodes.NOT_FOUND,
+                                     message=f"Test ID {test.id} and answer ID {answer.id} doesn't match.")
+
+        return data
+
+    def create(self, validated_data):
+        from authentication.utils import create_customer
+        customer = create_customer(self.context.get('request'))
+        return HonestyTestResult.objects.create(
+            test=validated_data.get('test'),
+            answer=validated_data.get('answer'),
+            result = validated_data.get('answer').is_true,
+            customer = customer
+        )
+
+
+class HonestyTestResultRequestSerializer(serializers.Serializer):
+    test = serializers.IntegerField()
+    answer = serializers.IntegerField()
+
+    def validate(self, data):
+        if data.get('question') is not None and data.get('question') < 1:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Question id must be positive integer')
+        if data.get('answer') is not None and data.get('answer') < 1:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Answer id must be positive integer')
+
+
+class HonestyTestResultStatisticSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HonestyTestStatistic
+        fields = ('id', 'test_type', 'customer', 'organization')
 
 
 class CorruptionRiskSerializer(serializers.Serializer):

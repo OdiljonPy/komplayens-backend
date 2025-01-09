@@ -5,7 +5,7 @@ from .models import (
     HonestyTest, HonestyTestAnswer, ConflictAlert,
     Profession, ProfessionalEthics, OfficerAdvice, ReportType,
     ViolationReport, TechnicalSupport, TrainingCategory,
-    NewsCategory, HonestyTestCategory
+    NewsCategory, HonestyTestCategory, HonestyTestStatistic
 )
 
 
@@ -81,6 +81,12 @@ class HonestyTestAnswerAdmin(admin.ModelAdmin):
     list_display = ('id', 'question', 'answer')
     list_display_links = ('id', 'question')
     search_fields = ('question__question', 'answer')
+
+
+@admin.register(HonestyTestStatistic)
+class ModelNameAdmin(admin.ModelAdmin):
+    list_display = ('id', 'test_type', 'organization', 'customer')
+    list_display_links = ('id', 'test_type')
 
 
 @admin.register(ConflictAlert)

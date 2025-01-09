@@ -23,7 +23,7 @@ urlpatterns = [
     path('news/<int:pk>/', NewsViewSet.as_view({'get': 'news'})),
     path('news/category/', NewsViewSet.as_view({'get': 'news_category'})),
 
-    path('honesty/test/category/<int:pk>/', HonestyViewSet.as_view({'get': 'honesty_test_list'})),
+    path('honesty/test/', HonestyViewSet.as_view({'get': 'honesty_test_list'})),
     path('honesty/test/result/', HonestyViewSet.as_view({'post': 'honesty_test_result',})),
     path('honesty/category/', HonestyViewSet.as_view({'get': 'honesty_test_categories'})),
 

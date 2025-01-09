@@ -67,3 +67,18 @@ class AboutUs(BaseModel):
         verbose_name = 'О нас'
         verbose_name_plural = 'О нас'
         ordering = ('-created_at',)
+
+
+class Banner(BaseModel):
+    title = models.CharField(max_length=200, verbose_name='Название')
+    short_description = models.CharField(max_length=300, verbose_name='Краткое описание')
+    image = models.ImageField(upload_to='banner', verbose_name='Изображение')
+    is_published = models.BooleanField(default=False, verbose_name='Oпубликован')
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = 'Баннер'
+        verbose_name_plural = 'Баннеры'
+        ordering = ('-created_at',)

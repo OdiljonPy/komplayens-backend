@@ -239,6 +239,7 @@ class NewsViewSet(ViewSet):
     @swagger_auto_schema(
         operation_summary='News category list',
         operation_description='News category list',
+        responses={200: NewsCategorySerializer(many=True)},
         tags=['News']
     )
     def news_category(self, request):
@@ -291,6 +292,8 @@ class HonestyViewSet(ViewSet):
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
+        operation_summary='Honesty test Result',
+        operation_description='Honesty test Result',
         request_body=HonestyTestResultRequestSerializer(many=True),
         responses={200: HonestyTestResultSerializer(many=True)},
         tags=['HonestyTest']
@@ -310,6 +313,8 @@ class ConflictAlertViewSet(ViewSet):
         manual_parameters=[openapi.Parameter(
             name='type', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Type of ConflictAlert'
         )],
+        operation_summary='Conflict alert',
+        operation_description='Create conflict alert',
         request_body=ConflictAlertSerializer,
         responses={200: ConflictAlertSerializer()},
         tags=['ConflictAlert']
@@ -331,6 +336,12 @@ class ConflictAlertViewSet(ViewSet):
             file_three_create(serialized_data=serializer.data)
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_201_CREATED)
 
+    @swagger_auto_schema(
+        operation_summary='Conflict alert',
+        operation_description='Detail of conflict alert',
+        responses={200: ConflictAlertSerializer()},
+        tags=['ConflictAlert']
+    )
     def conflict_alert(self, request, pk):
         data = ConflictAlert.objects.filter(id=pk).first()
         if not data:
@@ -339,6 +350,8 @@ class ConflictAlertViewSet(ViewSet):
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
+        operation_summary='Conflict alert delete',
+        operation_description='Delete conflict alert',
         responses={200: ConflictAlertSerializer()},
         tags=['ConflictAlert']
     )
@@ -456,6 +469,8 @@ class OfficerAdviceViewSet(ViewSet):
 
 class ViolationReportViewSet(ViewSet):
     @swagger_auto_schema(
+        operation_summary='Create Violation Report',
+        operation_description='Create Violation Reports',
         request_body=ViolationReportSerializer(),
         responses={201: ViolationReportSerializer()},
         tags=['ViolationReport']
@@ -468,6 +483,8 @@ class ViolationReportViewSet(ViewSet):
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(
+        operation_summary='Get Violation Reports type',
+        operation_description='Get Violation Reports type',
         responses={200: ReportTypeSerializer()},
         tags=['ViolationReport']
     )
@@ -479,6 +496,8 @@ class ViolationReportViewSet(ViewSet):
 
 class TechnicalSupportViewSet(ViewSet):
     @swagger_auto_schema(
+        operation_summary='Create Technical Support',
+        operation_description='Send message to Technical Support',
         request_body=TechnicalSupportSerializer(),
         responses={201: TechnicalSupportSerializer()},
         tags=['TechnicalSupport']

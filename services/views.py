@@ -13,7 +13,6 @@ from .models import (
     ConflictAlert, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType, NewsCategory,
     HonestyTestCategory,
-
 )
 
 from .serializers import (

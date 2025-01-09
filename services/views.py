@@ -191,6 +191,10 @@ class NewsViewSet(ViewSet):
                 name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='page_size number'),
             openapi.Parameter(
                 name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='category id'),
+            openapi.Parameter(
+                name='popular', in_=openapi.IN_QUERY, type=openapi.TYPE_BOOLEAN, description='popularity parameter'),
+            openapi.Parameter(
+                name='order_by', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, description='sort order')
         ],
         responses={200: NewsSerializer()},
         tags=['News']
@@ -203,7 +207,14 @@ class NewsViewSet(ViewSet):
         filter_ = Q()
         if params.get('category_id'):
             filter_ &= Q(category_id=params.get('category_id'))
-        data = News.objects.filter(filter_, is_published=True)
+
+        order_by = [
+            {'new': '-created_at', 'old': 'created_at'}.get(params.get('order_by')),
+        ]
+
+        params.get('popular') and order_by.append('-view_count')
+
+        data = News.objects.filter(filter_, is_published=True).order_by(*order_by)
         result = news_paginator(
             data, context={'request': request}, page=params.get('page'), page_size=params.get('page_size'))
         return Response(data={'result': result, 'ok': True}, status=status.HTTP_200_OK)

@@ -58,7 +58,9 @@ class TrainingSerializer(serializers.Serializer):
     image = serializers.ImageField()
     description = serializers.CharField()
     video = serializers.URLField()
+    video_length = serializers.FloatField()
     category = serializers.PrimaryKeyRelatedField(read_only=True)
+    view_count = serializers.IntegerField()
 
 
 class TrainingMediaSerializer(serializers.Serializer):
@@ -269,6 +271,8 @@ class TrainingParamValidator(PaginatorValidator):
 
 class NewsParamValidator(PaginatorValidator):
     category_id = serializers.IntegerField(required=False)
+    popular = serializers.BooleanField(allow_null=True, default=False)
+    order_by = serializers.ChoiceField(choices=('old', 'new'), required=False, default='new')
 
     def validate(self, attrs):
         if attrs.get('category_id') is not None and attrs.get('category_id') < 1:

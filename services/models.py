@@ -83,9 +83,11 @@ class Training(BaseModel):
     image = models.ImageField(upload_to="trainings/", verbose_name="Изображение")
     description = HTMLField(verbose_name="описание")
     video = models.URLField(default='https://www.youtube.com/', verbose_name='URL-адрес видео на YouTube')
+    video_length = models.FloatField(default=0, verbose_name='Продолжительность видео')
     category = models.ForeignKey(
         to='TrainingCategory', on_delete=models.SET_NULL, null=True, verbose_name='Название категории')
     is_published = models.BooleanField(default=False, verbose_name='Опубликовано')
+    view_count = models.PositiveIntegerField(default=0, verbose_name='Количество просмотров')
 
     def __str__(self):
         return self.name
@@ -99,7 +101,7 @@ class Training(BaseModel):
 class TrainingMedia(BaseModel):
     training = models.ForeignKey(
         Training, on_delete=models.SET_NULL, related_name='training_materials', null=True, verbose_name="Урок")
-    filename = models.CharField(max_length=100, verbose_name='Имя файла')
+    filename = models.CharField(max_length=100, verbose_name='Имя файла', blank=True, null=True)
     file = models.FileField(
         upload_to="trainings/media/", validators=[validate_file_type_and_size],
         verbose_name="Файл", blank=True, null=True)
@@ -117,6 +119,8 @@ class TrainingMedia(BaseModel):
                 self.type = 'PDF'
             elif ext in ['.ppt', '.pptx']:
                 self.type = 'PPT'
+        if not self.file:
+            self.type = 'MP4'
 
         super().save(*args, **kwargs)
 

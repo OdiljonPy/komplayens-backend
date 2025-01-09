@@ -9,21 +9,24 @@ from exceptions.error_messages import ErrorCodes
 from .models import (
     CategoryOrganization, Organization, Training,
     ElectronLibraryCategory, TrainingCategory,
-    ElectronLibrary, News, HonestyTest, HonestyTestAnswer,
+    ElectronLibrary, News, HonestyTest,
     ConflictAlert, Profession, ProfessionalEthics,
-    OfficerAdvice, ReportType, NewsCategory
+    OfficerAdvice, ReportType, NewsCategory,
+    HonestyTestCategory,
 )
 
 from .serializers import (
     CategoryOrganizationSerializer, OrganizationSerializer,
     TrainingSerializer, TrainingDetailSerializer, TrainingCategorySerializer,
     ElectronLibraryCategorySerializer, ElectronLibrarySerializer, NewsSerializer,
-    HonestyTestSerializer, HonestyTestAnswerSerializer,
     ProfessionSerializer, ProfessionalEthicsSerializer, OfficerAdviceSerializer,
     ReportTypeSerializer, ViolationReportSerializer, TechnicalSupportSerializer,
     ConflictAlertSerializer, ConflictAlertTypeSerializer, TrainingParamValidator,
     ParamValidateSerializer, NewsParamValidator, NewsCategorySerializer,
-    NewsDetailSerializer, ProfessionalEthicsParamValidator, OfficerAdviceParamValidator
+    NewsDetailSerializer, ProfessionalEthicsParamValidator, OfficerAdviceParamValidator,
+    HonestyTestCategorySerializer, HonestyTestResultSerializer,
+    HonestyTestResultRequestSerializer, HonestyTestResultStatisticSerializer,
+    HonestyParamSerializer, HonestyTestSerializer
 )
 from .utils import file_one_create, file_two_create, file_three_create
 from .repository.training_paginator import training_paginator
@@ -32,7 +35,7 @@ from .repository.news_paginator import news_paginator
 from .repository.electron_library_paginator import get_paginated_e_library
 from .repository.profession_paginator import profession_paginator
 from .repository.officer_advice_paginator import officer_advice_paginator
-
+from authentication.utils import create_customer
 
 class OrganizationViewSet(ViewSet):
     @swagger_auto_schema(
@@ -168,6 +171,7 @@ class ElectronLibraryViewSet(ViewSet):
                                          page_size=param_serializer.validated_data.get('page_size'))
         return Response(data={'result': result, 'ok': True}, status=status.HTTP_200_OK)
 
+
     @swagger_auto_schema(
         operation_summary='ElectronLibrary Categories',
         operation_description='List of all electron library categories',
@@ -245,32 +249,59 @@ class NewsViewSet(ViewSet):
 
 class HonestyViewSet(ViewSet):
     @swagger_auto_schema(
+        operation_summary='Honesty test categories',
+        operation_description='List of all honest test categories',
+        responses={200: HonestyTestCategorySerializer(many=True)},
+        tags=['HonestyTest']
+    )
+    def honesty_test_categories(self, request):
+        data = HonestyTestCategory.objects.all()
+        serializer = HonestyTestCategorySerializer(data, many=True, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(name='organization_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                              description='Organization id'),
+            openapi.Parameter(name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                              description='Category id'),
+        ],
+        operation_summary='Honesty tests by category id',
+        operation_description='List of all honesty test by category id',
         responses={200: HonestyTestSerializer()},
         tags=['HonestyTest']
     )
     def honesty_test_list(self, request):
-        data = HonestyTest.objects.all()
-        serializer = HonestyTestSerializer(data, many=True, context={'request': request})
+        customer = create_customer(request)
+        query_params = HonestyParamSerializer(data=request.query_params)
+        if not query_params.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=query_params.errors)
+        category_id = query_params.data.get('category_id')
+        organization_id = query_params.data.get('organization_id')
+
+        stats_data = {'test_type' : category_id, 'organization': organization_id, 'customer': customer.id}
+
+        stats_serializer = HonestyTestResultStatisticSerializer(data=stats_data, context={'request': request})
+        if not stats_serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=stats_serializer.errors)
+        stats_serializer.save()
+
+        questions = HonestyTest.objects.filter(category_id=category_id)
+        serializer = HonestyTestSerializer(questions, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
-        responses={200: HonestyTestSerializer()},
+        request_body=HonestyTestResultRequestSerializer(many=True),
+        responses={200: HonestyTestResultSerializer(many=True)},
         tags=['HonestyTest']
     )
-    def honesty_test(self, request, pk):
-        data = HonestyTest.objects.filter(id=pk).first()
-        if not data:
-            raise CustomApiException(ErrorCodes.NOT_FOUND)
-        serializer = HonestyTestSerializer(data, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+    def honesty_test_result(self, request):
+        serializer = HonestyTestResultSerializer(data=request.data, many=True, context={'request': request})
 
-    @swagger_auto_schema(
-        responses={200: HonestyTestAnswerSerializer()},
-        tags=['HonestyTest']
-    )
-    def honesty_test_answer(self, request, pk):
-        data = HonestyTestAnswer.objects.filter(question_id=pk)
-        serializer = HonestyTestAnswerSerializer(data, context={'request': request})
+        if not serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
+
+        serializer.save()
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 

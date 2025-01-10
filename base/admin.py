@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Region, District, FAQ, AboutUs
+from .models import Region, District, FAQ, AboutUs, Banner
 
 
 @admin.register(Region)
@@ -26,3 +26,10 @@ class FAQAdmin(admin.ModelAdmin):
 class AboutUsAdmin(admin.ModelAdmin):
     list_display = ('id', 'link', 'type')
     list_display_links = ('id', 'link')
+
+
+@admin.register(Banner)
+class BannerAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'is_published')
+    list_display_links = ('id', 'title')
+    search_fields = ('title',)

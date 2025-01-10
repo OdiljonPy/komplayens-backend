@@ -2,7 +2,6 @@ from rest_framework import status
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from django.utils import timezone
 from django.contrib.auth.hashers import check_password
@@ -20,6 +19,8 @@ from .serializers import (
 
 class UserViewSet(ViewSet):
     @swagger_auto_schema(
+        operation_summary='User create',
+        operation_description='Create a new user',
         request_body=UserCreateSerializer(),
         responses={201: UserCreateSerializer()},
         tags=["User"],
@@ -46,6 +47,8 @@ class UserViewSet(ViewSet):
         return Response(data={'result': {'otp_key': otp_key}, 'ok': True}, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(
+        operation_summary='OTP verification',
+        operation_description='Verify an OTP',
         request_body=OTPSerializer(),
         responses={200: ''},
         tags=["User"],
@@ -59,6 +62,8 @@ class UserViewSet(ViewSet):
         return Response(data={'result': 'Successfully verified', 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
+        operation_summary='OTP resend',
+        operation_description='Resend an OTP',
         request_body=ResendOTPSerializer(),
         responses={200: ResendOTPSerializer()},
         tags=["User"],
@@ -74,6 +79,8 @@ class UserViewSet(ViewSet):
         return Response(data={'result': {'otp_key': otp_key}, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
+        operation_summary='Login',
+        operation_description='Login a user',
         request_body=UserLoginSerializer(),
         responses={200: UserLoginSerializer()},
         tags=["User"],
@@ -114,6 +121,8 @@ class UserViewSet(ViewSet):
             status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
+        operation_summary='User update',
+        operation_description='Update a user',
         request_body=UserCreateSerializer(),
         responses={200: UserCreateSerializer()},
         tags=["User"],
@@ -133,6 +142,8 @@ class UserViewSet(ViewSet):
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
+        operation_summary='User details',
+        operation_description='Details about a user',
         responses={200: UserSerializer()},
         tags=["User"],
     )

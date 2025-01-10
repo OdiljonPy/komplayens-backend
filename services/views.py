@@ -197,6 +197,10 @@ class NewsViewSet(ViewSet):
                 name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='page_size number'),
             openapi.Parameter(
                 name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='category id'),
+            openapi.Parameter(
+                name='popular', in_=openapi.IN_QUERY, type=openapi.TYPE_BOOLEAN, description='popularity parameter'),
+            openapi.Parameter(
+                name='order_by', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, description='sort order')
         ],
         responses={200: NewsSerializer()},
         tags=['News']
@@ -209,7 +213,14 @@ class NewsViewSet(ViewSet):
         filter_ = Q()
         if params.get('category_id'):
             filter_ &= Q(category_id=params.get('category_id'))
-        data = News.objects.filter(filter_, is_published=True)
+
+        order_by = [
+            {'new': '-created_at', 'old': 'created_at'}.get(params.get('order_by')),
+        ]
+
+        params.get('popular') and order_by.append('-view_count')
+
+        data = News.objects.filter(filter_, is_published=True).order_by(*order_by)
         result = news_paginator(
             data, context={'request': request}, page=params.get('page'), page_size=params.get('page_size'))
         return Response(data={'result': result, 'ok': True}, status=status.HTTP_200_OK)
@@ -230,6 +241,7 @@ class NewsViewSet(ViewSet):
     @swagger_auto_schema(
         operation_summary='News category list',
         operation_description='News category list',
+        responses={200: NewsCategorySerializer(many=True)},
         tags=['News']
     )
     def news_category(self, request):
@@ -294,6 +306,8 @@ class HonestyViewSet(ViewSet):
         return Response(data={'new': True, 'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
+        operation_summary='Honesty test Result',
+        operation_description='Honesty test Result',
         request_body=HonestyTestResultRequestSerializer(many=True),
         responses={200: HonestyTestResultSerializer(many=True)},
         tags=['HonestyTest']
@@ -327,6 +341,8 @@ class ConflictAlertViewSet(ViewSet):
         manual_parameters=[openapi.Parameter(
             name='type', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Type of ConflictAlert'
         )],
+        operation_summary='Conflict alert',
+        operation_description='Create conflict alert',
         request_body=ConflictAlertSerializer,
         responses={200: ConflictAlertSerializer()},
         tags=['ConflictAlert']
@@ -348,6 +364,12 @@ class ConflictAlertViewSet(ViewSet):
             file_three_create(serialized_data=serializer.data)
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_201_CREATED)
 
+    @swagger_auto_schema(
+        operation_summary='Conflict alert',
+        operation_description='Detail of conflict alert',
+        responses={200: ConflictAlertSerializer()},
+        tags=['ConflictAlert']
+    )
     def conflict_alert(self, request, pk):
         data = ConflictAlert.objects.filter(id=pk).first()
         if not data:
@@ -356,6 +378,8 @@ class ConflictAlertViewSet(ViewSet):
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
+        operation_summary='Conflict alert delete',
+        operation_description='Delete conflict alert',
         responses={200: ConflictAlertSerializer()},
         tags=['ConflictAlert']
     )
@@ -473,6 +497,8 @@ class OfficerAdviceViewSet(ViewSet):
 
 class ViolationReportViewSet(ViewSet):
     @swagger_auto_schema(
+        operation_summary='Create Violation Report',
+        operation_description='Create Violation Reports',
         request_body=ViolationReportSerializer(),
         responses={201: ViolationReportSerializer()},
         tags=['ViolationReport']
@@ -485,6 +511,8 @@ class ViolationReportViewSet(ViewSet):
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(
+        operation_summary='Get Violation Reports type',
+        operation_description='Get Violation Reports type',
         responses={200: ReportTypeSerializer()},
         tags=['ViolationReport']
     )
@@ -496,6 +524,8 @@ class ViolationReportViewSet(ViewSet):
 
 class TechnicalSupportViewSet(ViewSet):
     @swagger_auto_schema(
+        operation_summary='Create Technical Support',
+        operation_description='Send message to Technical Support',
         request_body=TechnicalSupportSerializer(),
         responses={201: TechnicalSupportSerializer()},
         tags=['TechnicalSupport']

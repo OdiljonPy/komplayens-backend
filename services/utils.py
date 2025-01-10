@@ -243,6 +243,7 @@ def file_three_create(serialized_data):
 
 def calculate_percent(customer, category_id: int):
     from .models import HonestyTest, HonestyTestResult
+
     all_tests = HonestyTest.objects.filter(category_id=category_id).count()
     true_tests = HonestyTestResult.objects.filter(test__category_id=category_id, customer_id=customer.id, result=True).count()
     return (true_tests / all_tests) * 100 or 0

@@ -139,17 +139,18 @@ class HonestyTestCategorySerializer(serializers.Serializer):
     in_term = serializers.BooleanField()
 
 
-class HonestyTestAnswerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = HonestyTestAnswer
-        fields = ('id', 'question', 'answer', 'is_true')
+class HonestyTestAnswerSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    question = serializers.CharField()
+    answer = serializers.CharField()
 
 
-class HonestyTestSerializer(serializers.ModelSerializer):
+class HonestyTestSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
     answers = HonestyTestAnswerSerializer(many=True, read_only=True, source='test_honest')
-    class Meta:
-        model = HonestyTest
-        fields = ('id', 'question', 'advice', 'category', 'answers')
+    question = serializers.CharField()
+    advice = serializers.CharField()
+    category = serializers.PrimaryKeyRelatedField(read_only=True)
 
 
 class HonestyTestSendResultSerializer(serializers.Serializer):

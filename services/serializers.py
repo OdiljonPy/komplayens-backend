@@ -134,6 +134,7 @@ class HonestyTestCategorySerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
     image = serializers.ImageField()
+    in_term = serializers.BooleanField()
 
 
 class HonestyTestAnswerSerializer(serializers.ModelSerializer):
@@ -149,12 +150,22 @@ class HonestyTestSerializer(serializers.ModelSerializer):
         fields = ('id', 'question', 'advice', 'category', 'answers')
 
 
+class HonestyTestSendResultSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    honesty_test = HonestyTestSerializer(read_only=True, source='test')
+    test = serializers.PrimaryKeyRelatedField(read_only=True)
+    answer = serializers.PrimaryKeyRelatedField(read_only=True)
+    result = serializers.BooleanField()
+    customer = serializers.PrimaryKeyRelatedField(read_only=True)
+
+
 class HonestyTestResultSerializer(serializers.ModelSerializer):
+    honesty_test = HonestyTestSerializer(read_only=True, source='test')
 
     class Meta:
         model = HonestyTestResult
-        fields = ('id', 'test', 'answer', 'result', 'customer', 'percent')
-        extra_kwargs = {'customer': {'required': False}, 'result': {'required': False}, 'percent': {'required': False}}
+        fields = ('id', 'test', 'answer', 'result', 'customer', 'honesty_test')
+        extra_kwargs = {'customer': {'required': False}, 'result': {'required': False}}
 
     def validate(self, data):
         test = data.get('test')

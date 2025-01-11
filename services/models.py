@@ -249,7 +249,7 @@ class HonestyTestAnswer(BaseModel):
 
 class HonestyTestResult(BaseModel):
     customer = models.ForeignKey(to='authentication.Customer', on_delete=models.CASCADE, verbose_name='Клиент')
-    test = models.ForeignKey(to='HonestyTest', on_delete=models.CASCADE, verbose_name='Тест')
+    test = models.ForeignKey(to='HonestyTest', on_delete=models.CASCADE, related_name='test_result', verbose_name='Тест')
     answer = models.ForeignKey(to='HonestyTestAnswer', on_delete=models.CASCADE, verbose_name='Ответ')
     result = models.BooleanField(default=False, verbose_name='Результат')
 
@@ -265,7 +265,7 @@ class HonestyTestResult(BaseModel):
 class HonestyTestStatistic(BaseModel):
     test_type = models.ForeignKey(to='HonestyTestCategory', on_delete=models.SET_NULL, null=True, related_name='stats_test_type', verbose_name='Тип теста')
     customer = models.ForeignKey(to='authentication.Customer', on_delete=models.SET_NULL, null=True, verbose_name='Клиент')
-    organization = models.ForeignKey(to='Organization', on_delete=models.SET_NULL, null=True, verbose_name='Организация')
+    organization = models.ForeignKey(to='Organization', on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Организация')
 
     def __str__(self):
         return f'{self.organization} - {self.customer}'

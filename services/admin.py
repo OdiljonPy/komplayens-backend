@@ -5,7 +5,8 @@ from .models import (
     HonestyTest, HonestyTestAnswer, ConflictAlert,
     Profession, ProfessionalEthics, OfficerAdvice, ReportType,
     ViolationReport, TechnicalSupport, TrainingCategory,
-    NewsCategory, HonestyTestCategory, HonestyTestStatistic
+    NewsCategory, HonestyTestCategory, HonestyTestStatistic,
+    ViolationFile, GuiltyPerson
 )
 
 
@@ -150,3 +151,15 @@ class TrainingCategoryAdmin(admin.ModelAdmin):
 class NewsCategoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     list_display_links = ('id', 'name')
+
+
+@admin.register(ViolationFile)
+class ViolationFileAdmin(admin.ModelAdmin):
+    list_display = ('id', 'report')
+    list_display_links = ('id', 'report')
+
+
+@admin.register(GuiltyPerson)
+class GuiltyPersonAdmin(admin.ModelAdmin):
+    list_display = ('id', 'full_name', 'report')
+    list_display_links = ('id', 'full_name',)

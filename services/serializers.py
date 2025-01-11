@@ -146,13 +146,13 @@ class HonestyTestAnswerSerializer(serializers.ModelSerializer):
 
 class HonestyTestSerializer(serializers.ModelSerializer):
     answers = HonestyTestAnswerSerializer(many=True, read_only=True, source='test_honest')
+
     class Meta:
         model = HonestyTest
         fields = ('id', 'question', 'advice', 'category', 'answers')
 
 
 class HonestyTestResultSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = HonestyTestResult
         fields = ('id', 'test', 'answer', 'result', 'customer', 'percent')
@@ -177,8 +177,8 @@ class HonestyTestResultSerializer(serializers.ModelSerializer):
         return HonestyTestResult.objects.create(
             test=validated_data.get('test'),
             answer=validated_data.get('answer'),
-            result = validated_data.get('answer').is_true,
-            customer = customer
+            result=validated_data.get('answer').is_true,
+            customer=customer
         )
 
 
@@ -352,3 +352,20 @@ class OfficerAdviceParamValidator(PaginatorValidator):
         if attrs.get('professional_ethics', 0) < 1:
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='professional_ethics must be greater than 1')
         return super().validate(attrs)
+
+
+class ViolationReportCreateSerializer(serializers.Serializer):
+    organization = serializers.IntegerField(required=True)
+    event_time = serializers.DateTimeField(required=True)
+    region = serializers.IntegerField(required=True)
+    district = serializers.IntegerField(required=True)
+    report_type = serializers.IntegerField(required=True)
+    comment = serializers.CharField(required=True)
+    informant_full_name = serializers.CharField(required=False)
+    informant_phone_number = serializers.CharField(required=False)
+    informant_email = serializers.EmailField(required=False)
+    is_anonim = serializers.BooleanField(required=False, default=False)
+    file = serializers.FileField(required=False)
+    full_name = serializers.CharField(required=True)
+    position = serializers.CharField(required=True)
+    phone_number = serializers.CharField(required=False)

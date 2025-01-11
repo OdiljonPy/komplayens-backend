@@ -226,7 +226,8 @@ class HonestyTest(BaseModel):
 
 
 class HonestyTestAnswer(BaseModel):
-    question = models.ForeignKey(HonestyTest, on_delete=models.CASCADE, related_name='test_honest', verbose_name='Вопрос')
+    question = models.ForeignKey(HonestyTest, on_delete=models.CASCADE, related_name='test_honest',
+                                 verbose_name='Вопрос')
     answer = models.CharField(max_length=120, verbose_name='Отвечать')
     is_true = models.BooleanField(default=False, verbose_name='')
 
@@ -406,10 +407,11 @@ class ViolationReport(BaseModel):
     report_type = models.ForeignKey(ReportType, on_delete=models.SET_NULL, null=True, verbose_name='Тип отчета')
     comment = models.TextField(verbose_name='Комментарий')
 
-    informant_full_name = models.CharField(max_length=100, blank=True, null=True, verbose_name='')
-    informant_phone_number = models.CharField(max_length=100, blank=True, null=True, verbose_name='')
-    informant_email = models.EmailField(blank=True, null=True, verbose_name='')
-    is_anonim = models.BooleanField(default=False, verbose_name='')
+    informant_full_name = models.CharField(max_length=100, blank=True, null=True, verbose_name='Полное имя информатора')
+    informant_phone_number = models.CharField(
+        max_length=100, blank=True, null=True, verbose_name='Номер телефона информатора')
+    informant_email = models.EmailField(blank=True, null=True, verbose_name='Электронная почта информатора')
+    is_anonim = models.BooleanField(default=False, verbose_name='Аноним')
 
     def __str__(self):
         return str(self.id)
@@ -421,30 +423,32 @@ class ViolationReport(BaseModel):
 
 
 class GuiltyPerson(BaseModel):
-    report = models.ForeignKey(to='ViolationReport', on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=100, verbose_name='')
-    position = models.CharField(max_length=100, verbose_name='')
-    phone_number = models.CharField(max_length=100, verbose_name='')
+    report = models.ForeignKey(to='ViolationReport', on_delete=models.CASCADE, verbose_name='Отчет о нарушении')
+    full_name = models.CharField(max_length=100, verbose_name='Полное имя')
+    position = models.CharField(max_length=100, verbose_name='Позиция')
+    phone_number = models.CharField(max_length=100, verbose_name='Номер телефона')
 
     def __str__(self):
         return self.full_name
 
     class Meta:
-        verbose_name = ''
-        verbose_name_plural = ''
+        verbose_name = 'Виновное лицо'
+        verbose_name_plural = 'Виновное лицо'
         ordering = ('-created_at',)
 
 
 class ViolationFile(BaseModel):
-    report = models.ForeignKey(to='ViolationReport', on_delete=models.CASCADE, verbose_name='')
-    file = models.FileField(upload_to='violation_report/', verbose_name='Файл')
+    report = models.ForeignKey(to='ViolationReport', on_delete=models.CASCADE, verbose_name='Нарушение')
+    file = models.FileField(upload_to='violation_report/', verbose_name='Файл', validators=[
+        FileExtensionValidator(allowed_extensions=('pdf', 'jpg', 'jpeg', 'png', 'mp4'),
+                               message='File must be in (pdf, jpg, jpeg, png, mp4)')])
 
     def __str__(self):
         return str(self.id)
 
     class Meta:
-        verbose_name = ''
-        verbose_name_plural = ''
+        verbose_name = 'Файл нарушения'
+        verbose_name_plural = 'Файлы нарушений'
         ordering = ('-created_at',)
 
 

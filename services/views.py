@@ -12,8 +12,8 @@ from .models import (
     ElectronLibrary, News, HonestyTest,
     ConflictAlert, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType, NewsCategory,
-    HonestyTestCategory, HonestyTestStatistic,
-    HonestyTestResult,
+    HonestyTestCategory, ViolationReport, ViolationFile,
+    HonestyTestStatistic, HonestyTestResult,
 )
 
 from .serializers import (
@@ -27,7 +27,8 @@ from .serializers import (
     NewsDetailSerializer, ProfessionalEthicsParamValidator, OfficerAdviceParamValidator,
     HonestyTestCategorySerializer, HonestyTestResultSerializer,
     HonestyTestResultRequestSerializer, HonestyTestResultStatisticSerializer,
-    HonestyParamSerializer, HonestyTestSerializer, HonestyTestSendResultSerializer
+    HonestyParamSerializer, HonestyTestSerializer, ViolationFileSerializer,
+    GuiltyPersonSerializer, ViolationReportCreateSerializer, HonestyTestSendResultSerializer
 )
 from .utils import file_one_create, file_two_create, file_three_create, calculate_percent
 from .repository.training_paginator import training_paginator
@@ -172,7 +173,6 @@ class ElectronLibraryViewSet(ViewSet):
                                          page=param_serializer.validated_data.get('page'),
                                          page_size=param_serializer.validated_data.get('page_size'))
         return Response(data={'result': result, 'ok': True}, status=status.HTTP_200_OK)
-
 
     @swagger_auto_schema(
         operation_summary='ElectronLibrary Categories',
@@ -499,7 +499,7 @@ class ViolationReportViewSet(ViewSet):
     @swagger_auto_schema(
         operation_summary='Create Violation Report',
         operation_description='Create Violation Reports',
-        request_body=ViolationReportSerializer(),
+        request_body=ViolationReportCreateSerializer(),
         responses={201: ViolationReportSerializer()},
         tags=['ViolationReport']
     )
@@ -507,7 +507,49 @@ class ViolationReportViewSet(ViewSet):
         serializer = ViolationReportSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
-        serializer.save()
+
+        if not serializer.validated_data.get('is_anonim'):
+            validated_data = serializer.validated_data
+            if not (validated_data.get('informant_full_name') and validated_data.get('informant_phone_number') and
+                    validated_data.get('informant_email')):
+                raise CustomApiException(
+                    ErrorCodes.VALIDATION_FAILED, message='Informant full name and phone and email are required')
+        violation = serializer.save()
+
+        files_data = []
+        for file in request.FILES.getlist('file'):
+            files_data.append({'report': violation.id, 'file': file})
+
+        file_serializer = ViolationFileSerializer(data=files_data, many=True, context={'request': request})
+        if not file_serializer.is_valid():
+            ViolationReport.objects.filter(id=violation.id).delete()
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=file_serializer.errors)
+
+        guilty_data = []
+        full_names = request.data.getlist('full_name')
+        positions = request.data.getlist('position')
+        phone_numbers = request.data.getlist('phone_number')
+        if len(full_names) != len(phone_numbers) or len(full_names) != len(positions):
+            ViolationReport.objects.filter(id=violation.id).delete()
+            raise CustomApiException(
+                ErrorCodes.VALIDATION_FAILED, message='There is an error in the contact information.')
+
+        for full_name in request.data.getlist('full_name'):
+            guilty_data.append(
+                {'report': violation.id,
+                 'full_name': full_name,
+                 'phone_number': phone_numbers.pop(0),
+                 'position': positions.pop(0)
+                 })
+
+        guilty_person_serializer = GuiltyPersonSerializer(data=guilty_data, many=True, context={'request': request})
+        if not guilty_person_serializer.is_valid():
+            ViolationReport.objects.filter(id=violation.id).delete()
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=guilty_person_serializer.errors)
+
+        file_serializer.save()
+        guilty_person_serializer.save()
+
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(

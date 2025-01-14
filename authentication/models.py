@@ -64,3 +64,12 @@ class Customer(BaseModel):
         verbose_name = 'Клиент'
         verbose_name_plural = 'Клиенты'
         ordering = ('-created_at',)
+
+
+class ContentViewer(BaseModel):
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True)
+    content_id = models.IntegerField(default=0)
+    content_type = models.IntegerField(default=0)
+
+    def __str__(self):
+        return str(self.id)

@@ -1,9 +1,12 @@
+import datetime
+
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.db.models import Q
+
 from exceptions.exception import CustomApiException
 from exceptions.error_messages import ErrorCodes
 from .models import (
@@ -12,9 +15,10 @@ from .models import (
     ElectronLibrary, News, HonestyTest,
     ConflictAlert, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType, NewsCategory,
-    HonestyTestCategory, ViolationReport, ViolationFile,
-    HonestyTestStatistic, HonestyTestResult,
+    HonestyTestCategory, ViolationReport, HonestyTestResult,
+    AnnouncementCategory, Announcement
 )
+from authentication.models import ContentViewer
 
 from .serializers import (
     CategoryOrganizationSerializer, OrganizationSerializer,
@@ -28,8 +32,8 @@ from .serializers import (
     HonestyTestCategorySerializer, HonestyTestResultSerializer,
     HonestyTestResultRequestSerializer, HonestyTestResultStatisticSerializer,
     HonestyParamSerializer, HonestyTestSerializer, ViolationFileSerializer,
-    GuiltyPersonSerializer, ViolationReportCreateSerializer,
-    HonestyTestSendResultSerializer, HonestyTestDefaultSerializer
+    GuiltyPersonSerializer, ViolationReportCreateSerializer, HonestyTestDefaultSerializer,
+    AnnouncementCategorySerializer, AnnouncementSerializer
 )
 from .utils import file_one_create, file_two_create, file_three_create, calculate_percent
 from .repository.training_paginator import training_paginator
@@ -38,6 +42,7 @@ from .repository.news_paginator import news_paginator
 from .repository.electron_library_paginator import get_paginated_e_library
 from .repository.profession_paginator import profession_paginator
 from .repository.officer_advice_paginator import officer_advice_paginator
+from .repository.announcement_paginator import get_paginated_announcement
 from authentication.utils import create_customer
 
 
@@ -575,3 +580,59 @@ class TechnicalSupportViewSet(ViewSet):
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
         serializer.save()
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_201_CREATED)
+
+
+class AnnouncementViewSet(ViewSet):
+    @swagger_auto_schema(
+        operation_summary='Announcement Category',
+        operation_description='Category of Announcement',
+        responses={200: AnnouncementCategorySerializer(many=True)},
+        tags=['Announcement']
+    )
+    def announcement_categories(self, request):
+        categories = AnnouncementCategory.objects.filter(is_published=True)
+        serializer = AnnouncementCategorySerializer(categories, many=True, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
+            openapi.Parameter(name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
+            openapi.Parameter(name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
+        ],
+        operation_summary='Announcements List',
+        operation_description='List of Announcements',
+        responses={200: AnnouncementSerializer(many=True)},
+        tags=['Announcement']
+    )
+    def announcement_list(self, request):
+        param_serializer = ParamValidateSerializer(data=request.query_params, context={'request': request})
+        if not param_serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=param_serializer.errors)
+        category_id = param_serializer.validated_data.get('category_id')
+        data = Announcement.objects.filter(category_id=category_id, is_published=True)
+        response = get_paginated_announcement(request_data=data, context={'request': request},
+                                              page=param_serializer.validated_data.get('page'),
+                                              page_size=param_serializer.validated_data.get('page_size'))
+
+        return Response(data={'result': response, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_summary='Announcements detail',
+        operation_description='Detail of Announcements',
+        responses={200: AnnouncementSerializer()},
+        tags=['Announcement']
+    )
+    def announcement_detail(self, request, pk):
+        time_ = datetime.date
+        announcement = Announcement.objects.filter(id=pk, is_published=True).first()
+        customer = create_customer(request)
+        content_viewer = ContentViewer.objects.filter(content_id=pk, customer=customer, content_type=1,
+                                                      created_at__day=time_.day, created_at__month=time_.month,
+                                                      created_at__yesr=time_.year).first()
+        if not content_viewer:
+            content_viewer.create()
+        if not announcement:
+            raise CustomApiException(ErrorCodes.NOT_FOUND, message='Announcement not found')
+        serializer = AnnouncementSerializer(announcement, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)

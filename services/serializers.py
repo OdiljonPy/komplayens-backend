@@ -418,3 +418,17 @@ class ViolationReportCreateSerializer(serializers.Serializer):
     full_name = serializers.CharField(required=True)
     position = serializers.CharField(required=True)
     phone_number = serializers.CharField(required=False)
+
+
+class AnnouncementCategorySerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField()
+
+
+class AnnouncementSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    category = serializers.SerializerMethodField(read_only=True, source='category.name')
+    title = serializers.CharField()
+    description = serializers.CharField()
+    image = serializers.ImageField()
+    views = serializers.PrimaryKeyRelatedField(read_only=True)

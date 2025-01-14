@@ -13,9 +13,8 @@ from .models import (
     ElectronLibrary, News, HonestyTest,
     ConflictAlert, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType, NewsCategory,
-    HonestyTestCategory, ViolationReport, ViolationFile,
-    HonestyTestStatistic, HonestyTestResult,
-    HonestyTestCategory, ViolationReport, CorruptionRisk
+    HonestyTestCategory, ViolationReport,
+    HonestyTestResult, CorruptionRisk
 )
 
 from .serializers import (
@@ -31,11 +30,9 @@ from .serializers import (
     HonestyTestResultRequestSerializer, HonestyTestResultStatisticSerializer,
     HonestyParamSerializer, HonestyTestSerializer, ViolationFileSerializer,
     GuiltyPersonSerializer, ViolationReportCreateSerializer,
-    HonestyTestSendResultSerializer, HonestyTestDefaultSerializer
-    GuiltyPersonSerializer, ViolationReportCreateSerializer,
-    CorruptionRiskSerializer, CorruptionRiskParamValidator
+    HonestyTestDefaultSerializer, CorruptionRiskSerializer,
+    CorruptionRiskParamValidator
 )
-from .utils import file_one_create, file_two_create, file_three_create, calculate_percent
 from .repository.training_paginator import training_paginator
 from .repository.organization_paginator import get_paginated_organizations
 from .repository.news_paginator import news_paginator
@@ -46,7 +43,7 @@ from .repository.corruption_risk_paginator import corruption_risk_paginator
 from authentication.utils import create_customer
 from .utils import (
     file_one_create, file_two_create, file_three_create,
-    get_google_sheet_statistics
+    get_google_sheet_statistics, calculate_percent
 )
 
 
@@ -290,7 +287,6 @@ class HonestyViewSet(ViewSet):
 
         category_id = query_params.validated_data.get('category_id')
 
-
         if HonestyTestResult.objects.filter(test__category_id=category_id, customer_id=customer.id).exists():
             data = HonestyTest.objects.filter(category_id=category_id)
             result_serializer = HonestyTestSerializer(data, many=True, context={'customer': customer})
@@ -300,7 +296,8 @@ class HonestyViewSet(ViewSet):
 
         questions = HonestyTest.objects.filter(category_id=category_id)
         serializer = HonestyTestDefaultSerializer(questions, many=True, context={'customer': customer})
-        return Response(data={'new': True, 'percent': None, 'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+        return Response(data={'new': True, 'percent': None, 'result': serializer.data, 'ok': True},
+                        status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -339,7 +336,8 @@ class HonestyViewSet(ViewSet):
         percent = calculate_percent(category_id=category_id, customer=customer)
         questions = HonestyTest.objects.filter(category_id=category_id)
         question_serializer = HonestyTestSerializer(questions, many=True, context={'customer': customer})
-        return Response(data={'new': False, 'percent': percent, 'result': question_serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+        return Response(data={'new': False, 'percent': percent, 'result': question_serializer.data, 'ok': True},
+                        status=status.HTTP_200_OK)
 
 
 class ConflictAlertViewSet(ViewSet):

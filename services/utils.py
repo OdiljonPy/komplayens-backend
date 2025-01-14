@@ -7,6 +7,8 @@ from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 from docx.shared import Pt
 import subprocess
+from authentication.utils import create_customer
+
 import io
 import base64
 import gspread
@@ -249,6 +251,14 @@ def file_three_create(serialized_data):
     subprocess.run(['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', output_dir, docx_output_path],
                    check=True)
     return serialized_data
+
+
+def calculate_percent(customer, category_id: int):
+    from .models import HonestyTest, HonestyTestResult
+
+    all_tests = HonestyTest.objects.filter(category_id=category_id).count()
+    true_tests = HonestyTestResult.objects.filter(test__category_id=category_id, customer_id=customer.id, result=True).count()
+    return (true_tests / all_tests) * 100 or 0
 
 
 def get_google_sheet_statistics(sheets_id):

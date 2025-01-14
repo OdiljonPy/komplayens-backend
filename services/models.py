@@ -199,7 +199,8 @@ class News(BaseModel):
 
 class HonestyTestCategory(BaseModel):
     name = models.CharField(max_length=40, verbose_name='Название категории')
-    image = models.ImageField(upload_to='honesty_test/category', verbose_name='')
+    image = models.ImageField(upload_to='honesty_test/category', verbose_name='Изображение')
+    in_term = models.BooleanField(default=True, verbose_name='B перспективе')
 
     def __str__(self):
         return self.name
@@ -237,14 +238,20 @@ class HonestyTestAnswer(BaseModel):
         verbose_name = 'Ответ на тест на честность'
         verbose_name_plural = 'Ответ на тест на честность'
         ordering = ('-created_at',)
+        constraints = [
+            models.UniqueConstraint(
+                fields=['question'],
+                condition=models.Q(is_true=True),
+                name='Only one answer should be true for one question'
+            )
+        ]
 
 
 class HonestyTestResult(BaseModel):
     customer = models.ForeignKey(to='authentication.Customer', on_delete=models.CASCADE, verbose_name='Клиент')
-    test = models.ForeignKey(to='HonestyTest', on_delete=models.CASCADE, verbose_name='Тест')
+    test = models.ForeignKey(to='HonestyTest', on_delete=models.CASCADE, related_name='test_result', verbose_name='Тест')
     answer = models.ForeignKey(to='HonestyTestAnswer', on_delete=models.CASCADE, verbose_name='Ответ')
     result = models.BooleanField(default=False, verbose_name='Результат')
-    percent = models.FloatField(default=0, verbose_name='процент')
 
     def __str__(self):
         return str(self.id)
@@ -256,11 +263,9 @@ class HonestyTestResult(BaseModel):
 
 
 class HonestyTestStatistic(BaseModel):
-    test_type = models.ForeignKey(to='HonestyTest', on_delete=models.SET_NULL, null=True,
-                                  related_name='stats_test_type', verbose_name='Тип теста')
-    customer = models.ForeignKey(to='authentication.Customer', on_delete=models.SET_NULL, null=True,
-                                 verbose_name='Клиент')
-    organization = models.ForeignKey(to='HonestyTest', on_delete=models.SET_NULL, null=True, verbose_name='Организация')
+    test_type = models.ForeignKey(to='HonestyTestCategory', on_delete=models.SET_NULL, null=True, related_name='stats_test_type', verbose_name='Тип теста')
+    customer = models.ForeignKey(to='authentication.Customer', on_delete=models.SET_NULL, null=True, verbose_name='Клиент')
+    organization = models.ForeignKey(to='Organization', on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Организация')
 
     def __str__(self):
         return f'{self.organization} - {self.customer}'

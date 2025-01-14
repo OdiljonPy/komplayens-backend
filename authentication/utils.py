@@ -75,8 +75,6 @@ def otp_verification(data):
 
 def create_customer(request):
     from .models import Customer
-    if getattr(request.user, 'id', None):
-        return request.user
     user_agent = request.META.get('HTTP_USER_AGENT')
     ip_address = request.META.get('HTTP_X_FORWARDED_FOR', None)
     ip_address = ip_address or request.META.get('REMOTE_ADDR')

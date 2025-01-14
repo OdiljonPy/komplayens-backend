@@ -26,12 +26,12 @@ class ParamValidateSerializer(serializers.Serializer):
 
 class HonestyParamSerializer(serializers.Serializer):
     category_id = serializers.IntegerField()
-    organization_id = serializers.IntegerField()
+    organization_id = serializers.IntegerField(required=False)
 
     def validate(self, data):
         if data.get('category_id') < 1:
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Category id must be positive integer')
-        if data.get('organization_id') < 1:
+        if data.get('organization_id') is not None and data.get('organization_id') < 1:
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Organization id must be positive integer')
         return data
 
@@ -136,27 +136,68 @@ class HonestyTestCategorySerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
     image = serializers.ImageField()
+    in_term = serializers.BooleanField()
 
 
-class HonestyTestAnswerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = HonestyTestAnswer
-        fields = ('id', 'question', 'answer', 'is_true')
+class HonestyTestAnswerSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    question = serializers.CharField()
+    answer = serializers.CharField()
+    is_true = serializers.BooleanField()
 
 
-class HonestyTestSerializer(serializers.ModelSerializer):
-    answers = HonestyTestAnswerSerializer(many=True, read_only=True, source='test_honest')
+class HonestyTestDefaultAnswerSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    question = serializers.CharField()
+    answer = serializers.CharField()
+    is_true = serializers.SerializerMethodField()
 
-    class Meta:
-        model = HonestyTest
-        fields = ('id', 'question', 'advice', 'category', 'answers')
+    def get_is_true(self, obj):
+        return
 
 
-class HonestyTestResultSerializer(serializers.ModelSerializer):
+class HonestyTestUserResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = HonestyTestResult
-        fields = ('id', 'test', 'answer', 'result', 'customer', 'percent')
-        extra_kwargs = {'customer': {'required': False}, 'result': {'required': False}, 'percent': {'required': False}}
+        fields = ('answer', 'result')
+
+
+class HonestyTestDefaultSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    question = serializers.CharField()
+    advice = serializers.CharField()
+    category = serializers.PrimaryKeyRelatedField(read_only=True)
+    answers = HonestyTestDefaultAnswerSerializer(many=True, read_only=True, source='test_honest')
+    user_result = serializers.SerializerMethodField()
+
+    def get_advice(self, obj):
+        return
+
+    def get_user_result(self, obj):
+        return {}
+
+
+class HonestyTestSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    question = serializers.CharField()
+    advice = serializers.CharField()
+    category = serializers.PrimaryKeyRelatedField(read_only=True)
+    answers = HonestyTestAnswerSerializer(many=True, read_only=True, source='test_honest')
+    user_result = serializers.SerializerMethodField()
+
+    def get_user_result(self, obj):
+        customer = self.context.get('customer')
+        result = obj.test_result.filter(customer=customer).first()
+        if result:
+            return HonestyTestUserResultSerializer(result).data
+        return None
+
+class HonestyTestResultSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = HonestyTestResult
+        fields = ('id', 'test', 'answer', 'result')
+        extra_kwargs = {'result': {'required': False}}
 
     def validate(self, data):
         test = data.get('test')
@@ -177,9 +218,17 @@ class HonestyTestResultSerializer(serializers.ModelSerializer):
         return HonestyTestResult.objects.create(
             test=validated_data.get('test'),
             answer=validated_data.get('answer'),
-            result=validated_data.get('answer').is_true,
-            customer=customer
+            result = validated_data.get('answer').is_true,
+            customer = customer
         )
+
+
+class HonestyTestSendResultSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    test = serializers.PrimaryKeyRelatedField(read_only=True)
+    answer = serializers.PrimaryKeyRelatedField(read_only=True)
+    result = serializers.BooleanField()
+    honesty_test = HonestyTestSerializer(read_only=True, source='test')
 
 
 class HonestyTestResultRequestSerializer(serializers.Serializer):

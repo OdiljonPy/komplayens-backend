@@ -12,7 +12,8 @@ from .models import (
     ElectronLibrary, News, HonestyTest,
     ConflictAlert, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType, NewsCategory,
-    HonestyTestCategory, ViolationReport, ViolationFile
+    HonestyTestCategory, ViolationReport, ViolationFile,
+    HonestyTestStatistic, HonestyTestResult,
 )
 
 from .serializers import (
@@ -27,9 +28,10 @@ from .serializers import (
     HonestyTestCategorySerializer, HonestyTestResultSerializer,
     HonestyTestResultRequestSerializer, HonestyTestResultStatisticSerializer,
     HonestyParamSerializer, HonestyTestSerializer, ViolationFileSerializer,
-    GuiltyPersonSerializer, ViolationReportCreateSerializer
+    GuiltyPersonSerializer, ViolationReportCreateSerializer,
+    HonestyTestSendResultSerializer, HonestyTestDefaultSerializer
 )
-from .utils import file_one_create, file_two_create, file_three_create
+from .utils import file_one_create, file_two_create, file_three_create, calculate_percent
 from .repository.training_paginator import training_paginator
 from .repository.organization_paginator import get_paginated_organizations
 from .repository.news_paginator import news_paginator
@@ -257,14 +259,12 @@ class HonestyViewSet(ViewSet):
         tags=['HonestyTest']
     )
     def honesty_test_categories(self, request):
-        data = HonestyTestCategory.objects.all()
+        data = HonestyTestCategory.objects.filter(in_term=True)
         serializer = HonestyTestCategorySerializer(data, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter(name='organization_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
-                              description='Organization id'),
             openapi.Parameter(name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
                               description='Category id'),
         ],
@@ -274,25 +274,32 @@ class HonestyViewSet(ViewSet):
         tags=['HonestyTest']
     )
     def honesty_test_list(self, request):
-        customer = create_customer(request)
         query_params = HonestyParamSerializer(data=request.query_params)
+        customer = create_customer(request)
         if not query_params.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=query_params.errors)
-        category_id = query_params.data.get('category_id')
-        organization_id = query_params.data.get('organization_id')
 
-        stats_data = {'test_type': category_id, 'organization': organization_id, 'customer': customer.id}
+        category_id = query_params.validated_data.get('category_id')
 
-        stats_serializer = HonestyTestResultStatisticSerializer(data=stats_data, context={'request': request})
-        if not stats_serializer.is_valid():
-            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=stats_serializer.errors)
-        stats_serializer.save()
+
+        if HonestyTestResult.objects.filter(test__category_id=category_id, customer_id=customer.id).exists():
+            data = HonestyTest.objects.filter(category_id=category_id)
+            result_serializer = HonestyTestSerializer(data, many=True, context={'customer': customer})
+            percent = calculate_percent(category_id=category_id, customer=customer)
+            return Response(data={'new': False, 'percent': percent, 'result': result_serializer.data, 'ok': True},
+                            status=status.HTTP_200_OK)
 
         questions = HonestyTest.objects.filter(category_id=category_id)
-        serializer = HonestyTestSerializer(questions, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+        serializer = HonestyTestDefaultSerializer(questions, many=True, context={'customer': customer})
+        return Response(data={'new': True, 'percent': None, 'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(name='organization_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                              description='Organization id'),
+            openapi.Parameter(name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                              description='Category id'),
+        ],
         operation_summary='Honesty test Result',
         operation_description='Honesty test Result',
         request_body=HonestyTestResultRequestSerializer(many=True),
@@ -300,13 +307,30 @@ class HonestyViewSet(ViewSet):
         tags=['HonestyTest']
     )
     def honesty_test_result(self, request):
-        serializer = HonestyTestResultSerializer(data=request.data, many=True, context={'request': request})
+        customer = create_customer(request)
+        query_params = HonestyParamSerializer(data=request.query_params)
+        if not query_params.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=query_params.errors)
+        category_id = query_params.validated_data.get('category_id')
+        organization_id = query_params.validated_data.get('organization_id')
 
+        if HonestyTestResult.objects.filter(test__category_id=category_id, customer_id=customer.id).exists():
+            raise CustomApiException(ErrorCodes.FORBIDDEN, message='You have already solved this test')
+
+        serializer = HonestyTestResultSerializer(data=request.data, many=True, context={'request': request})
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
-
         serializer.save()
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+        stats_data = {'test_type': category_id, 'organization': organization_id, 'customer': customer.id}
+        stats_serializer = HonestyTestResultStatisticSerializer(data=stats_data, context={'request': request})
+        if not stats_serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=stats_serializer.errors)
+        stats_serializer.save()
+        percent = calculate_percent(category_id=category_id, customer=customer)
+        questions = HonestyTest.objects.filter(category_id=category_id)
+        question_serializer = HonestyTestSerializer(questions, many=True, context={'customer': customer})
+        return Response(data={'new': False, 'percent': percent, 'result': question_serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 
 class ConflictAlertViewSet(ViewSet):

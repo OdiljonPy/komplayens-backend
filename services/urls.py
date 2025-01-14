@@ -3,7 +3,7 @@ from .views import (
     OrganizationViewSet, TrainingViewSet, ElectronLibraryViewSet,
     NewsViewSet, HonestyViewSet, ConflictAlertViewSet,
     ProfessionalEthicsViewSet, OfficerAdviceViewSet, ViolationReportViewSet,
-    TechnicalSupportViewSet
+    TechnicalSupportViewSet, CorruptionRiskViewSet
 )
 
 urlpatterns = [
@@ -23,7 +23,7 @@ urlpatterns = [
     path('news/category/', NewsViewSet.as_view({'get': 'news_category'})),
 
     path('honesty/test/', HonestyViewSet.as_view({'get': 'honesty_test_list'})),
-    path('honesty/test/result/', HonestyViewSet.as_view({'post': 'honesty_test_result',})),
+    path('honesty/test/result/', HonestyViewSet.as_view({'post': 'honesty_test_result', })),
     path('honesty/category/', HonestyViewSet.as_view({'get': 'honesty_test_categories'})),
 
     path('conflict/alert/',
@@ -40,6 +40,9 @@ urlpatterns = [
 
     path('violation/report/', ViolationReportViewSet.as_view({'post': 'create_violation_report'})),
     path('violation/report/types/', ViolationReportViewSet.as_view({'post': 'report_types'})),
+
+    path('corruption/', CorruptionRiskViewSet.as_view({'get': 'corruption_list'})),
+    path('corruption/<int:pk>/', CorruptionRiskViewSet.as_view({'get': 'corruption_detail'})),
 
     path('technical/support/', TechnicalSupportViewSet.as_view({'post': 'create_technical_support'}))
 ]

@@ -274,15 +274,15 @@ class HonestyTestStatistic(BaseModel):
 class CorruptionRisk(BaseModel):
     name = models.CharField(max_length=80, verbose_name='Название')
     short_desc = models.TextField(max_length=120, verbose_name='Краткое описание')
-    image = models.ImageField(upload_to='corruption_risk/', verbose_name='')
+    image = models.ImageField(upload_to='corruption_risk/', verbose_name='Изображение')
 
-    form_url = models.URLField(verbose_name='')
-    excel_url = models.URLField(verbose_name='')
+    form_url = models.URLField(verbose_name='URL-адрес Формы')
+    excel_url = models.URLField(verbose_name='URL-адрес Эксель')
 
-    start_date = models.DateTimeField(verbose_name='')
-    end_date = models.DateTimeField(verbose_name='')
+    start_date = models.DateTimeField(verbose_name='Дата начала')
+    end_date = models.DateTimeField(verbose_name='Дата окончания')
     result = HTMLField(blank=True, verbose_name='Результат')
-    status = models.IntegerField(choices=Corruption_Risk_STATUS, default=1, verbose_name='')
+    status = models.IntegerField(choices=Corruption_Risk_STATUS, default=1, verbose_name='Статус')
 
     def __str__(self):
         return str(self.id)

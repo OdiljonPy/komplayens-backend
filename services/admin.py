@@ -6,7 +6,7 @@ from .models import (
     Profession, ProfessionalEthics, OfficerAdvice, ReportType,
     ViolationReport, TechnicalSupport, TrainingCategory,
     NewsCategory, HonestyTestCategory, HonestyTestStatistic,
-    ViolationFile, GuiltyPerson
+    ViolationFile, GuiltyPerson, CorruptionRisk
 )
 
 
@@ -163,3 +163,9 @@ class ViolationFileAdmin(admin.ModelAdmin):
 class GuiltyPersonAdmin(admin.ModelAdmin):
     list_display = ('id', 'full_name', 'report')
     list_display_links = ('id', 'full_name',)
+
+
+@admin.register(CorruptionRisk)
+class CorruptionRiskAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'status')
+    list_display_links = ('id', 'name')

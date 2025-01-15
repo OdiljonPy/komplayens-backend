@@ -145,10 +145,10 @@ class TrainingViewSet(ViewSet):
         if not content_viewer:
             ContentViewer.objects.create(content_id=pk, customer=customer, content_type=3, view_day=today)
             Training.objects.filter(id=pk).update(views=F('views') + 1)
-        if content_viewer and content_viewer.view_day < today:
-            content_viewer = ContentViewer.objects.update(content_id=pk, customer=customer, content_type=3)
-            content_viewer.view_day = today
-            Training.objects.filter(id=pk).update(views=F('views') + 1)
+        elif content_viewer.view_day < today:
+            ContentViewer.objects.update(content_id=pk, customer=customer, content_type=3, view_day=today)
+            data.views += 1
+            data.save(update_fields=['views'])
         serializer = TrainingDetailSerializer(data, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -261,13 +261,15 @@ class NewsViewSet(ViewSet):
         today = timezone.now().date()
         customer = create_customer(request)
         content_viewer = ContentViewer.objects.filter(content_id=pk, customer=customer, content_type=2).first()
+
         if not content_viewer:
             ContentViewer.objects.create(content_id=pk, customer=customer, content_type=2, view_day=today)
             News.objects.filter(id=pk).update(views=F('views') + 1)
-        if content_viewer and content_viewer.view_day < today:
-            content_viewer = ContentViewer.objects.update(content_id=pk, customer=customer, content_type=2)
-            content_viewer.view_day = today
-            News.objects.filter(id=pk).update(views=F('views') + 1)
+
+        elif content_viewer.view_day < today:
+            ContentViewer.objects.update(content_id=pk, customer=customer, content_type=2, view_day=today)
+            data.views += 1
+            data.save(update_fields=['views'])
         serializer = NewsDetailSerializer(data, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -347,7 +349,7 @@ class HonestyViewSet(ViewSet):
         organization_id = query_params.validated_data.get('organization_id')
 
         if HonestyTestResult.objects.filter(test__category_id=category_id, customer_id=customer.id).exists():
-            raise CustomApiException(ErrorCodes.FORBIDDEN, message='You have already solved this test')
+            raise CustomApiException(ErrorCodes.INVALID_INPUT, message='You have already solved this test')
 
         serializer = HonestyTestResultSerializer(data=request.data, many=True, context={'request': request})
         if not serializer.is_valid():
@@ -722,9 +724,9 @@ class AnnouncementViewSet(ViewSet):
         if not content_viewer:
             ContentViewer.objects.create(content_id=pk, customer=customer, content_type=1, view_day=today)
             Announcement.objects.filter(id=pk).update(views=F('views') + 1)
-        if content_viewer and content_viewer.view_day < today:
-            content_viewer = ContentViewer.objects.update(content_id=pk, customer=customer, content_type=1)
-            content_viewer.view_day = today
-            Announcement.objects.filter(id=pk).update(views=F('views') + 1)
+        elif content_viewer.view_day < today:
+            ContentViewer.objects.update(content_id=pk, customer=customer, content_type=1, view_day=today)
+            announcement.views += 1
+            announcement.save(update_fields=['views'])
         serializer = AnnouncementSerializer(announcement, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)

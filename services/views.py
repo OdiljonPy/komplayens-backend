@@ -1,5 +1,4 @@
-import datetime
-
+from datetime import datetime
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import status
@@ -15,7 +14,8 @@ from .models import (
     ElectronLibrary, News, HonestyTest,
     ConflictAlert, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType, NewsCategory,
-    HonestyTestCategory, ViolationReport, HonestyTestResult,
+    HonestyTestCategory, ViolationReport,
+    HonestyTestResult, CorruptionRisk,
     AnnouncementCategory, Announcement
 )
 from authentication.models import ContentViewer
@@ -32,18 +32,23 @@ from .serializers import (
     HonestyTestCategorySerializer, HonestyTestResultSerializer,
     HonestyTestResultRequestSerializer, HonestyTestResultStatisticSerializer,
     HonestyParamSerializer, HonestyTestSerializer, ViolationFileSerializer,
-    GuiltyPersonSerializer, ViolationReportCreateSerializer, HonestyTestDefaultSerializer,
-    AnnouncementCategorySerializer, AnnouncementSerializer
+    GuiltyPersonSerializer, ViolationReportCreateSerializer,
+    HonestyTestDefaultSerializer, CorruptionRiskSerializer,
+    CorruptionRiskParamValidator, AnnouncementCategorySerializer, AnnouncementSerializer
 )
-from .utils import file_one_create, file_two_create, file_three_create, calculate_percent
 from .repository.training_paginator import training_paginator
 from .repository.organization_paginator import get_paginated_organizations
 from .repository.news_paginator import news_paginator
 from .repository.electron_library_paginator import get_paginated_e_library
 from .repository.profession_paginator import profession_paginator
 from .repository.officer_advice_paginator import officer_advice_paginator
+from .repository.corruption_risk_paginator import corruption_risk_paginator
 from .repository.announcement_paginator import get_paginated_announcement
 from authentication.utils import create_customer
+from .utils import (
+    file_one_create, file_two_create, file_three_create,
+    get_google_sheet_statistics, calculate_percent
+)
 
 
 class OrganizationViewSet(ViewSet):
@@ -286,7 +291,6 @@ class HonestyViewSet(ViewSet):
 
         category_id = query_params.validated_data.get('category_id')
 
-
         if HonestyTestResult.objects.filter(test__category_id=category_id, customer_id=customer.id).exists():
             data = HonestyTest.objects.filter(category_id=category_id)
             result_serializer = HonestyTestSerializer(data, many=True, context={'customer': customer})
@@ -296,7 +300,8 @@ class HonestyViewSet(ViewSet):
 
         questions = HonestyTest.objects.filter(category_id=category_id)
         serializer = HonestyTestDefaultSerializer(questions, many=True, context={'customer': customer})
-        return Response(data={'new': True, 'percent': None, 'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+        return Response(data={'new': True, 'percent': None, 'result': serializer.data, 'ok': True},
+                        status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -335,7 +340,8 @@ class HonestyViewSet(ViewSet):
         percent = calculate_percent(category_id=category_id, customer=customer)
         questions = HonestyTest.objects.filter(category_id=category_id)
         question_serializer = HonestyTestSerializer(questions, many=True, context={'customer': customer})
-        return Response(data={'new': False, 'percent': percent, 'result': question_serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+        return Response(data={'new': False, 'percent': percent, 'result': question_serializer.data, 'ok': True},
+                        status=status.HTTP_200_OK)
 
 
 class ConflictAlertViewSet(ViewSet):
@@ -563,6 +569,66 @@ class ViolationReportViewSet(ViewSet):
     def report_types(self, request):
         data = ReportType.objects.all()
         serializer = ReportTypeSerializer(data, many=True, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+
+class CorruptionRiskViewSet(ViewSet):
+    @swagger_auto_schema(
+        operation_summary='Corruption Risk list api with filter',
+        operation_description='Corruption Rist list api with filter',
+        manual_parameters=[
+            openapi.Parameter(
+                name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Page number'),
+            openapi.Parameter(
+                name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Page size'),
+            openapi.Parameter(
+                name='order_by', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, description='Page order (new or old)'),
+            openapi.Parameter(
+                name='status', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='CorruptionRisk status'),
+            openapi.Parameter(
+                name='from_date', in_=openapi.IN_QUERY, type=openapi.FORMAT_DATE, description='From date'),
+            openapi.Parameter(
+                name='to_date', in_=openapi.IN_QUERY, type=openapi.FORMAT_DATE, description='To date'),
+        ],
+        tags=['CorruptionRisk']
+    )
+    def corruption_list(self, request):
+        serializer = CorruptionRiskParamValidator(data=request.query_params)
+        if not serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
+        objects = CorruptionRisk.objects.filter(end_date__gte=datetime.today(), status=1)
+        for result in objects:
+            sheet_id = result.excel_url.split("/d/")[1].split("/")[0]
+            result.result = get_google_sheet_statistics(sheets_id=sheet_id)
+            result.status = 2
+            result.save(update_fields=['result', 'status'])
+
+        filter_ = Q()
+        params = serializer.validated_data
+        if params.get('status'):
+            filter_ &= Q(status=params.get('status'))
+
+        if params.get('from_date'):
+            filter_ &= Q(start_date__lte=params.get('from_date'))
+
+        if params.get('to_date'):
+            filter_ &= Q(end_date__gte=params.get('to_date'))
+
+        query_response = CorruptionRisk.objects.filter(filter_)
+        result = corruption_risk_paginator(
+            query_response, page=params.get('page'), page_size=params.get('page_size'), context={'request': request})
+        return Response(data={'result': result, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_summary='Corruption Risk detail api',
+        operation_description='Corruption Risk detail api',
+        tags=['CorruptionRisk']
+    )
+    def corruption_detail(self, request, pk):
+        result = CorruptionRisk.objects.filter(id=pk).first()
+        if not result:
+            raise CustomApiException(ErrorCodes.NOT_FOUND)
+        serializer = CorruptionRiskSerializer(result, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 

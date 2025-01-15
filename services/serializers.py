@@ -255,8 +255,8 @@ class CorruptionRiskSerializer(serializers.Serializer):
     image = serializers.ImageField()
     form_url = serializers.URLField()
     excel_url = serializers.URLField()
-    start_date = serializers.DateField()
-    end_date = serializers.DateField()
+    start_date = serializers.DateTimeField()
+    end_date = serializers.DateTimeField()
     result = serializers.CharField()
     status = serializers.IntegerField()
 
@@ -418,6 +418,18 @@ class ViolationReportCreateSerializer(serializers.Serializer):
     full_name = serializers.CharField(required=True)
     position = serializers.CharField(required=True)
     phone_number = serializers.CharField(required=False)
+
+
+class CorruptionRiskParamValidator(PaginatorValidator):
+    order_by = serializers.ChoiceField(choices=('new', 'old'), required=False, default='new')
+    status = serializers.IntegerField(required=False)
+    from_date = serializers.DateField(required=False)
+    to_date = serializers.DateField(required=False)
+
+    def validate(self, attrs):
+        if attrs.get('status') and attrs.get('status', 0) < 1 or attrs.get('status', 0) > 2:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='status must be between 1 and 2')
+        return super().validate(attrs)
 
 
 class AnnouncementCategorySerializer(serializers.Serializer):

@@ -1,7 +1,5 @@
-from urllib import request
-
-from django.core.paginator import Paginator
 from django.db.models import Count
+from django.core.paginator import Paginator
 from services.serializers import ElectronLibrarySerializer
 
 def get_paginated_e_library(request_data, context: dict, page, page_size):

@@ -144,7 +144,8 @@ class TrainingViewSet(ViewSet):
         content_viewer = ContentViewer.objects.filter(content_id=pk, customer=customer, content_type=3).first()
         if not content_viewer:
             ContentViewer.objects.create(content_id=pk, customer=customer, content_type=3, view_day=today)
-            Training.objects.filter(id=pk).update(views=F('views') + 1)
+            data.views += 1
+            data.save(update_fields=['views'])
         elif content_viewer.view_day < today:
             ContentViewer.objects.update(content_id=pk, customer=customer, content_type=3, view_day=today)
             data.views += 1
@@ -264,7 +265,8 @@ class NewsViewSet(ViewSet):
 
         if not content_viewer:
             ContentViewer.objects.create(content_id=pk, customer=customer, content_type=2, view_day=today)
-            News.objects.filter(id=pk).update(views=F('views') + 1)
+            data.views += 1
+            data.save(update_fields=['views'])
 
         elif content_viewer.view_day < today:
             ContentViewer.objects.update(content_id=pk, customer=customer, content_type=2, view_day=today)
@@ -723,7 +725,8 @@ class AnnouncementViewSet(ViewSet):
         content_viewer = ContentViewer.objects.filter(content_id=pk, customer=customer, content_type=1).first()
         if not content_viewer:
             ContentViewer.objects.create(content_id=pk, customer=customer, content_type=1, view_day=today)
-            Announcement.objects.filter(id=pk).update(views=F('views') + 1)
+            announcement.views += 1
+            announcement.save(update_fields=['views'])
         elif content_viewer.view_day < today:
             ContentViewer.objects.update(content_id=pk, customer=customer, content_type=1, view_day=today)
             announcement.views += 1

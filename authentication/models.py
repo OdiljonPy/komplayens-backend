@@ -17,6 +17,13 @@ OFFICER_REQUEST_STATUS = (
 )
 
 
+CONTENT_TYPE_CHOICES = (
+    (1, 'Announcement'),
+    (2, 'News'),
+    (3, 'Training'),
+)
+
+
 class User(BaseModel):
     first_name = models.CharField(max_length=80, verbose_name='Имя')
     last_name = models.CharField(max_length=80, verbose_name='Фамилия')
@@ -68,10 +75,15 @@ class Customer(BaseModel):
 
 
 class ContentViewer(BaseModel):
-    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True)
-    content_id = models.IntegerField(default=0)
-    content_type = models.IntegerField(default=0)
-    view_day = models.DateField(default=timezone.now)
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, verbose_name='Клиент')
+    content_id = models.IntegerField(default=0, verbose_name='ID контента')
+    content_type = models.IntegerField(choices=CONTENT_TYPE_CHOICES, verbose_name='Тип контентa')
+    view_day = models.DateField(default=timezone.now, verbose_name='Дата просмотра')
 
     def __str__(self):
         return str(self.id)
+
+    class Meta:
+        verbose_name = 'Просмотр контента'
+        verbose_name_plural = 'Просмотры контента'
+        ordering = ('-created_at',)

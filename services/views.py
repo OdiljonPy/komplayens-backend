@@ -1,4 +1,6 @@
 from datetime import datetime
+from django.db.models import F
+from django.utils import timezone
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import status
@@ -137,6 +139,16 @@ class TrainingViewSet(ViewSet):
         data = Training.objects.filter(id=pk).first()
         if not data:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
+        today = timezone.now().date()
+        customer = create_customer(request)
+        content_viewer = ContentViewer.objects.filter(content_id=pk, customer=customer, content_type=3).first()
+        if not content_viewer:
+            ContentViewer.objects.create(content_id=pk, customer=customer, content_type=3, view_day=today)
+            Training.objects.filter(id=pk).update(views=F('views') + 1)
+        if content_viewer and content_viewer.view_day < today:
+            content_viewer = ContentViewer.objects.update(content_id=pk, customer=customer, content_type=3)
+            content_viewer.view_day = today
+            Training.objects.filter(id=pk).update(views=F('views') + 1)
         serializer = TrainingDetailSerializer(data, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -229,7 +241,7 @@ class NewsViewSet(ViewSet):
             {'new': '-created_at', 'old': 'created_at'}.get(params.get('order_by')),
         ]
 
-        params.get('popular') and order_by.append('-view_count')
+        params.get('popular') and order_by.append('-views')
 
         data = News.objects.filter(filter_, is_published=True).order_by(*order_by)
         result = news_paginator(
@@ -246,6 +258,16 @@ class NewsViewSet(ViewSet):
         data = News.objects.filter(id=pk).first()
         if not data:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
+        today = timezone.now().date()
+        customer = create_customer(request)
+        content_viewer = ContentViewer.objects.filter(content_id=pk, customer=customer, content_type=2).first()
+        if not content_viewer:
+            ContentViewer.objects.create(content_id=pk, customer=customer, content_type=2, view_day=today)
+            News.objects.filter(id=pk).update(views=F('views') + 1)
+        if content_viewer and content_viewer.view_day < today:
+            content_viewer = ContentViewer.objects.update(content_id=pk, customer=customer, content_type=2)
+            content_viewer.view_day = today
+            News.objects.filter(id=pk).update(views=F('views') + 1)
         serializer = NewsDetailSerializer(data, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -656,7 +678,7 @@ class AnnouncementViewSet(ViewSet):
         tags=['Announcement']
     )
     def announcement_categories(self, request):
-        categories = AnnouncementCategory.objects.filter(is_published=True)
+        categories = AnnouncementCategory.objects.filter()
         serializer = AnnouncementCategorySerializer(categories, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -690,15 +712,19 @@ class AnnouncementViewSet(ViewSet):
         tags=['Announcement']
     )
     def announcement_detail(self, request, pk):
-        time_ = datetime.date
         announcement = Announcement.objects.filter(id=pk, is_published=True).first()
-        customer = create_customer(request)
-        content_viewer = ContentViewer.objects.filter(content_id=pk, customer=customer, content_type=1,
-                                                      created_at__day=time_.day, created_at__month=time_.month,
-                                                      created_at__yesr=time_.year).first()
-        if not content_viewer:
-            content_viewer.create()
         if not announcement:
             raise CustomApiException(ErrorCodes.NOT_FOUND, message='Announcement not found')
+
+        today = timezone.now().date()
+        customer = create_customer(request)
+        content_viewer = ContentViewer.objects.filter(content_id=pk, customer=customer, content_type=1).first()
+        if not content_viewer:
+            ContentViewer.objects.create(content_id=pk, customer=customer, content_type=1, view_day=today)
+            Announcement.objects.filter(id=pk).update(views=F('views') + 1)
+        if content_viewer and content_viewer.view_day < today:
+            content_viewer = ContentViewer.objects.update(content_id=pk, customer=customer, content_type=1)
+            content_viewer.view_day = today
+            Announcement.objects.filter(id=pk).update(views=F('views') + 1)
         serializer = AnnouncementSerializer(announcement, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)

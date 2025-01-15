@@ -1,3 +1,4 @@
+from django.utils import timezone
 from uuid import uuid4
 from django.db import models
 from abstarct_model.base_model import BaseModel
@@ -70,6 +71,7 @@ class ContentViewer(BaseModel):
     customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True)
     content_id = models.IntegerField(default=0)
     content_type = models.IntegerField(default=0)
+    view_day = models.DateField(default=timezone.now)
 
     def __str__(self):
         return str(self.id)

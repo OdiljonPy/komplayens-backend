@@ -7,7 +7,7 @@ from .models import (
     ViolationReport, TechnicalSupport, TrainingCategory,
     NewsCategory, HonestyTestCategory, HonestyTestStatistic,
     ViolationFile, GuiltyPerson, HonestyTestResult,
-    CorruptionRisk
+    CorruptionRisk,  AnnouncementCategory, Announcement
 )
 
 
@@ -176,3 +176,16 @@ class GuiltyPersonAdmin(admin.ModelAdmin):
 class CorruptionRiskAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'status')
     list_display_links = ('id', 'name')
+@admin.register(AnnouncementCategory)
+class AnnouncementCategoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    list_display_links = ('id', 'name')
+    search_fields = ('name',)
+
+
+@admin.register(Announcement)
+class AnnouncementAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'category')
+    list_display_links = ('id', 'title')
+    search_fields = ('title',)
+

@@ -87,8 +87,7 @@ class Training(BaseModel):
     category = models.ForeignKey(
         to='TrainingCategory', on_delete=models.SET_NULL, null=True, verbose_name='Название категории')
     is_published = models.BooleanField(default=False, verbose_name='Опубликовано')
-    views = models.ManyToManyField(to='authentication.Customer', blank=True, related_name='training_view',
-                                   verbose_name='Просмотры')
+    views = models.IntegerField(default=0, verbose_name='Просмотры')
 
     def __str__(self):
         return self.name
@@ -187,8 +186,7 @@ class News(BaseModel):
     category = models.ForeignKey(to='NewsCategory', on_delete=models.SET_NULL, null=True, verbose_name='Категория')
     is_published = models.BooleanField(default=False, verbose_name="Опубликован")
     published_date = models.DateField(null=True, blank=True, verbose_name="Дата публикации")
-    views = models.ManyToManyField(to='authentication.Customer', blank=True, related_name='news_view',
-                                   verbose_name='Просмотры')
+    views = models.IntegerField(default=0, verbose_name='Просмотры')
 
     def __str__(self):
         return self.title
@@ -490,8 +488,7 @@ class Announcement(BaseModel):
     image = models.ImageField(upload_to='post/', verbose_name='Изображение')
     is_published = models.BooleanField(default=False, verbose_name='Опубликовано')
     published_date = models.DateField(blank=True, null=True, verbose_name='Дата публикации')
-    views = models.ManyToManyField(to='authentication.Customer', blank=True,
-                                   related_name='announcement_view', verbose_name='Просмотры')
+    views = models.IntegerField(default=0, verbose_name='Просмотры')
 
     def __str__(self):
         return str(self.title)

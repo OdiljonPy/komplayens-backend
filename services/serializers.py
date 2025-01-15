@@ -72,7 +72,7 @@ class TrainingSerializer(serializers.Serializer):
     video = serializers.URLField()
     video_length = serializers.FloatField()
     category = serializers.PrimaryKeyRelatedField(read_only=True)
-    view_count = serializers.IntegerField()
+    views = serializers.IntegerField()
 
 
 class TrainingMediaSerializer(serializers.Serializer):
@@ -120,14 +120,14 @@ class NewsSerializer(serializers.Serializer):
     image = serializers.ImageField()
     category = serializers.PrimaryKeyRelatedField(read_only=True)
     published_date = serializers.DateField()
-    view_count = serializers.IntegerField()
+    views = serializers.IntegerField()
 
 
 class NewsDetailSerializer(NewsSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['additional'] = NewsSerializer(
-            News.objects.filter(is_published=True).order_by('-view_count')[:3],
+            News.objects.filter(is_published=True).order_by('-views')[:3],
             many=True, context=self.context).data
         return data
 
@@ -439,8 +439,11 @@ class AnnouncementCategorySerializer(serializers.Serializer):
 
 class AnnouncementSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    category = serializers.SerializerMethodField(read_only=True, source='category.name')
+    category = serializers.SerializerMethodField(read_only=True)
     title = serializers.CharField()
     description = serializers.CharField()
     image = serializers.ImageField()
     views = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    def get_category(self, obj):
+        return obj.category.name

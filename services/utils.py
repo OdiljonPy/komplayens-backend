@@ -7,8 +7,7 @@ from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 from docx.shared import Pt
 import subprocess
-from authentication.utils import create_customer
-
+from django.conf import settings
 import io
 import base64
 import gspread
@@ -269,7 +268,7 @@ def get_google_sheet_statistics(sheets_id):
 
     SCOPE = ["https://www.googleapis.com/auth/spreadsheets"]
     creds = Credentials.from_service_account_file(
-        filename=f"{base_dir}/google_access_json/oceanic-catcher-441013-i5-32aa559cd203.json", scopes=SCOPE)
+        filename=f"{base_dir}/google_access_json/{settings.GOOGLE_ACCESS_JSON_NAME}", scopes=SCOPE)
     client = gspread.authorize(creds)
     rows = client.open_by_key(sheets_id).sheet1.get_all_values()
 

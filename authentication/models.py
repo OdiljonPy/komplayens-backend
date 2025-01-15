@@ -15,22 +15,25 @@ OFFICER_REQUEST_STATUS = (
     (3, 'Rejected'),
 )
 
+USER_ACTIVE_STATUS = (
+    (1, 'Active'),
+    (2, 'Block'),
+)
+
 
 class User(BaseModel):
     first_name = models.CharField(max_length=80, verbose_name='Имя')
     last_name = models.CharField(max_length=80, verbose_name='Фамилия')
     password = models.CharField(max_length=250, verbose_name="Пароль")
     phone_number = models.CharField(max_length=14, verbose_name="Номер телефона", validators=[phone_number_validation])
-    email = models.EmailField(blank=True, null=True)
     role = models.PositiveSmallIntegerField(choices=ROLE_CHOICES, default=3, verbose_name="Роль")
     organization = models.ForeignKey(to='services.Organization', on_delete=models.SET_NULL, null=True)
-    login_time = models.DateTimeField(null=True, verbose_name="Время входа")
+    login_time = models.DateTimeField(null=True, blank=True, verbose_name="Время входа")
     status = models.IntegerField(choices=OFFICER_REQUEST_STATUS, default=1, verbose_name='Статус')
-    is_verify = models.BooleanField(default=False)
-    active = models.BooleanField(default=False)
+    is_active = models.IntegerField(choices=USER_ACTIVE_STATUS, default=1)
 
     def __str__(self):
-        return str(self.id)
+        return f"{self.first_name} - {self.id}"
 
     class Meta:
         verbose_name = 'Пользователь'

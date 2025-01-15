@@ -678,7 +678,7 @@ class AnnouncementViewSet(ViewSet):
         tags=['Announcement']
     )
     def announcement_categories(self, request):
-        categories = AnnouncementCategory.objects.filter()
+        categories = AnnouncementCategory.objects.all()
         serializer = AnnouncementCategorySerializer(categories, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 

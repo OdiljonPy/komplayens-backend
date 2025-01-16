@@ -10,6 +10,7 @@ class ErrorCodes(Enum):
     ALREADY_EXISTS = 6
     USER_DOES_NOT_EXIST = 7
     INCORRECT_PASSWORD = 8
+    USER_BLOCKED = 9
 
 error_messages = {
     1: {"result": "Unauthorized access", "http_status": status.HTTP_401_UNAUTHORIZED},
@@ -20,6 +21,7 @@ error_messages = {
     6: {"result": "User already exists", "http_status": status.HTTP_400_BAD_REQUEST},
     7: {"result": "User does not exist", "http_status": status.HTTP_400_BAD_REQUEST},
     8: {"result": "Incorrect password", "http_status": status.HTTP_400_BAD_REQUEST},
+    9: {'result': 'User blocked', 'http_status': status.HTTP_400_BAD_REQUEST},
 }
 
 

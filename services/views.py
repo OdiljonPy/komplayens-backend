@@ -18,7 +18,8 @@ from .models import (
     OfficerAdvice, ReportType, NewsCategory,
     HonestyTestCategory, ViolationReport,
     HonestyTestResult, CorruptionRisk,
-    AnnouncementCategory, Announcement
+    AnnouncementCategory, Announcement,
+    CorruptionRiskMedia
 )
 from authentication.models import ContentViewer
 
@@ -36,7 +37,8 @@ from .serializers import (
     HonestyParamSerializer, HonestyTestSerializer, ViolationFileSerializer,
     GuiltyPersonSerializer, ViolationReportCreateSerializer,
     HonestyTestDefaultSerializer, CorruptionRiskSerializer,
-    CorruptionRiskParamValidator, AnnouncementCategorySerializer, AnnouncementSerializer
+    CorruptionRiskParamValidator, AnnouncementCategorySerializer,
+    AnnouncementSerializer, CorruptionRiskMediaSerializer
 )
 from .repository.training_paginator import training_paginator
 from .repository.organization_paginator import get_paginated_organizations
@@ -56,14 +58,14 @@ from .utils import (
 class OrganizationViewSet(ViewSet):
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter(name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
-                              description="Page number"),
-            openapi.Parameter(name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
-                              description="Page size"),
-            openapi.Parameter(name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
-                              description="Category id"),
-            openapi.Parameter(name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING,
-                              description="Search term"),
+            openapi.Parameter(
+                name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description="Page number"),
+            openapi.Parameter(
+                name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description="Page size number"),
+            openapi.Parameter(
+                name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description="Category id"),
+            openapi.Parameter(
+                name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Search term"),
         ],
         operation_summary='Organization List',
         operation_description='List of all organizations',
@@ -77,14 +79,14 @@ class OrganizationViewSet(ViewSet):
         category_id = param_serializer.validated_data.get('category_id')
         filter_ = Q()
         if category_id:
-            filter_ |= Q(category_id=category_id)
+            filter_ &= Q(category_id=category_id)
         if request.query_params.get('q'):
-            filter_ |= Q(name__icontains=request.query_params.get('q'))
+            filter_ &= Q(name__icontains=request.query_params.get('q'))
         organizations = Organization.objects.filter(filter_)
-        response = get_paginated_organizations(request_data=organizations, context={'request': request},
-                                               page=param_serializer.validated_data.get('page'),
-                                               page_size=param_serializer.validated_data.get('page_size')
-                                               )
+        response = get_paginated_organizations(
+            request_data=organizations, context={'request': request}, page=param_serializer.validated_data.get('page'),
+            page_size=param_serializer.validated_data.get('page_size')
+        )
         return Response(data={'result': response, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
@@ -109,9 +111,20 @@ class TrainingViewSet(ViewSet):
             openapi.Parameter(
                 name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Page size number'),
             openapi.Parameter(
-                name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, description='search parameter'),
+                name='from_date', in_=openapi.IN_QUERY, type=openapi.FORMAT_DATE, description='From-date parameter'),
             openapi.Parameter(
-                name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='search parameter'),
+                name='to_date', in_=openapi.IN_QUERY, type=openapi.FORMAT_DATE, description='To-date parameter'),
+            openapi.Parameter(
+                name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, description='Search parameter'),
+            openapi.Parameter(
+                name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                description='Category id parameter'),
+            openapi.Parameter(
+                name='order_by', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING,
+                description="Order parameter {'new' or 'old'}"),
+            openapi.Parameter(
+                name='popular', in_=openapi.IN_QUERY, type=openapi.TYPE_BOOLEAN,
+                description='Popular parameter. Default false')
         ],
         responses={200: TrainingSerializer()},
         tags=['Training']
@@ -122,9 +135,24 @@ class TrainingViewSet(ViewSet):
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
         params = serializer.data
         filter_ = Q(name__icontains=params.get('q')) | Q(description__icontains=params.get('q'))
+
+        if params.get('from_date'):
+            filter_ &= Q(created_at__gte=params.get('from_date'))
+
+        if params.get('to_date'):
+            filter_ &= Q(created_at__lte=params.get('to_date'))
+
         if params.get('category_id'):
             filter_ &= Q(category_id=params.get('category_id'))
-        data = Training.objects.filter(filter_, is_published=True)
+
+        order_by = [
+            {'new': '-created_at', 'old': 'created_at'}.get('order_by'),
+        ]
+
+        if params.get('popular') is not None:
+            order_by.append('-view_count')
+
+        data = Training.objects.filter(filter_, is_published=True).order_by(*order_by)
         result = training_paginator(
             data, context={'request': request}, page=params.get('page'), page_size=params.get('page_size'))
         return Response(data={'result': result, 'ok': True}, status=status.HTTP_200_OK)
@@ -136,7 +164,7 @@ class TrainingViewSet(ViewSet):
         tags=['Training']
     )
     def training(self, request, pk):
-        data = Training.objects.filter(id=pk).first()
+        data = Training.objects.filter(id=pk, is_published=True).first()
         if not data:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
         today = timezone.now().date()
@@ -167,18 +195,22 @@ class TrainingViewSet(ViewSet):
 
 class ElectronLibraryViewSet(ViewSet):
     @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
-                              description="Page number"),
-            openapi.Parameter(name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
-                              description="Page size"),
-            openapi.Parameter(name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING,
-                              description="Search term"),
-            openapi.Parameter(name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
-                              description="Category id"),
-        ],
         operation_summary='ElectronLibrary List',
         operation_description='List of electron libraries',
+        manual_parameters=[
+            openapi.Parameter(
+                name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                description="Page number (integer field)"),
+            openapi.Parameter(
+                name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                description="Page size number (integer field)"),
+            openapi.Parameter(
+                name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING,
+                description="Search term (string field)"),
+            openapi.Parameter(
+                name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                description="Category id (integer field)"),
+        ],
         responses={200: ElectronLibrarySerializer(many=True)},
         tags=['ElectronLibrary']
     )
@@ -189,13 +221,13 @@ class ElectronLibraryViewSet(ViewSet):
         category_id = param_serializer.validated_data.get('category_id')
         filter_ = Q()
         if request.query_params.get('q'):
-            filter_ |= Q(name__icontains=request.query_params.get('q'))
+            filter_ &= Q(name__icontains=request.query_params.get('q'))
         if category_id:
-            filter_ |= Q(category_id=category_id)
+            filter_ &= Q(category_id=category_id)
         data = ElectronLibrary.objects.filter(filter_, is_published=True)
-        result = get_paginated_e_library(request_data=data, context={'request': request},
-                                         page=param_serializer.validated_data.get('page'),
-                                         page_size=param_serializer.validated_data.get('page_size'))
+        result = get_paginated_e_library(
+            request_data=data, context={'request': request}, page=param_serializer.validated_data.get('page'),
+            page_size=param_serializer.validated_data.get('page_size'))
         return Response(data={'result': result, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
@@ -220,9 +252,9 @@ class NewsViewSet(ViewSet):
             openapi.Parameter(
                 name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='page_size number'),
             openapi.Parameter(
-                name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='category id'),
+                name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Category id'),
             openapi.Parameter(
-                name='popular', in_=openapi.IN_QUERY, type=openapi.TYPE_BOOLEAN, description='popularity parameter'),
+                name='popular', in_=openapi.IN_QUERY, type=openapi.TYPE_BOOLEAN, description='Popularity parameter'),
             openapi.Parameter(
                 name='order_by', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, description='sort order')
         ],
@@ -238,11 +270,11 @@ class NewsViewSet(ViewSet):
         if params.get('category_id'):
             filter_ &= Q(category_id=params.get('category_id'))
 
-        order_by = [
-            {'new': '-created_at', 'old': 'created_at'}.get(params.get('order_by')),
-        ]
-
-        params.get('popular') and order_by.append('-views')
+        order_by = []
+        params.get('popular') and order_by.append('-view_count')
+        order_by.append(
+            {'new': '-created_at', 'old': 'created_at'}.get(params.get('order_by'))
+        )
 
         data = News.objects.filter(filter_, is_published=True).order_by(*order_by)
         result = news_paginator(
@@ -256,7 +288,7 @@ class NewsViewSet(ViewSet):
         tags=['News']
     )
     def news(self, request, pk):
-        data = News.objects.filter(id=pk).first()
+        data = News.objects.filter(id=pk, is_published=True).first()
         if not data:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
         today = timezone.now().date()
@@ -301,8 +333,8 @@ class HonestyViewSet(ViewSet):
 
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter(name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
-                              description='Category id'),
+            openapi.Parameter(
+                name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Category id'),
         ],
         operation_summary='Honesty tests by category id',
         operation_description='List of all honesty test by category id',
@@ -331,10 +363,10 @@ class HonestyViewSet(ViewSet):
 
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter(name='organization_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
-                              description='Organization id'),
-            openapi.Parameter(name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
-                              description='Category id'),
+            openapi.Parameter(
+                name='organization_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Organization id'),
+            openapi.Parameter(
+                name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Category id'),
         ],
         operation_summary='Honesty test Result',
         operation_description='Honesty test Result',
@@ -373,7 +405,7 @@ class HonestyViewSet(ViewSet):
 class ConflictAlertViewSet(ViewSet):
     @swagger_auto_schema(
         manual_parameters=[openapi.Parameter(
-            name='type', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Type of ConflictAlert'
+            name='type', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Type of ConflictAlert (1, 2, 3)'
         )],
         operation_summary='Conflict alert',
         operation_description='Create conflict alert',
@@ -433,7 +465,7 @@ class ProfessionalEthicsViewSet(ViewSet):
             openapi.Parameter(
                 name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Page number'),
             openapi.Parameter(
-                name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Page number'),
+                name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Page size number'),
             openapi.Parameter(
                 name='profession_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Profession ID'),
             openapi.Parameter(
@@ -532,7 +564,7 @@ class OfficerAdviceViewSet(ViewSet):
 class ViolationReportViewSet(ViewSet):
     @swagger_auto_schema(
         operation_summary='Create Violation Report',
-        operation_description='Create Violation Reports',
+        operation_description='Create Violation Report',
         request_body=ViolationReportCreateSerializer(),
         responses={201: ViolationReportSerializer()},
         tags=['ViolationReport']
@@ -622,7 +654,7 @@ class CorruptionRiskViewSet(ViewSet):
         serializer = CorruptionRiskParamValidator(data=request.query_params)
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
-        objects = CorruptionRisk.objects.filter(end_date__gte=datetime.today(), status=1)
+        objects = CorruptionRisk.objects.filter(end_date__lte=datetime.today(), status=1)
         for result in objects:
             sheet_id = result.excel_url.split("/d/")[1].split("/")[0]
             result.result = get_google_sheet_statistics(sheets_id=sheet_id)
@@ -640,7 +672,11 @@ class CorruptionRiskViewSet(ViewSet):
         if params.get('to_date'):
             filter_ &= Q(end_date__gte=params.get('to_date'))
 
-        query_response = CorruptionRisk.objects.filter(filter_)
+        order_by = [
+            {'new': '-created_at', 'old': '-created_at'}.get(params.get('order_by')),
+        ]
+
+        query_response = CorruptionRisk.objects.filter(filter_).order_by(*order_by)
         result = corruption_risk_paginator(
             query_response, page=params.get('page'), page_size=params.get('page_size'), context={'request': request})
         return Response(data={'result': result, 'ok': True}, status=status.HTTP_200_OK)
@@ -654,7 +690,20 @@ class CorruptionRiskViewSet(ViewSet):
         result = CorruptionRisk.objects.filter(id=pk).first()
         if not result:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
+
+        if not result.result:
+            raise CustomApiException(ErrorCodes.INVALID_INPUT, message='No response to the survey was created.')
         serializer = CorruptionRiskSerializer(result, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_summary='Corruption Risk Media list api',
+        operation_description='Corruption Risk Media list api',
+        tags=['CorruptionRisk']
+    )
+    def corruption_risk_media(self, request):
+        file_list = CorruptionRiskMedia.objects.all()
+        serializer = CorruptionRiskMediaSerializer(file_list, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 

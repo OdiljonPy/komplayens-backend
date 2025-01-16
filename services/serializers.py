@@ -13,7 +13,7 @@ class ParamValidateSerializer(serializers.Serializer):
     page = serializers.IntegerField(required=False, default=1)
     page_size = serializers.IntegerField(required=False, default=10)
     category_id = serializers.IntegerField(required=False)
-    q = serializers.CharField(required=False)
+    q = serializers.CharField(required=False, default='')
 
     def validate(self, data):
         if data.get('page_size') < 1 or data.get('page') < 1:
@@ -261,11 +261,17 @@ class CorruptionRiskSerializer(serializers.Serializer):
     status = serializers.IntegerField()
 
 
+class CorruptionRiskMediaSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    filename = serializers.CharField()
+    file = serializers.FileField()
+
+
 class ConflictAlertTypeSerializer(serializers.Serializer):
     type = serializers.IntegerField(required=True)
 
     def validate(self, data):
-        if data.get('type') and data.get('type') not in [1, 2, 3]:
+        if data.get('type') is not None and data.get('type') not in [1, 2, 3]:
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Type must be 1, 2, or 3')
         return data
 
@@ -319,7 +325,7 @@ class OfficerAdviceSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data['created_at'] = instance.created_at
         data['officer_full_name'] = getattr(
-            instance.officer, 'first_name', '') + getattr(instance.officer, 'last_name', '')
+            instance.officer, 'first_name', '') + ' ' + getattr(instance.officer, 'last_name', '')
         return data
 
 
@@ -356,16 +362,22 @@ class TechnicalSupportSerializer(serializers.Serializer):
 class PaginatorValidator(serializers.Serializer):
     page = serializers.IntegerField(required=False, default=1)
     page_size = serializers.IntegerField(required=False, default=10)
+    from_date = serializers.DateField(required=False)
+    to_date = serializers.DateField(required=False)
 
     def validate(self, attrs):
         if attrs.get('page', 0) < 1 or attrs.get('page_size', 0) < 1:
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='page and page_size must be greater than 1')
+        if (attrs.get('from_date') and attrs.get('to_date')) and (attrs.get('from_date') > attrs.get('to_date')):
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='From date cannot be greater than To date')
         return super().validate(attrs)
 
 
 class TrainingParamValidator(PaginatorValidator):
     category_id = serializers.IntegerField(required=False)
     q = serializers.CharField(required=False, default='')
+    order_by = serializers.ChoiceField(choices=('new', 'old'), required=False, default='new')
+    popular = serializers.BooleanField(allow_null=True, default=False)
 
     def validate(self, attrs):
         if attrs.get('category_id') is not None and attrs.get('category_id') < 1:

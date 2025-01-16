@@ -7,7 +7,8 @@ from .models import (
     ViolationReport, TechnicalSupport, TrainingCategory,
     NewsCategory, HonestyTestCategory, HonestyTestStatistic,
     ViolationFile, GuiltyPerson, HonestyTestResult,
-    CorruptionRisk,  AnnouncementCategory, Announcement
+    CorruptionRisk, CorruptionRiskMedia,
+    AnnouncementCategory, Announcement
 )
 
 
@@ -189,3 +190,9 @@ class AnnouncementAdmin(admin.ModelAdmin):
     list_display_links = ('id', 'title')
     search_fields = ('title',)
 
+
+
+@admin.register(CorruptionRiskMedia)
+class CorruptionRiskMediaAdmin(admin.ModelAdmin):
+    list_display = ('id', 'filename')
+    list_display_links = ('id', 'filename')

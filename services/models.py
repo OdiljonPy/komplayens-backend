@@ -4,6 +4,7 @@ from django.db import models
 from abstarct_model.base_model import BaseModel
 from base.models import Region, District
 from .utils import validate_file_type_and_size
+from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 
 MEDIA_TYPE_CHOICES = (
@@ -105,8 +106,7 @@ class TrainingMedia(BaseModel):
     file = models.FileField(
         upload_to="trainings/media/", validators=[validate_file_type_and_size],
         verbose_name="Файл", blank=True, null=True)
-    video = models.URLField(
-        default='https://www.youtube.com/', verbose_name='URL-адрес видео на YouTube', blank=True, null=True)
+    video = models.URLField(verbose_name='URL-адрес видео на YouTube', blank=True, null=True)
     video_title = models.CharField(verbose_name='Название видео', blank=True, null=True)
     order = models.IntegerField(verbose_name="Очередь")
     type = models.CharField(max_length=5, choices=MEDIA_TYPE_CHOICES, editable=False, verbose_name="Тип")
@@ -123,6 +123,10 @@ class TrainingMedia(BaseModel):
             self.type = 'MP4'
 
         super().save(*args, **kwargs)
+
+    def clean(self):
+        if self.file and self.video:
+            raise ValidationError("You can't download a file with a video at the same time!")
 
     def __str__(self):
         return f"{str(self.id)} {self.training.name or ''}"
@@ -299,6 +303,16 @@ class CorruptionRisk(BaseModel):
     class Meta:
         verbose_name = 'Риск коррупции'
         verbose_name_plural = 'Риск коррупции'
+        ordering = ('-created_at',)
+
+
+class CorruptionRiskMedia(BaseModel):
+    filename = models.CharField(max_length=60, verbose_name='Имя файла')
+    file = models.FileField(upload_to='corruption_risk/media', verbose_name='Файл')
+
+    class Meta:
+        verbose_name = 'Коррупционный риск СМИ'
+        verbose_name_plural = 'Коррупционный риск СМИ'
         ordering = ('-created_at',)
 
 

@@ -28,3 +28,7 @@ class UserSerializer(serializers.Serializer):
 class UserLoginSerializer(serializers.Serializer):
     phone_number = serializers.CharField(required=True, validators=[phone_number_validation])
     password = serializers.CharField(required=True)
+
+
+class PasswordRecoverySerializer(serializers.Serializer):
+    phone_number = serializers.CharField(required=True, validators=[phone_number_validation])

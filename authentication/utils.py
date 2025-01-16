@@ -1,10 +1,8 @@
 import re
 import random
-from datetime import timedelta, datetime
-
+import string
 from exceptions.error_messages import ErrorCodes
 from exceptions.exception import CustomApiException
-from utils.send_otp_code import send_otp_code
 
 
 def phone_number_validation(value):
@@ -31,3 +29,14 @@ def create_customer(request):
         return customer
     customer = Customer.objects.create(ip_address=ip_address, user_agent=user_agent)
     return customer
+
+
+def generate_passwd():
+    return ''.join(random.sample(string.ascii_letters + string.digits, k=9))
+
+
+def send_password_sms():
+    from utils.send_otp_code import send_otp_code
+    new_password = generate_passwd()
+    send_otp_code(new_password)
+    return new_password

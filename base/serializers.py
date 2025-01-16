@@ -50,4 +50,3 @@ class BannerSerializer(serializers.Serializer):
     title = serializers.CharField()
     short_description = serializers.CharField()
     image = serializers.ImageField()
-    is_published = serializers.BooleanField()

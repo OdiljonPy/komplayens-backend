@@ -18,8 +18,8 @@ from .models import (
     OfficerAdvice, ReportType, NewsCategory,
     HonestyTestCategory, ViolationReport,
     HonestyTestResult, CorruptionRisk,
-    AnnouncementCategory, Announcement
-    HonestyTestResult, CorruptionRisk, CorruptionRiskMedia
+    AnnouncementCategory, Announcement,
+    CorruptionRiskMedia
 )
 from authentication.models import ContentViewer
 
@@ -37,8 +37,8 @@ from .serializers import (
     HonestyParamSerializer, HonestyTestSerializer, ViolationFileSerializer,
     GuiltyPersonSerializer, ViolationReportCreateSerializer,
     HonestyTestDefaultSerializer, CorruptionRiskSerializer,
-    CorruptionRiskParamValidator, AnnouncementCategorySerializer, AnnouncementSerializer
-    CorruptionRiskParamValidator, CorruptionRiskMediaSerializer
+    CorruptionRiskParamValidator, AnnouncementCategorySerializer,
+    AnnouncementSerializer, CorruptionRiskMediaSerializer
 )
 from .repository.training_paginator import training_paginator
 from .repository.organization_paginator import get_paginated_organizations

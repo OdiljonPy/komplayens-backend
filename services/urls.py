@@ -3,7 +3,7 @@ from .views import (
     OrganizationViewSet, TrainingViewSet, ElectronLibraryViewSet,
     NewsViewSet, HonestyViewSet, ConflictAlertViewSet,
     ProfessionalEthicsViewSet, OfficerAdviceViewSet, ViolationReportViewSet,
-    TechnicalSupportViewSet, CorruptionRiskViewSet
+    TechnicalSupportViewSet, CorruptionRiskViewSet, AnnouncementViewSet
 )
 
 urlpatterns = [
@@ -45,5 +45,9 @@ urlpatterns = [
     path('corruption/<int:pk>/', CorruptionRiskViewSet.as_view({'get': 'corruption_detail'})),
     path('corruption/media/', CorruptionRiskViewSet.as_view({'get': 'corruption_risk_media'})),
 
-    path('technical/support/', TechnicalSupportViewSet.as_view({'post': 'create_technical_support'}))
+    path('technical/support/', TechnicalSupportViewSet.as_view({'post': 'create_technical_support'})),
+    path('technical/support/', TechnicalSupportViewSet.as_view({'post': 'create_technical_support'})),
+    path('announcement/categories/', AnnouncementViewSet.as_view({'get': 'announcement_categories'})),
+    path('announcement/', AnnouncementViewSet.as_view({'get': 'announcement_list'})),
+    path('announcement/<int:pk>/', AnnouncementViewSet.as_view({'get': 'announcement_detail'}))
 ]

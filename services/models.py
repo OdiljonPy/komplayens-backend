@@ -88,7 +88,7 @@ class Training(BaseModel):
     category = models.ForeignKey(
         to='TrainingCategory', on_delete=models.SET_NULL, null=True, verbose_name='Название категории')
     is_published = models.BooleanField(default=False, verbose_name='Опубликовано')
-    view_count = models.PositiveIntegerField(default=0, verbose_name='Количество просмотров')
+    views = models.IntegerField(default=0, verbose_name='Просмотры')
 
     def __str__(self):
         return self.name
@@ -190,7 +190,7 @@ class News(BaseModel):
     category = models.ForeignKey(to='NewsCategory', on_delete=models.SET_NULL, null=True, verbose_name='Категория')
     is_published = models.BooleanField(default=False, verbose_name="Опубликован")
     published_date = models.DateField(null=True, blank=True, verbose_name="Дата публикации")
-    view_count = models.PositiveIntegerField(default=0, verbose_name='Количество просмотров')
+    views = models.IntegerField(default=0, verbose_name='Просмотры')
 
     def __str__(self):
         return self.title
@@ -253,7 +253,8 @@ class HonestyTestAnswer(BaseModel):
 
 class HonestyTestResult(BaseModel):
     customer = models.ForeignKey(to='authentication.Customer', on_delete=models.CASCADE, verbose_name='Клиент')
-    test = models.ForeignKey(to='HonestyTest', on_delete=models.CASCADE, related_name='test_result', verbose_name='Тест')
+    test = models.ForeignKey(to='HonestyTest', on_delete=models.CASCADE, related_name='test_result',
+                             verbose_name='Тест')
     answer = models.ForeignKey(to='HonestyTestAnswer', on_delete=models.CASCADE, verbose_name='Ответ')
     result = models.BooleanField(default=False, verbose_name='Результат')
 
@@ -267,9 +268,12 @@ class HonestyTestResult(BaseModel):
 
 
 class HonestyTestStatistic(BaseModel):
-    test_type = models.ForeignKey(to='HonestyTestCategory', on_delete=models.SET_NULL, null=True, related_name='stats_test_type', verbose_name='Тип теста')
-    customer = models.ForeignKey(to='authentication.Customer', on_delete=models.SET_NULL, null=True, verbose_name='Клиент')
-    organization = models.ForeignKey(to='Organization', on_delete=models.SET_NULL, blank=True, null=True, verbose_name='Организация')
+    test_type = models.ForeignKey(to='HonestyTestCategory', on_delete=models.SET_NULL, null=True,
+                                  related_name='stats_test_type', verbose_name='Тип теста')
+    customer = models.ForeignKey(to='authentication.Customer', on_delete=models.SET_NULL, null=True,
+                                 verbose_name='Клиент')
+    organization = models.ForeignKey(to='Organization', on_delete=models.SET_NULL, blank=True, null=True,
+                                     verbose_name='Организация')
 
     def __str__(self):
         return f'{self.organization} - {self.customer}'
@@ -476,4 +480,34 @@ class TechnicalSupport(BaseModel):
     class Meta:
         verbose_name = 'Техническая поддержка'
         verbose_name_plural = 'Техническая поддержка'
+        ordering = ('-created_at',)
+
+
+class AnnouncementCategory(BaseModel):
+    name = models.CharField(max_length=255, verbose_name='Название')
+
+    def __str__(self):
+        return str(self.name)
+
+    class Meta:
+        verbose_name = 'Категория объявления'
+        verbose_name_plural = 'Категории объявлений'
+        ordering = ('-created_at',)
+
+
+class Announcement(BaseModel):
+    category = models.ForeignKey(AnnouncementCategory, on_delete=models.CASCADE, verbose_name='Категория')
+    title = models.CharField(max_length=255, verbose_name='Заголовок')
+    description = HTMLField(verbose_name='Описание')
+    image = models.ImageField(upload_to='post/', verbose_name='Изображение')
+    is_published = models.BooleanField(default=False, verbose_name='Опубликовано')
+    published_date = models.DateField(blank=True, null=True, verbose_name='Дата публикации')
+    views = models.IntegerField(default=0, verbose_name='Просмотры')
+
+    def __str__(self):
+        return str(self.title)
+
+    class Meta:
+        verbose_name = 'Объявление'
+        verbose_name_plural = 'Объявления'
         ordering = ('-created_at',)

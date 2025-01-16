@@ -1,12 +1,15 @@
 from .models import (
     Region, District, FAQ,
-    AboutUs, Banner
+    AboutUs, Banner, StatisticYear,
+    RainbowStatistic, LinerStatistic
 )
 from .serializers import (
     RegionSerializer, DistrictSerializer,
     FAQSerializer, AboutUsSerializer,
     TypeSerializer, AboutUsTypeSerializer,
-    BannerSerializer
+    BannerSerializer, StatisticYearSerializer,
+    RainbowStatisticSerializer, LinerStatisticSerializer,
+    StatisticParamSerializer
 )
 from exceptions.exception import CustomApiException
 from exceptions.error_messages import ErrorCodes
@@ -94,3 +97,56 @@ class BannerViewSet(ViewSet):
         banners = Banner.objects.filter(is_published=True)[:3]
         serializer = BannerSerializer(banners, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+
+class StatisticsViewSet(ViewSet):
+    @swagger_auto_schema(
+        operation_summary='Statistic Year',
+        operation_description='Get Statistic Year',
+        responses={200: StatisticYearSerializer(many=True)},
+        tags=['Statistics']
+    )
+    def statistic_year(self, request):
+        statistic_year = StatisticYear.objects.all()
+        serializer = StatisticYearSerializer(statistic_year, many=True, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(name='year_id', in_=openapi.IN_QUERY,
+                              type=openapi.TYPE_INTEGER, description='Statistics Year ID'),
+        ],
+        operation_summary='Rainbow and Liner Statistics by year id',
+        operation_description='Get Rainbow and Liner Statistics by year id',
+        responses={200: RainbowStatisticSerializer()},
+        tags=['Statistics']
+    )
+    def statistics(self, request):
+        param_serializer = StatisticParamSerializer(data=request.query_params, context={'request': request})
+
+        if not param_serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, param_serializer.errors)
+        year_id = request.query_params.get('year_id')
+        if year_id:
+            rainbow_statistics = RainbowStatistic.objects.filter(year_id=year_id).first()
+            if not rainbow_statistics:
+                raise CustomApiException(ErrorCodes.NOT_FOUND, message='Rainbow statistic not found')
+            liner_statistics = LinerStatistic.objects.filter(year_id=year_id).order_by('-percentage')
+            if not liner_statistics:
+                raise CustomApiException(ErrorCodes.NOT_FOUND, message='Liner statistic not found')
+        else:
+            year = StatisticYear.objects.order_by('-created_at')[:1]
+            if not year:
+                raise CustomApiException(ErrorCodes.NOT_FOUND, message='Statistic year not found')
+            liner_statistics = LinerStatistic.objects.filter(year=year).order_by('-percentage')
+            if not liner_statistics:
+                raise CustomApiException(ErrorCodes.NOT_FOUND, message='Liner statistic not found')
+            rainbow_statistics = RainbowStatistic.objects.filter(year=year).first()
+            if not rainbow_statistics:
+                raise CustomApiException(ErrorCodes.NOT_FOUND, message='Rainbow statistic not found')
+
+
+        rainbow_serializer = RainbowStatisticSerializer(rainbow_statistics, context={'request': request})
+        liner_serializer = LinerStatisticSerializer(liner_statistics, many=True, context={'request': request})
+        return Response(data={'result': {'rainbow' : rainbow_serializer.data, 'liner': liner_serializer.data},
+                              'ok': True}, status=status.HTTP_200_OK)

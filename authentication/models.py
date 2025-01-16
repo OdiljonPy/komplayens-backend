@@ -1,4 +1,3 @@
-from uuid import uuid4
 from django.db import models
 from abstarct_model.base_model import BaseModel
 from .utils import phone_number_validation
@@ -38,21 +37,6 @@ class User(BaseModel):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ('-created_at',)
-
-
-class OTP(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    otp_key = models.UUIDField(default=uuid4)
-    otp_code = models.IntegerField()
-    request_count = models.IntegerField(default=0)
-
-    def __str__(self):
-        return str(self.id)
-
-    class Meta:
-        verbose_name = 'ОТП'
-        verbose_name_plural = 'ОТП'
         ordering = ('-created_at',)
 
 

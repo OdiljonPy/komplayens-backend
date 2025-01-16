@@ -706,7 +706,6 @@ class AnnouncementViewSet(ViewSet):
         response = get_paginated_announcement(request_data=data, context={'request': request},
                                               page=param_serializer.validated_data.get('page'),
                                               page_size=param_serializer.validated_data.get('page_size'))
-
         return Response(data={'result': response, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(

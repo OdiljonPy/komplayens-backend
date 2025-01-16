@@ -4,14 +4,17 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_yasg.utils import swagger_auto_schema
 from django.utils import timezone
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import check_password, make_password
 from exceptions.error_messages import ErrorCodes
 from exceptions.exception import CustomApiException
 from .models import User
-from .utils import is_user_created
+from .utils import (
+    is_user_created, send_password_sms
+)
 
 from .serializers import (
-    UserCreateSerializer, UserSerializer, UserLoginSerializer
+    UserCreateSerializer, UserSerializer,
+    UserLoginSerializer, PasswordRecoverySerializer
 )
 
 
@@ -105,3 +108,24 @@ class UserViewSet(ViewSet):
             raise CustomApiException(ErrorCodes.NOT_FOUND)
         serializer = UserSerializer(user, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_summary='Password recovery',
+        operation_description='Recover a password',
+        request_body=PasswordRecoverySerializer(),
+        tags=["User"],
+    )
+    def password_recovery(self, request):
+        serializer = PasswordRecoverySerializer(data=request.data)
+        if not serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
+        phone_number = serializer.validated_data.get('phone_number')
+        user = User.objects.filter(phone_number=phone_number).first()
+        if not user:
+            raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)
+        if user.is_active == 2:
+            raise CustomApiException(ErrorCodes.USER_BLOCKED)
+        new_password = send_password_sms()
+        user.password = make_password(new_password)
+        user.save(update_fields=['password'])
+        return Response(data={'result': 'Password sent', 'ok': True}, status=status.HTTP_200_OK)

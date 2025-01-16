@@ -1,7 +1,5 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
-from exceptions.exception import CustomApiException
-from exceptions.error_messages import ErrorCodes
 from .utils import phone_number_validation
 from .models import User
 
@@ -9,7 +7,7 @@ from .models import User
 class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'password', 'phone_number', 'email')
+        fields = ('id', 'organization', 'first_name', 'last_name', 'password', 'phone_number')
         extra_kwargs = {'password': {'write_only': True}}
 
     def save(self, **kwargs):
@@ -20,22 +18,13 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
+    organization = serializers.ReadOnlyField(source='organization.id')
     first_name = serializers.CharField()
     last_name = serializers.CharField()
     phone_number = serializers.CharField()
-    email = serializers.EmailField()
     role = serializers.IntegerField()
 
 
 class UserLoginSerializer(serializers.Serializer):
     phone_number = serializers.CharField(required=True, validators=[phone_number_validation])
     password = serializers.CharField(required=True)
-
-
-class OTPSerializer(serializers.Serializer):
-    otp_key = serializers.UUIDField(required=True)
-    otp_code = serializers.IntegerField(required=True)
-
-
-class ResendOTPSerializer(serializers.Serializer):
-    otp_key = serializers.UUIDField(required=True)

@@ -1,10 +1,13 @@
 from datetime import datetime
+from django.db.models import F
+from django.utils import timezone
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.db.models import Q
+
 from exceptions.exception import CustomApiException
 from exceptions.error_messages import ErrorCodes
 from .models import (
@@ -14,8 +17,10 @@ from .models import (
     ConflictAlert, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType, NewsCategory,
     HonestyTestCategory, ViolationReport,
-    HonestyTestResult, CorruptionRisk
+    HonestyTestResult, CorruptionRisk,
+    AnnouncementCategory, Announcement
 )
+from authentication.models import ContentViewer
 
 from .serializers import (
     CategoryOrganizationSerializer, OrganizationSerializer,
@@ -31,7 +36,7 @@ from .serializers import (
     HonestyParamSerializer, HonestyTestSerializer, ViolationFileSerializer,
     GuiltyPersonSerializer, ViolationReportCreateSerializer,
     HonestyTestDefaultSerializer, CorruptionRiskSerializer,
-    CorruptionRiskParamValidator
+    CorruptionRiskParamValidator, AnnouncementCategorySerializer, AnnouncementSerializer
 )
 from .repository.training_paginator import training_paginator
 from .repository.organization_paginator import get_paginated_organizations
@@ -40,6 +45,7 @@ from .repository.electron_library_paginator import get_paginated_e_library
 from .repository.profession_paginator import profession_paginator
 from .repository.officer_advice_paginator import officer_advice_paginator
 from .repository.corruption_risk_paginator import corruption_risk_paginator
+from .repository.announcement_paginator import get_paginated_announcement
 from authentication.utils import create_customer
 from .utils import (
     file_one_create, file_two_create, file_three_create,
@@ -133,6 +139,17 @@ class TrainingViewSet(ViewSet):
         data = Training.objects.filter(id=pk).first()
         if not data:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
+        today = timezone.now().date()
+        customer = create_customer(request)
+        content_viewer = ContentViewer.objects.filter(content_id=pk, customer=customer, content_type=3).first()
+        if not content_viewer:
+            ContentViewer.objects.create(content_id=pk, customer=customer, content_type=3, view_day=today)
+            data.views += 1
+            data.save(update_fields=['views'])
+        elif content_viewer.view_day < today:
+            ContentViewer.objects.update(content_id=pk, customer=customer, content_type=3, view_day=today)
+            data.views += 1
+            data.save(update_fields=['views'])
         serializer = TrainingDetailSerializer(data, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -225,7 +242,7 @@ class NewsViewSet(ViewSet):
             {'new': '-created_at', 'old': 'created_at'}.get(params.get('order_by')),
         ]
 
-        params.get('popular') and order_by.append('-view_count')
+        params.get('popular') and order_by.append('-views')
 
         data = News.objects.filter(filter_, is_published=True).order_by(*order_by)
         result = news_paginator(
@@ -242,6 +259,19 @@ class NewsViewSet(ViewSet):
         data = News.objects.filter(id=pk).first()
         if not data:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
+        today = timezone.now().date()
+        customer = create_customer(request)
+        content_viewer = ContentViewer.objects.filter(content_id=pk, customer=customer, content_type=2).first()
+
+        if not content_viewer:
+            ContentViewer.objects.create(content_id=pk, customer=customer, content_type=2, view_day=today)
+            data.views += 1
+            data.save(update_fields=['views'])
+
+        elif content_viewer.view_day < today:
+            ContentViewer.objects.update(content_id=pk, customer=customer, content_type=2, view_day=today)
+            data.views += 1
+            data.save(update_fields=['views'])
         serializer = NewsDetailSerializer(data, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -321,7 +351,7 @@ class HonestyViewSet(ViewSet):
         organization_id = query_params.validated_data.get('organization_id')
 
         if HonestyTestResult.objects.filter(test__category_id=category_id, customer_id=customer.id).exists():
-            raise CustomApiException(ErrorCodes.FORBIDDEN, message='You have already solved this test')
+            raise CustomApiException(ErrorCodes.INVALID_INPUT, message='You have already solved this test')
 
         serializer = HonestyTestResultSerializer(data=request.data, many=True, context={'request': request})
         if not serializer.is_valid():
@@ -642,3 +672,63 @@ class TechnicalSupportViewSet(ViewSet):
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
         serializer.save()
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_201_CREATED)
+
+
+class AnnouncementViewSet(ViewSet):
+    @swagger_auto_schema(
+        operation_summary='Announcement Category',
+        operation_description='Category of Announcement',
+        responses={200: AnnouncementCategorySerializer(many=True)},
+        tags=['Announcement']
+    )
+    def announcement_categories(self, request):
+        categories = AnnouncementCategory.objects.all()
+        serializer = AnnouncementCategorySerializer(categories, many=True, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
+            openapi.Parameter(name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
+            openapi.Parameter(name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
+        ],
+        operation_summary='Announcements List',
+        operation_description='List of Announcements',
+        responses={200: AnnouncementSerializer(many=True)},
+        tags=['Announcement']
+    )
+    def announcement_list(self, request):
+        param_serializer = ParamValidateSerializer(data=request.query_params, context={'request': request})
+        if not param_serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=param_serializer.errors)
+        category_id = param_serializer.validated_data.get('category_id')
+        data = Announcement.objects.filter(category_id=category_id, is_published=True)
+        response = get_paginated_announcement(request_data=data, context={'request': request},
+                                              page=param_serializer.validated_data.get('page'),
+                                              page_size=param_serializer.validated_data.get('page_size'))
+        return Response(data={'result': response, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_summary='Announcements detail',
+        operation_description='Detail of Announcements',
+        responses={200: AnnouncementSerializer()},
+        tags=['Announcement']
+    )
+    def announcement_detail(self, request, pk):
+        announcement = Announcement.objects.filter(id=pk, is_published=True).first()
+        if not announcement:
+            raise CustomApiException(ErrorCodes.NOT_FOUND, message='Announcement not found')
+
+        today = timezone.now().date()
+        customer = create_customer(request)
+        content_viewer = ContentViewer.objects.filter(content_id=pk, customer=customer, content_type=1).first()
+        if not content_viewer:
+            ContentViewer.objects.create(content_id=pk, customer=customer, content_type=1, view_day=today)
+            announcement.views += 1
+            announcement.save(update_fields=['views'])
+        elif content_viewer.view_day < today:
+            ContentViewer.objects.update(content_id=pk, customer=customer, content_type=1, view_day=today)
+            announcement.views += 1
+            announcement.save(update_fields=['views'])
+        serializer = AnnouncementSerializer(announcement, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)

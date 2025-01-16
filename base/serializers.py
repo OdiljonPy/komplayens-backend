@@ -74,3 +74,8 @@ class LinerStatisticSerializer(serializers.Serializer):
 
 class StatisticParamSerializer(serializers.Serializer):
     year_id = serializers.IntegerField(required=False)
+
+    def validate(self, data):
+        if data.get('year_id') and data.get('year_id') < 1:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Statistic year_id must be positive integer')
+        return data

@@ -126,25 +126,19 @@ class StatisticsViewSet(ViewSet):
 
         if not param_serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, param_serializer.errors)
-        year_id = request.query_params.get('year_id')
-        if year_id:
-            rainbow_statistics = RainbowStatistic.objects.filter(year_id=year_id).first()
-            if not rainbow_statistics:
-                raise CustomApiException(ErrorCodes.NOT_FOUND, message='Rainbow statistic not found')
-            liner_statistics = LinerStatistic.objects.filter(year_id=year_id).order_by('-percentage')
-            if not liner_statistics:
-                raise CustomApiException(ErrorCodes.NOT_FOUND, message='Liner statistic not found')
-        else:
-            year = StatisticYear.objects.order_by('-created_at')[:1]
-            if not year:
-                raise CustomApiException(ErrorCodes.NOT_FOUND, message='Statistic year not found')
-            liner_statistics = LinerStatistic.objects.filter(year=year).order_by('-percentage')
-            if not liner_statistics:
-                raise CustomApiException(ErrorCodes.NOT_FOUND, message='Liner statistic not found')
-            rainbow_statistics = RainbowStatistic.objects.filter(year=year).first()
-            if not rainbow_statistics:
-                raise CustomApiException(ErrorCodes.NOT_FOUND, message='Rainbow statistic not found')
+        year_id = param_serializer.validated_data.get('year_id')
+        if not year_id:
+            year = StatisticYear.objects.order_by('-created_at').first()
+            year_id = getattr(year, 'id', None)
+        if not year_id:
+            raise CustomApiException(ErrorCodes.NOT_FOUND, message='Statistic Year does not exist')
 
+        rainbow_statistics = RainbowStatistic.objects.filter(year_id=year_id).first()
+        if not rainbow_statistics:
+            raise CustomApiException(ErrorCodes.NOT_FOUND, message='Rainbow statistic not found')
+        liner_statistics = LinerStatistic.objects.filter(year_id=year_id).order_by('-percentage')
+        if not liner_statistics:
+            raise CustomApiException(ErrorCodes.NOT_FOUND, message='Liner statistic not found')
 
         rainbow_serializer = RainbowStatisticSerializer(rainbow_statistics, context={'request': request})
         liner_serializer = LinerStatisticSerializer(liner_statistics, many=True, context={'request': request})

@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     RegionViewSet, DistrictViewSet, FAQViewSet,
-    AboutUsViewSet, BannerViewSet
+    AboutUsViewSet, BannerViewSet, StatisticsViewSet
 )
 
 urlpatterns = [
@@ -10,4 +10,6 @@ urlpatterns = [
     path('faqs/', FAQViewSet.as_view({'get': 'list'}), name='faq_list'),
     path('about/', AboutUsViewSet.as_view({'get': 'last'}), name='last_about'),
     path('banner/', BannerViewSet.as_view({'get': 'banner_list'}), name='banners_list'),
+    path('statistic/year/', StatisticsViewSet.as_view({'get': 'statistic_year'}), name='statistic_year'),
+    path('statistic/', StatisticsViewSet.as_view({'get': 'statistics'}), name='statistics'),
 ]

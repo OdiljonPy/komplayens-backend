@@ -104,7 +104,6 @@ class ElectronLibrarySerializer(serializers.Serializer):
     edition_year = serializers.DateField()
     file = serializers.FileField()
     category = serializers.PrimaryKeyRelatedField(read_only=True)
-    is_published = serializers.BooleanField()
 
 
 class NewsCategorySerializer(serializers.Serializer):

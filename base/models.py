@@ -1,6 +1,9 @@
 from django.db import models
 from tinymce.models import HTMLField
 from abstarct_model.base_model import BaseModel
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 FAQ_TYPE_CHOICES = (
     (1, 'FAQ System'),
@@ -82,3 +85,57 @@ class Banner(BaseModel):
         verbose_name = 'Баннер'
         verbose_name_plural = 'Баннеры'
         ordering = ('-created_at',)
+
+
+class StatisticYear(BaseModel):
+    year = models.PositiveIntegerField(
+        validators=[MinValueValidator(1990), MaxValueValidator(timezone.now().year)], unique=True, verbose_name='Год')
+
+    def __str__(self):
+        return str(self.year)
+
+    class Meta:
+        verbose_name = 'Статистика по году'
+        verbose_name_plural = 'Статистика по годам'
+        ordering = ('-year',)
+
+
+class RainbowStatistic(BaseModel):
+    year = models.ForeignKey(StatisticYear, on_delete=models.SET_NULL, null=True, verbose_name='Год')
+    high = models.FloatField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)],
+                             verbose_name='Высокий процент')
+    satisfactory = models.FloatField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)],
+                                     verbose_name='Удовлетворительный процент')
+    unsatisfactory = models.FloatField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)],
+                                       verbose_name='Неудовлетворительный процент')
+
+    def __str__(self):
+        return f'Статистика за {self.year}'
+
+    def clean(self):
+        if self.year and RainbowStatistic.objects.filter(year=self.year).exists():
+            raise ValidationError(f"Для года {self.year} уже существует запись статистики по радуге.")
+
+    class Meta:
+        verbose_name = 'Статистика по радуге'
+        verbose_name_plural = 'Статистика по радуге'
+        ordering = ('-year',)
+
+
+class LinerStatistic(BaseModel):
+    year = models.ForeignKey(StatisticYear, on_delete=models.SET_NULL, null=True, verbose_name='Год')
+    name = models.CharField(max_length=300, verbose_name='Наименование')
+    percentage = models.FloatField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)],
+                                verbose_name='Процент')
+
+    def __str__(self):
+        return str(self.name)
+
+    def clean(self):
+        if self.year and LinerStatistic.objects.filter(year=self.year).count() >= 10:
+            raise ValidationError(f"Для года {self.year} уже существует 10 записей линейной статистики.")
+
+    class Meta:
+        verbose_name = 'Линейная статистика'
+        verbose_name_plural = 'Линейная статистика'
+        ordering = ('-year',)

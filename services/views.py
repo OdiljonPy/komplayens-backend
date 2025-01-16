@@ -169,15 +169,13 @@ class TrainingViewSet(ViewSet):
             raise CustomApiException(ErrorCodes.NOT_FOUND)
         today = timezone.now().date()
         customer = create_customer(request)
-        content_viewer = ContentViewer.objects.filter(content_id=pk, customer=customer, content_type=3).first()
+        content_viewer = ContentViewer.objects.filter(
+            content_id=pk, customer=customer, content_type=3, view_day=today).first()
         if not content_viewer:
             ContentViewer.objects.create(content_id=pk, customer=customer, content_type=3, view_day=today)
             data.views += 1
             data.save(update_fields=['views'])
-        elif content_viewer.view_day < today:
-            ContentViewer.objects.update(content_id=pk, customer=customer, content_type=3, view_day=today)
-            data.views += 1
-            data.save(update_fields=['views'])
+
         serializer = TrainingDetailSerializer(data, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -293,17 +291,14 @@ class NewsViewSet(ViewSet):
             raise CustomApiException(ErrorCodes.NOT_FOUND)
         today = timezone.now().date()
         customer = create_customer(request)
-        content_viewer = ContentViewer.objects.filter(content_id=pk, customer=customer, content_type=2).first()
+        content_viewer = ContentViewer.objects.filter(
+            content_id=pk, customer=customer, content_type=2, view_day=today).first()
 
         if not content_viewer:
             ContentViewer.objects.create(content_id=pk, customer=customer, content_type=2, view_day=today)
             data.views += 1
             data.save(update_fields=['views'])
 
-        elif content_viewer.view_day < today:
-            ContentViewer.objects.update(content_id=pk, customer=customer, content_type=2, view_day=today)
-            data.views += 1
-            data.save(update_fields=['views'])
         serializer = NewsDetailSerializer(data, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -770,13 +765,10 @@ class AnnouncementViewSet(ViewSet):
 
         today = timezone.now().date()
         customer = create_customer(request)
-        content_viewer = ContentViewer.objects.filter(content_id=pk, customer=customer, content_type=1).first()
+        content_viewer = ContentViewer.objects.filter(
+            content_id=pk, customer=customer, content_type=1, view_day=today).first()
         if not content_viewer:
             ContentViewer.objects.create(content_id=pk, customer=customer, content_type=1, view_day=today)
-            announcement.views += 1
-            announcement.save(update_fields=['views'])
-        elif content_viewer.view_day < today:
-            ContentViewer.objects.update(content_id=pk, customer=customer, content_type=1, view_day=today)
             announcement.views += 1
             announcement.save(update_fields=['views'])
         serializer = AnnouncementSerializer(announcement, context={'request': request})

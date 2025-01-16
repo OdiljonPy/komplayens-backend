@@ -7,7 +7,7 @@ from .models import (
     ViolationReport, TechnicalSupport, TrainingCategory,
     NewsCategory, HonestyTestCategory, HonestyTestStatistic,
     ViolationFile, GuiltyPerson, HonestyTestResult,
-    CorruptionRisk
+    CorruptionRisk, CorruptionRiskMedia
 )
 
 
@@ -176,3 +176,9 @@ class GuiltyPersonAdmin(admin.ModelAdmin):
 class CorruptionRiskAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'status')
     list_display_links = ('id', 'name')
+
+
+@admin.register(CorruptionRiskMedia)
+class CorruptionRiskMediaAdmin(admin.ModelAdmin):
+    list_display = ('id', 'filename')
+    list_display_links = ('id', 'filename')

@@ -43,6 +43,7 @@ urlpatterns = [
 
     path('corruption/', CorruptionRiskViewSet.as_view({'get': 'corruption_list'})),
     path('corruption/<int:pk>/', CorruptionRiskViewSet.as_view({'get': 'corruption_detail'})),
+    path('corruption/media/', CorruptionRiskViewSet.as_view({'get': 'corruption_risk_media'})),
 
     path('technical/support/', TechnicalSupportViewSet.as_view({'post': 'create_technical_support'}))
 ]

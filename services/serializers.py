@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from exceptions.exception import CustomApiException
 from exceptions.error_messages import ErrorCodes
+from django.conf import settings
 from .models import (
     HonestyTest, HonestyTestAnswer, GuiltyPerson,
     ViolationFile, ConflictAlert, OfficerAdvice,
@@ -37,11 +38,28 @@ class HonestyParamSerializer(serializers.Serializer):
 
 
 class CategoryOrganizationSerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
 
 
 class OrganizationSerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+        self.fields['address'] = serializers.CharField(source=f'address_{language}')
+
     id = serializers.IntegerField(read_only=True)
     category = serializers.PrimaryKeyRelatedField(read_only=True)
     name = serializers.CharField()
@@ -60,11 +78,28 @@ class OrganizationSerializer(serializers.Serializer):
 
 
 class TrainingCategorySerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
 
 
 class TrainingSerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+        self.fields['description'] = serializers.CharField(source=f'description_{language}')
+
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
     image = serializers.ImageField()
@@ -76,6 +111,15 @@ class TrainingSerializer(serializers.Serializer):
 
 
 class TrainingMediaSerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['filename'] = serializers.CharField(source=f'filename_{language}')
+        self.fields['video_title'] = serializers.CharField(source=f'video_title_{language}')
+
     id = serializers.IntegerField(read_only=True)
     training = serializers.PrimaryKeyRelatedField(read_only=True)
     filename = serializers.CharField()
@@ -91,11 +135,30 @@ class TrainingDetailSerializer(TrainingSerializer):
 
 
 class ElectronLibraryCategorySerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(max_length=40)
 
 
 class ElectronLibrarySerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+        self.fields['author'] = serializers.CharField(source=f'author_{language}')
+        self.fields['edition_author'] = serializers.CharField(source=f'edition_author_{language}')
+        self.fields['edition_type'] = serializers.CharField(source=f'edition_type_{language}')
+
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(max_length=80)
     author = serializers.CharField(max_length=100)
@@ -107,11 +170,29 @@ class ElectronLibrarySerializer(serializers.Serializer):
 
 
 class NewsCategorySerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
 
 
 class NewsSerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['title'] = serializers.CharField(source=f'title_{language}')
+        self.fields['short_description'] = serializers.CharField(source=f'short_description_{language}')
+        self.fields['description'] = serializers.CharField(source=f'description_{language}')
+
     id = serializers.IntegerField(read_only=True)
     title = serializers.CharField()
     short_description = serializers.CharField()
@@ -125,7 +206,7 @@ class NewsSerializer(serializers.Serializer):
 class NewsDetailSerializer(NewsSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        category =getattr(instance.category, 'id')
+        category = getattr(instance.category, 'id')
         additional = News.objects.filter(
             is_published=True, category_id=category).exclude(id=instance.id).order_by('-views')[:3]
         if not additional:
@@ -135,6 +216,14 @@ class NewsDetailSerializer(NewsSerializer):
 
 
 class HonestyTestCategorySerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
     image = serializers.ImageField()
@@ -142,15 +231,29 @@ class HonestyTestCategorySerializer(serializers.Serializer):
 
 
 class HonestyTestAnswerSerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['answer'] = serializers.CharField(source=f'answer_{language}')
+
     id = serializers.IntegerField(read_only=True)
-    question = serializers.CharField()
     answer = serializers.CharField()
     is_true = serializers.BooleanField()
 
 
 class HonestyTestDefaultAnswerSerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['answer'] = serializers.CharField(source=f'answer_{language}')
+
     id = serializers.IntegerField(read_only=True)
-    question = serializers.CharField()
     answer = serializers.CharField()
     is_true = serializers.SerializerMethodField()
 
@@ -165,6 +268,15 @@ class HonestyTestUserResultSerializer(serializers.ModelSerializer):
 
 
 class HonestyTestDefaultSerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['question'] = serializers.CharField(source=f'question_{language}')
+        self.fields['advice'] = serializers.CharField(source=f'advice_{language}')
+
     id = serializers.IntegerField(read_only=True)
     question = serializers.CharField()
     advice = serializers.CharField()
@@ -180,6 +292,15 @@ class HonestyTestDefaultSerializer(serializers.Serializer):
 
 
 class HonestyTestSerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['question'] = serializers.CharField(source=f'question_{language}')
+        self.fields['advice'] = serializers.CharField(source=f'advice_{language}')
+
     id = serializers.IntegerField(read_only=True)
     question = serializers.CharField()
     advice = serializers.CharField()
@@ -194,8 +315,8 @@ class HonestyTestSerializer(serializers.Serializer):
             return HonestyTestUserResultSerializer(result).data
         return None
 
-class HonestyTestResultSerializer(serializers.ModelSerializer):
 
+class HonestyTestResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = HonestyTestResult
         fields = ('id', 'test', 'answer', 'result')
@@ -220,8 +341,8 @@ class HonestyTestResultSerializer(serializers.ModelSerializer):
         return HonestyTestResult.objects.create(
             test=validated_data.get('test'),
             answer=validated_data.get('answer'),
-            result = validated_data.get('answer').is_true,
-            customer = customer
+            result=validated_data.get('answer').is_true,
+            customer=customer
         )
 
 
@@ -251,6 +372,16 @@ class HonestyTestResultStatisticSerializer(serializers.ModelSerializer):
 
 
 class CorruptionRiskSerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+        self.fields['short_desc'] = serializers.CharField(source=f'short_desc_{language}')
+        self.fields['result'] = serializers.CharField(source=f'result_{language}')
+
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
     short_desc = serializers.CharField()
@@ -264,6 +395,14 @@ class CorruptionRiskSerializer(serializers.Serializer):
 
 
 class CorruptionRiskMediaSerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['filename'] = serializers.CharField(source=f'filename_{language}')
+
     id = serializers.IntegerField(read_only=True)
     filename = serializers.CharField()
     file = serializers.FileField()
@@ -306,11 +445,29 @@ class ConflictAlertSerializer(serializers.ModelSerializer):
 
 
 class ProfessionSerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
 
 
 class ProfessionalEthicsSerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['title'] = serializers.CharField(source=f'title_{language}')
+        self.fields['description'] = serializers.CharField(source=f'description_{language}')
+        self.fields['case'] = serializers.CharField(source=f'case_{language}')
+
     id = serializers.IntegerField(read_only=True)
     title = serializers.CharField()
     description = serializers.CharField()
@@ -332,6 +489,14 @@ class OfficerAdviceSerializer(serializers.ModelSerializer):
 
 
 class ReportTypeSerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
 
@@ -447,11 +612,28 @@ class CorruptionRiskParamValidator(PaginatorValidator):
 
 
 class AnnouncementCategorySerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
 
 
 class AnnouncementSerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['title'] = serializers.CharField(source=f'title_{language}')
+        self.fields['description'] = serializers.CharField(source=f'description_{language}')
+
     id = serializers.IntegerField(read_only=True)
     category = serializers.SerializerMethodField(read_only=True)
     title = serializers.CharField()
@@ -464,11 +646,27 @@ class AnnouncementSerializer(serializers.Serializer):
 
 
 class HandoutCategorySerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
 
 
 class HandoutSerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
     file = serializers.FileField()

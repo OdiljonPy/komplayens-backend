@@ -226,7 +226,7 @@ class HonestyTest(BaseModel):
     class Meta:
         verbose_name = 'Тест на честность'
         verbose_name_plural = 'Тест на честность'
-        ordering = ('-created_at',)
+        ordering = ('?',)
 
 
 class HonestyTestAnswer(BaseModel):
@@ -241,7 +241,7 @@ class HonestyTestAnswer(BaseModel):
     class Meta:
         verbose_name = 'Ответ на тест на честность'
         verbose_name_plural = 'Ответ на тест на честность'
-        ordering = ('-created_at',)
+        ordering = ('?',)
         constraints = [
             models.UniqueConstraint(
                 fields=['question'],

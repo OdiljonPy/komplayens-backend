@@ -317,7 +317,7 @@ class NewsViewSet(ViewSet):
 class HonestyViewSet(ViewSet):
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter(name='q', in_=openapi.IN_QUERY, description='Search'),
+            openapi.Parameter(name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, description='Search'),
         ],
         operation_summary='Honesty test categories',
         operation_description='List of all honest test categories',

@@ -71,8 +71,10 @@ class AboutUsViewSet(ViewSet):
         operation_summary='Get last About Us',
         operation_description='Get last About Us',
         manual_parameters=[
-            openapi.Parameter(name='type', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
-                              description="About US Type, choices: 1, 2, 3"),],
+            openapi.Parameter(
+                name='type', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                description="About US Type, choices: 1-'About Conflict of Interest' "
+                            "2-'About Corruption Risk' 3-'About Promotion and Useful Information'"),],
         responses={200: AboutUsSerializer()},
         tags=['AboutUs']
     )

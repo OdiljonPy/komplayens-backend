@@ -461,3 +461,14 @@ class AnnouncementSerializer(serializers.Serializer):
 
     def get_category(self, obj):
         return obj.category.name
+
+
+class HandoutCategorySerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField()
+
+
+class HandoutSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField()
+    file = serializers.FileField()

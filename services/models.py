@@ -511,3 +511,31 @@ class Announcement(BaseModel):
         verbose_name = 'Объявление'
         verbose_name_plural = 'Объявления'
         ordering = ('-created_at',)
+
+
+class HandoutCategory(BaseModel):
+    name = models.CharField(max_length=100, verbose_name='Название')
+
+    def __str__(self):
+        return str(self.name)
+
+    class Meta:
+        verbose_name = 'Категория раздаточного материала'
+        verbose_name_plural = 'Категории раздаточных материало'
+        ordering = ('-created_at',)
+
+
+class Handout(BaseModel):
+    category = models.ForeignKey(HandoutCategory, on_delete=models.CASCADE, verbose_name='Категория')
+    name = models.CharField(max_length=100, verbose_name='Название')
+    file = models.FileField(upload_to='handout/',
+    validators=[FileExtensionValidator(['pdf', 'jpg', 'jpeg', 'png', 'zip', 'xls', 'xlsx' ])], verbose_name='Файл')
+    is_published = models.BooleanField(default=True, verbose_name='Опубликовано')
+
+    def __str__(self):
+        return str(self.name)
+
+    class Meta:
+        verbose_name = 'Раздаточный материал'
+        verbose_name_plural = 'Раздаточные материалы'
+        ordering = ('-created_at',)

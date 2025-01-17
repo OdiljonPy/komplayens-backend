@@ -92,11 +92,15 @@ class OrganizationViewSet(ViewSet):
     @swagger_auto_schema(
         operation_summary='Organization Categories',
         operation_description='List of all organization categories',
+        manual_parameters=[
+            openapi.Parameter(name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, description="Search term"),
+        ],
         responses={200: CategoryOrganizationSerializer()},
         tags=['Organization']
     )
     def organization_categories(self, request):
-        data = CategoryOrganization.objects.all()
+        search_param = request.query_params.get('q') or ''
+        data = CategoryOrganization.objects.filter(name__icontains=search_param)
         serializer = CategoryOrganizationSerializer(data, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -559,7 +563,7 @@ class OfficerAdviceViewSet(ViewSet):
         result = officer_advice_paginator(
             data, context={'request': request}, page=params.get('page'), page_size=params.get('page_size')
         )
-        return Response(data={'result': result, 'ok': True}, status=status.HTTP_200_OK)
+        return Response(data={'result': result, 'comment_count': len(data), 'ok': True}, status=status.HTTP_200_OK)
 
 
 class ViolationReportViewSet(ViewSet):

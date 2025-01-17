@@ -125,9 +125,12 @@ class NewsSerializer(serializers.Serializer):
 class NewsDetailSerializer(NewsSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data['additional'] = NewsSerializer(
-            News.objects.filter(is_published=True).order_by('-views')[:3],
-            many=True, context=self.context).data
+        category =getattr(instance.category, 'id')
+        additional = News.objects.filter(
+            is_published=True, category_id=category).exclude(id=instance.id).order_by('-views')[:3]
+        if not additional:
+            additional = News.objects.filter(is_published=True).exclude(id=instance.id).order_by('-views')[:3]
+        data['additional'] = NewsSerializer(additional, many=True, context=self.context).data
         return data
 
 

@@ -24,24 +24,25 @@ class FAQSerializer(serializers.Serializer):
 
 class AboutUsSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    short_desc = serializers.CharField()
-    link = serializers.CharField()
+    title = serializers.CharField()
+    short_description = serializers.CharField()
+    image = serializers.ImageField()
     type = serializers.IntegerField()
 
 
 class TypeSerializer(serializers.Serializer):
-    type = serializers.IntegerField(required=False, default=1)
+    type = serializers.IntegerField()
 
     def validate(self, data):
-        if data.get('type') and data.get('type') not in [1, 2, 3]:
+        if data.get('type') not in [1, 2, 3]:
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='FAQ type must be 1, 2, or 3')
         return data
 
 
 class AboutUsTypeSerializer(TypeSerializer):
     def validate(self, data):
-        if data.get('type') and data.get('type') not in [1, 2, 3, 4]:
-            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='AboutUs type must be 1, 2, 3 or 4')
+        if data.get('type') not in [1, 2, 3]:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='AboutUs type must be 1, 2 or 3')
         return data
 
 

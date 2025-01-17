@@ -24,8 +24,8 @@ class FAQAdmin(admin.ModelAdmin):
 
 @admin.register(AboutUs)
 class AboutUsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'link', 'type')
-    list_display_links = ('id', 'link')
+    list_display = ('id', 'title', 'type')
+    list_display_links = ('id', 'title')
 
 
 @admin.register(Banner)

@@ -12,10 +12,9 @@ FAQ_TYPE_CHOICES = (
 )
 
 ABOUT_TYPE_CHOICES = (
-    (1, 'About System'),
-    (2, 'About Violation Report'),
-    (3, 'About Conflict of Interest'),
-    (4, 'About Corruption Risk'),
+    (1, 'About Conflict of Interest'),
+    (2, 'About Corruption Risk'),
+    (3, 'About Promotion and Useful Information')
 )
 
 
@@ -59,9 +58,11 @@ class FAQ(BaseModel):
 
 
 class AboutUs(BaseModel):
-    short_desc = models.TextField(max_length=300, verbose_name='Краткое описание')
-    link = models.CharField(max_length=40, verbose_name='Ссылка')
+    title = models.CharField(max_length=200, verbose_name='Название')
+    short_description = models.TextField(max_length=500, verbose_name='Краткое описание')
+    image = models.ImageField(upload_to='about/', verbose_name='Изображение')
     type = models.IntegerField(choices=ABOUT_TYPE_CHOICES, default=1, verbose_name='Категория')
+    is_published = models.BooleanField(default=True, verbose_name='Oпубликован')
 
     def __str__(self):
         return str(self.id)
@@ -75,7 +76,7 @@ class AboutUs(BaseModel):
 class Banner(BaseModel):
     title = models.CharField(max_length=200, verbose_name='Название')
     short_description = models.CharField(max_length=300, verbose_name='Краткое описание')
-    image = models.ImageField(upload_to='banner', verbose_name='Изображение')
+    image = models.ImageField(upload_to='banner/', verbose_name='Изображение')
     is_published = models.BooleanField(default=False, verbose_name='Oпубликован')
 
     def __str__(self):

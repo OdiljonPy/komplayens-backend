@@ -51,7 +51,7 @@ class FAQViewSet(ViewSet):
         operation_summary='List of FAQs',
         operation_description='List of FAQs',
         manual_parameters=[
-            openapi.Parameter(name='type', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, default=1,
+            openapi.Parameter(name='type', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
                               description="FAQ Type, choices: 1, 2, 3"),],
         responses={200: FAQSerializer(many=True)},
         tags=['FAQ']
@@ -71,8 +71,8 @@ class AboutUsViewSet(ViewSet):
         operation_summary='Get last About Us',
         operation_description='Get last About Us',
         manual_parameters=[
-            openapi.Parameter(name='type', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, default=1,
-                              description="About US Type, choices: 1, 2, 3, 4"), ],
+            openapi.Parameter(name='type', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                              description="About US Type, choices: 1, 2, 3"),],
         responses={200: AboutUsSerializer()},
         tags=['AboutUs']
     )
@@ -81,7 +81,9 @@ class AboutUsViewSet(ViewSet):
         if not param_serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, param_serializer.errors)
         about_us_type = param_serializer.validated_data.get('type')
-        about_us = AboutUs.objects.filter(type=about_us_type).order_by('-created_at').first()
+        about_us = AboutUs.objects.filter(type=about_us_type, is_published=True).order_by('-created_at').first()
+        if not about_us:
+            raise CustomApiException(ErrorCodes.NOT_FOUND, message='This type of About Us not Found')
         serializer = AboutUsSerializer(about_us, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 

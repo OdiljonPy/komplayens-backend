@@ -124,8 +124,6 @@ class NewsSerializer(serializers.Serializer):
 
 class NewsDetailSerializer(NewsSerializer):
     def to_representation(self, instance):
-        from django.db import connection
-        connection.queries.clear()
         data = super().to_representation(instance)
         category =getattr(instance.category, 'id')
         additional = News.objects.filter(

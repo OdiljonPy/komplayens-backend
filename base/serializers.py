@@ -1,11 +1,19 @@
 from rest_framework import serializers
 from exceptions.exception import CustomApiException
 from exceptions.error_messages import ErrorCodes
-from django.utils import timezone
+from config import settings
 
 class RegionSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
 
 
 class DistrictSerializer(serializers.Serializer):
@@ -14,12 +22,30 @@ class DistrictSerializer(serializers.Serializer):
     region = serializers.PrimaryKeyRelatedField(read_only=True)
     region_name = serializers.CharField(source='region.name', read_only=True)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+        self.fields['region_name'] = serializers.CharField(source=f'region.name_{language}')
+
 
 class FAQSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     question = serializers.CharField()
     answer = serializers.CharField()
     type = serializers.IntegerField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['question'] = serializers.CharField(source=f'question_{language}')
+        self.fields['answer'] = serializers.CharField(source=f'answer_{language}')
 
 
 class AboutUsSerializer(serializers.Serializer):
@@ -28,6 +54,15 @@ class AboutUsSerializer(serializers.Serializer):
     short_description = serializers.CharField()
     image = serializers.ImageField()
     type = serializers.IntegerField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['title'] = serializers.CharField(source=f'title_{language}')
+        self.fields['short_description'] = serializers.CharField(source=f'short_description_{language}')
 
 
 class TypeSerializer(serializers.Serializer):
@@ -52,6 +87,15 @@ class BannerSerializer(serializers.Serializer):
     short_description = serializers.CharField()
     image = serializers.ImageField()
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['title'] = serializers.CharField(source=f'title_{language}')
+        self.fields['short_description'] = serializers.CharField(source=f'short_description_{language}')
+
 
 class StatisticYearSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
@@ -71,6 +115,14 @@ class LinerStatisticSerializer(serializers.Serializer):
     year_id = serializers.IntegerField()
     name = serializers.CharField()
     percentage = serializers.FloatField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
 
 
 class StatisticParamSerializer(serializers.Serializer):

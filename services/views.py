@@ -316,13 +316,19 @@ class NewsViewSet(ViewSet):
 
 class HonestyViewSet(ViewSet):
     @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, description='Search'),
+        ],
         operation_summary='Honesty test categories',
         operation_description='List of all honest test categories',
         responses={200: HonestyTestCategorySerializer(many=True)},
         tags=['HonestyTest']
     )
     def honesty_test_categories(self, request):
-        data = HonestyTestCategory.objects.filter(in_term=True)
+        filter_ = Q()
+        if request.query_params.get('q'):
+            filter_ &= Q(name__icontains=request.query_params.get('q'))
+        data = HonestyTestCategory.objects.filter(filter_, in_term=True)
         serializer = HonestyTestCategorySerializer(data, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 

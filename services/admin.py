@@ -27,19 +27,17 @@ class OrganizationAdmin(admin.ModelAdmin):
     list_filter = ('region', 'district')
 
 
+class TrainingMediaInline(admin.TabularInline):
+    model = TrainingMedia
+    extra = 1
+
+
 @admin.register(Training)
 class TrainingAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     list_display_links = ('id', 'name')
     search_fields = ('name', 'description')
-
-
-@admin.register(TrainingMedia)
-class TrainingMediaAdmin(admin.ModelAdmin):
-    list_display = ('id', 'order', 'type')
-    list_display_links = ('id', 'order')
-    search_fields = ('order',)
-    list_filter = ('type',)
+    inlines = (TrainingMediaInline,)
 
 
 @admin.register(News)
@@ -65,11 +63,17 @@ class ElectronLibraryAdmin(admin.ModelAdmin):
     list_filter = ('is_published', 'category')
 
 
+class HonestyTestAnswerInline(admin.TabularInline):
+    model = HonestyTestAnswer
+    extra = 1
+
+
 @admin.register(HonestyTest)
 class HonestyTestAdmin(admin.ModelAdmin):
     list_display = ('id', 'question')
     list_display_links = ('id', 'question')
     search_fields = ('question',)
+    inlines = (HonestyTestAnswerInline,)
 
 
 @admin.register(HonestyTestCategory)
@@ -77,13 +81,6 @@ class HonestyTestCategoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     list_display_links = ('id', 'name')
     search_fields = ('name',)
-
-
-@admin.register(HonestyTestAnswer)
-class HonestyTestAnswerAdmin(admin.ModelAdmin):
-    list_display = ('id', 'question', 'answer')
-    list_display_links = ('id', 'question')
-    search_fields = ('question__question', 'answer')
 
 
 @admin.register(HonestyTestStatistic)
@@ -133,12 +130,18 @@ class ReportTypeAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
+class ViolationFileInline(admin.TabularInline):
+    model = ViolationFile
+    extra = 1
+
+
 @admin.register(ViolationReport)
 class ViolationReportAdmin(admin.ModelAdmin):
     list_display = ('id', 'organization', 'event_time', 'report_type')
     list_display_links = ('id', 'organization')
     list_filter = ('report_type',)
     search_fields = ('comment',)
+    inlines = (ViolationFileInline,)
 
 
 @admin.register(TechnicalSupport)
@@ -161,12 +164,6 @@ class NewsCategoryAdmin(admin.ModelAdmin):
     list_display_links = ('id', 'name')
 
 
-@admin.register(ViolationFile)
-class ViolationFileAdmin(admin.ModelAdmin):
-    list_display = ('id', 'report')
-    list_display_links = ('id', 'report')
-
-
 @admin.register(GuiltyPerson)
 class GuiltyPersonAdmin(admin.ModelAdmin):
     list_display = ('id', 'full_name', 'report')
@@ -177,6 +174,8 @@ class GuiltyPersonAdmin(admin.ModelAdmin):
 class CorruptionRiskAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'status')
     list_display_links = ('id', 'name')
+
+
 @admin.register(AnnouncementCategory)
 class AnnouncementCategoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
@@ -189,7 +188,6 @@ class AnnouncementAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'category')
     list_display_links = ('id', 'title')
     search_fields = ('title',)
-
 
 
 @admin.register(CorruptionRiskMedia)

@@ -19,7 +19,8 @@ from .models import (
     HonestyTestCategory, ViolationReport,
     HonestyTestResult, CorruptionRisk,
     AnnouncementCategory, Announcement,
-    CorruptionRiskMedia
+    CorruptionRiskMedia, HandoutCategory,
+    Handout
 )
 from authentication.models import ContentViewer
 
@@ -38,7 +39,8 @@ from .serializers import (
     GuiltyPersonSerializer, ViolationReportCreateSerializer,
     HonestyTestDefaultSerializer, CorruptionRiskSerializer,
     CorruptionRiskParamValidator, AnnouncementCategorySerializer,
-    AnnouncementSerializer, CorruptionRiskMediaSerializer
+    AnnouncementSerializer, CorruptionRiskMediaSerializer,
+    HandoutCategorySerializer, HandoutSerializer
 )
 from .repository.training_paginator import training_paginator
 from .repository.organization_paginator import get_paginated_organizations
@@ -48,6 +50,7 @@ from .repository.profession_paginator import profession_paginator
 from .repository.officer_advice_paginator import officer_advice_paginator
 from .repository.corruption_risk_paginator import corruption_risk_paginator
 from .repository.announcement_paginator import get_paginated_announcement
+from .repository.handout_paginator import get_paginated_handout
 from authentication.utils import create_customer
 from .utils import (
     file_one_create, file_two_create, file_three_create,
@@ -779,3 +782,44 @@ class AnnouncementViewSet(ViewSet):
             announcement.save(update_fields=['views'])
         serializer = AnnouncementSerializer(announcement, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+
+class HandoutViewSet(ViewSet):
+    @swagger_auto_schema(
+        operation_summary='Handout Category',
+        operation_description='Category of Handout',
+        responses={200: HandoutCategorySerializer(many=True)},
+        tags=['Handout']
+    )
+    def handout_categories(self, request):
+        categories = HandoutCategory.objects.all()
+        serializer = HandoutCategorySerializer(categories, many=True, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Page number'),
+            openapi.Parameter(name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Page size'),
+            openapi.Parameter(name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Category id'),
+            openapi.Parameter(name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, description='Query string'),
+        ],
+        operation_summary='Handout List',
+        operation_description='List of Handouts',
+        responses={200: HandoutSerializer(many=True)},
+        tags=['Handout']
+    )
+    def handout(self, request):
+        param_serializer = ParamValidateSerializer(data=request.query_params, context={'request': request})
+        if not param_serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=param_serializer.errors)
+
+        filter_ = Q()
+        if param_serializer.validated_data.get('category_id'):
+            filter_ &= Q(category_id=param_serializer.validated_data.get('category_id'))
+        if param_serializer.validated_data.get('q'):
+            filter_ &= Q(name__icontains=param_serializer.validated_data.get('q'))
+        handouts = Handout.objects.filter(filter_, is_published=True)
+        response = get_paginated_handout(request_data=handouts, context={'request': request},
+                                         page=param_serializer.validated_data.get('page'),
+                                         page_size=param_serializer.validated_data.get('page_size'))
+        return Response(data={'result': response, 'ok': True}, status=status.HTTP_200_OK)

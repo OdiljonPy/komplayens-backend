@@ -8,7 +8,8 @@ from .models import (
     NewsCategory, HonestyTestCategory, HonestyTestStatistic,
     ViolationFile, GuiltyPerson, HonestyTestResult,
     CorruptionRisk, CorruptionRiskMedia,
-    AnnouncementCategory, Announcement
+    AnnouncementCategory, Announcement,
+    HandoutCategory, Handout
 )
 
 
@@ -196,3 +197,16 @@ class AnnouncementAdmin(admin.ModelAdmin):
 class CorruptionRiskMediaAdmin(admin.ModelAdmin):
     list_display = ('id', 'filename')
     list_display_links = ('id', 'filename')
+
+
+@admin.register(HandoutCategory)
+class HandoutCategoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    list_display_links = ('id', 'name')
+
+
+@admin.register(Handout)
+class HandoutAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    list_display_links = ('id', 'name')
+    search_fields = ('name',)

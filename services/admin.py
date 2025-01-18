@@ -208,3 +208,4 @@ class HandoutAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     list_display_links = ('id', 'name')
     search_fields = ('name',)
+    readonly_fields = ('type',)

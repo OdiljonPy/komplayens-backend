@@ -854,7 +854,7 @@ class HandoutViewSet(ViewSet):
             openapi.Parameter(name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, description='Query string'),
         ],
         operation_summary='Handout List',
-        operation_description='List of Handouts',
+        operation_description="List of Handouts, File type may be one of ['pdf', 'jpg', 'jpeg', 'png', 'zip', 'xls']",
         responses={200: HandoutSerializer(many=True)},
         tags=['Handout']
     )

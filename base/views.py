@@ -1,7 +1,8 @@
 from .models import (
     Region, District, FAQ,
     AboutUs, Banner, StatisticYear,
-    RainbowStatistic, LinerStatistic
+    RainbowStatistic, LinerStatistic,
+    QuarterlyStatistic
 )
 from .serializers import (
     RegionSerializer, DistrictSerializer,
@@ -9,7 +10,7 @@ from .serializers import (
     TypeSerializer, AboutUsTypeSerializer,
     BannerSerializer, StatisticYearSerializer,
     RainbowStatisticSerializer, LinerStatisticSerializer,
-    StatisticParamSerializer
+    StatisticParamSerializer, QuarterlyStatisticSerializer
 )
 from exceptions.exception import CustomApiException
 from exceptions.error_messages import ErrorCodes
@@ -132,7 +133,7 @@ class StatisticsViewSet(ViewSet):
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, param_serializer.errors)
         year_id = param_serializer.validated_data.get('year_id')
         if not year_id:
-            year = StatisticYear.objects.order_by('-created_at').first()
+            year = StatisticYear.objects.order_by('-year').first()
             year_id = getattr(year, 'id', None)
         if not year_id:
             raise CustomApiException(ErrorCodes.NOT_FOUND, message='Statistic Year does not exist')
@@ -148,3 +149,29 @@ class StatisticsViewSet(ViewSet):
         liner_serializer = LinerStatisticSerializer(liner_statistics, many=True, context={'request': request})
         return Response(data={'result': {'rainbow' : rainbow_serializer.data, 'liner': liner_serializer.data},
                               'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(name='year_id', in_=openapi.IN_QUERY,
+                              type=openapi.TYPE_INTEGER, description='Statistics Year ID'),
+        ],
+        operation_summary='Quarterly Statistics by year id',
+        operation_description='Get Quarterly Statistics by year id',
+        responses={200: QuarterlyStatisticSerializer(many=True)},
+        tags=['Statistics']
+    )
+    def quarterly_statistics(self, request):
+        param_serializer = StatisticParamSerializer(data=request.query_params, context={'request': request})
+        if not param_serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, param_serializer.errors)
+        year_id = param_serializer.validated_data.get('year_id')
+        if not year_id:
+            year = StatisticYear.objects.order_by('-year').first()
+            year_id = getattr(year, 'id', None)
+        if not year_id:
+            raise CustomApiException(ErrorCodes.NOT_FOUND, message='Statistic Year does not exist')
+        quarterly_statistics = QuarterlyStatistic.objects.filter(year_id=year_id)
+        if not quarterly_statistics:
+            raise CustomApiException(ErrorCodes.NOT_FOUND, message='Quarterly statistic not found in this year')
+        serializer = QuarterlyStatisticSerializer(quarterly_statistics, many=True, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)

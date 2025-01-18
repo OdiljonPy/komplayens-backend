@@ -13,11 +13,6 @@ MEDIA_TYPE_CHOICES = (
     ('PPT', 'PPT'),
 )
 
-QUESTION_TYPE_CHOICES = (
-    (1, 'One answer'),
-    (2, 'Many answers'),
-)
-
 CONFLICT_ALERT_TYPE_CHOICES = (
     (1, "About existing conflicts of interest (notification)"),
     (2, "About the employee's possible conflict of interest (declaration)"),

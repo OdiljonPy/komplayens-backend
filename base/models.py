@@ -140,3 +140,45 @@ class LinerStatistic(BaseModel):
         verbose_name = 'Линейная статистика'
         verbose_name_plural = 'Линейная статистика'
         ordering = ('-year',)
+
+
+class QuarterlyStatistic(BaseModel):
+    year = models.ForeignKey(StatisticYear, on_delete=models.SET_NULL, null=True, verbose_name='Год')
+    name = models.CharField(max_length=150, verbose_name='Название')
+    first_quarter = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(35)],
+                                        verbose_name='Первый квартал')
+    second_quarter =models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(30)],
+                                        verbose_name='Второй квартал')
+    third_quarter =models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(15)],
+                                       verbose_name='Третий квартал')
+    fourth_quarter =models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(15)],
+                                        verbose_name='Четвертый квартал')
+    fifth_quarter =models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(5)],
+                                       verbose_name='Пятый квартал')
+    last_year = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)],
+                                    null=True, blank=True, verbose_name='Предыдущий год')
+    this_year = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)],
+                                    verbose_name='Текущий год')
+
+    def __str__(self):
+        return str(self.name)
+
+    def save(self, *args, **kwargs):
+        self.this_year = (self.first_quarter +
+                          self.second_quarter +
+                          self.third_quarter +
+                          self.fourth_quarter +
+                          self.fifth_quarter)
+        super().save(*args, **kwargs)
+
+    @property
+    def difference(self):
+        if self.last_year:
+            return self.this_year - self.last_year
+        else:
+            return
+
+    class Meta:
+        verbose_name = 'Квартальная статистика'
+        verbose_name_plural = 'Квартальная статистика'
+        ordering = ('-year',)

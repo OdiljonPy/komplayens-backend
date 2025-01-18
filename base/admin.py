@@ -1,5 +1,8 @@
 from django.contrib import admin
-from .models import Region, District, FAQ, AboutUs, Banner, StatisticYear, RainbowStatistic, LinerStatistic
+from .models import (Region, District, FAQ,
+                     AboutUs, Banner, StatisticYear,
+                     RainbowStatistic, LinerStatistic,
+                     QuarterlyStatistic)
 
 
 @admin.register(Region)
@@ -51,3 +54,11 @@ class RainbowStatisticAdmin(admin.ModelAdmin):
 class LinerStatisticAdmin(admin.ModelAdmin):
     list_display = ('id', 'year', 'name', 'percentage')
     list_display_links = ('id', 'year')
+
+
+@admin.register(QuarterlyStatistic)
+class QuarterlyStatisticAdmin(admin.ModelAdmin):
+    list_display = ('id', 'year', 'name', 'this_year', 'last_year')
+    list_display_links = ('id', 'year')
+    search_fields = ('name',)
+    readonly_fields = ('this_year',)

@@ -104,7 +104,7 @@ class StatisticYearSerializer(serializers.Serializer):
 
 class RainbowStatisticSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    year_id = serializers.IntegerField()
+    year = serializers.PrimaryKeyRelatedField(read_only=True)
     high = serializers.FloatField()
     satisfactory = serializers.FloatField()
     unsatisfactory = serializers.FloatField()
@@ -112,7 +112,7 @@ class RainbowStatisticSerializer(serializers.Serializer):
 
 class LinerStatisticSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    year_id = serializers.IntegerField()
+    year = serializers.PrimaryKeyRelatedField(read_only=True)
     name = serializers.CharField()
     percentage = serializers.FloatField()
 
@@ -132,3 +132,28 @@ class StatisticParamSerializer(serializers.Serializer):
         if data.get('year_id') and data.get('year_id') < 1:
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Statistic year_id must be positive integer')
         return data
+
+
+class QuarterlyStatisticSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    year = serializers.PrimaryKeyRelatedField(read_only=True)
+    name = serializers.CharField()
+    first_quarter = serializers.IntegerField()
+    second_quarter = serializers.IntegerField()
+    third_quarter = serializers.IntegerField()
+    fourth_quarter = serializers.IntegerField()
+    fifth_quarter = serializers.IntegerField()
+    last_year = serializers.IntegerField()
+    this_year = serializers.IntegerField()
+    difference = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+
+    def get_difference(self, obj):
+        return obj.difference

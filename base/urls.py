@@ -12,4 +12,5 @@ urlpatterns = [
     path('banner/', BannerViewSet.as_view({'get': 'banner_list'}), name='banners_list'),
     path('statistic/year/', StatisticsViewSet.as_view({'get': 'statistic_year'}), name='statistic_year'),
     path('statistic/', StatisticsViewSet.as_view({'get': 'statistics'}), name='statistics'),
+    path('statistic/quarterly/', StatisticsViewSet.as_view({'get': 'quarterly_statistics'}), name='quarterly_statistic'),
 ]

@@ -184,7 +184,7 @@ class NewsCategory(BaseModel):
 
 class News(BaseModel):
     title = models.CharField(max_length=300, verbose_name="Заголовок")
-    short_description = models.CharField(max_length=150, verbose_name='Краткое описание')
+    short_description = models.CharField(max_length=400, verbose_name='Краткое описание')
     description = HTMLField(verbose_name="Описание")
     image = models.ImageField(upload_to="news/", verbose_name="Изображение")
     category = models.ForeignKey(to='NewsCategory', on_delete=models.SET_NULL, null=True, verbose_name='Категория')
@@ -286,7 +286,7 @@ class HonestyTestStatistic(BaseModel):
 
 class CorruptionRisk(BaseModel):
     name = models.CharField(max_length=80, verbose_name='Название')
-    short_desc = models.TextField(max_length=120, verbose_name='Краткое описание')
+    short_desc = models.TextField(max_length=500, verbose_name='Краткое описание')
     image = models.ImageField(upload_to='corruption_risk/', verbose_name='Изображение')
 
     form_url = models.URLField(verbose_name='URL-адрес Формы')

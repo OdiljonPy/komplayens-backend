@@ -1,5 +1,4 @@
 from datetime import datetime
-from django.db.models import F
 from django.utils import timezone
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
@@ -83,8 +82,14 @@ class OrganizationViewSet(ViewSet):
         filter_ = Q()
         if category_id:
             filter_ &= Q(category_id=category_id)
-        if request.query_params.get('q'):
-            filter_ &= Q(name__icontains=request.query_params.get('q'))
+
+        search_param = param_serializer.validated_data.get('q')
+        if search_param:
+            filter_ &= Q(
+                Q(name_uz__icontains=search_param) |
+                Q(name_ru__icontains=search_param) |
+                Q(name_en__icontains=search_param)
+            )
         organizations = Organization.objects.filter(filter_)
         response = get_paginated_organizations(
             request_data=organizations, context={'request': request}, page=param_serializer.validated_data.get('page'),
@@ -102,8 +107,15 @@ class OrganizationViewSet(ViewSet):
         tags=['Organization']
     )
     def organization_categories(self, request):
-        search_param = request.query_params.get('q') or ''
-        data = CategoryOrganization.objects.filter(name__icontains=search_param)
+        filter_ = Q()
+        search_param = request.query_params.get('q')
+        if search_param:
+            filter_ &= Q(
+                Q(name_uz__icontains=search_param) |
+                Q(name_ru__icontains=search_param) |
+                Q(name_en__icontains=search_param)
+            )
+        data = CategoryOrganization.objects.filter(filter_)
         serializer = CategoryOrganizationSerializer(data, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -141,7 +153,17 @@ class TrainingViewSet(ViewSet):
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
         params = serializer.data
-        filter_ = Q(name__icontains=params.get('q')) | Q(description__icontains=params.get('q'))
+        filter_ = Q()
+        search_param = params.get('q')
+        if search_param:
+            filter_ &= Q(
+                Q(name_uz__icontains=search_param) |
+                Q(name_ru__icontains=search_param) |
+                Q(name_en__icontains=search_param) |
+                Q(description_uz__icontains=search_param) |
+                Q(description_ru__icontains=search_param) |
+                Q(description_en__icontains=search_param)
+            )
 
         if params.get('from_date'):
             filter_ &= Q(created_at__gte=params.get('from_date'))
@@ -225,8 +247,13 @@ class ElectronLibraryViewSet(ViewSet):
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=param_serializer.errors)
         category_id = param_serializer.validated_data.get('category_id')
         filter_ = Q()
-        if request.query_params.get('q'):
-            filter_ &= Q(name__icontains=request.query_params.get('q'))
+        search_param = request.query_params.get('q')
+        if search_param:
+            filter_ &= Q(
+                Q(name_uz__icontains=search_param) |
+                Q(name_ru__icontains=search_param) |
+                Q(name_en__icontains=search_param)
+            )
         if category_id:
             filter_ &= Q(category_id=category_id)
         data = ElectronLibrary.objects.filter(filter_, is_published=True)
@@ -333,8 +360,13 @@ class HonestyViewSet(ViewSet):
     )
     def honesty_test_categories(self, request):
         filter_ = Q()
-        if request.query_params.get('q'):
-            filter_ &= Q(name__icontains=request.query_params.get('q'))
+        search_param = request.query_params.get('q')
+        if search_param:
+            filter_ &= Q(
+                Q(name_uz__icontains=search_param) |
+                Q(name_ru__icontains=search_param) |
+                Q(name_en__icontains=search_param)
+            )
         data = HonestyTestCategory.objects.filter(filter_, in_term=True)
         serializer = HonestyTestCategorySerializer(data, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
@@ -487,11 +519,20 @@ class ProfessionalEthicsViewSet(ViewSet):
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
         params = serializer.data
-        filter_ = (
-                Q(title__icontains=params.get('q'))
-                | Q(description__icontains=params.get('q'))
-                | Q(case__icontains=params.get('q'))
-        )
+        filter_ = Q()
+        search_param = params.get('q')
+        if search_param:
+            filter_ &= Q(
+                Q(title_uz__icontains=search_param) |
+                Q(title_ru__icontains=search_param) |
+                Q(title_en__icontains=search_param) |
+                Q(description_uz__icontains=search_param) |
+                Q(description_ru__icontains=search_param) |
+                Q(description_en__icontains=search_param) |
+                Q(case_uz__icontains=search_param) |
+                Q(case_ru__icontains=search_param) |
+                Q(case_en__icontains=search_param)
+            )
         if params.get('profession_id'):
             filter_ &= Q(profession_id=params.get('profession_id'))
         data = ProfessionalEthics.objects.filter(filter_)
@@ -603,6 +644,9 @@ class ViolationReportViewSet(ViewSet):
         full_names = request.data.getlist('full_name')
         positions = request.data.getlist('position')
         phone_numbers = request.data.getlist('phone_number')
+        if len(full_names) == 0:
+            raise CustomApiException(ErrorCodes.INVALID_INPUT, message='The guilty party must have information.')
+
         if len(full_names) != len(phone_numbers) or len(full_names) != len(positions):
             ViolationReport.objects.filter(id=violation.id).delete()
             raise CustomApiException(
@@ -803,8 +847,10 @@ class HandoutViewSet(ViewSet):
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Page number'),
-            openapi.Parameter(name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Page size'),
-            openapi.Parameter(name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Category id'),
+            openapi.Parameter(name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                              description='Page size'),
+            openapi.Parameter(name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                              description='Category id'),
             openapi.Parameter(name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, description='Query string'),
         ],
         operation_summary='Handout List',
@@ -820,8 +866,13 @@ class HandoutViewSet(ViewSet):
         filter_ = Q()
         if param_serializer.validated_data.get('category_id'):
             filter_ &= Q(category_id=param_serializer.validated_data.get('category_id'))
-        if param_serializer.validated_data.get('q'):
-            filter_ &= Q(name__icontains=param_serializer.validated_data.get('q'))
+        search_param = param_serializer.validated_data.get('q')
+        if search_param:
+            filter_ &= Q(
+                Q(name__icontains=search_param) |
+                Q(name__icontains=search_param) |
+                Q(name__icontains=search_param)
+            )
         handouts = Handout.objects.filter(filter_, is_published=True)
         response = get_paginated_handout(request_data=handouts, context={'request': request},
                                          page=param_serializer.validated_data.get('page'),

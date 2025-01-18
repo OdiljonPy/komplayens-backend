@@ -644,6 +644,9 @@ class ViolationReportViewSet(ViewSet):
         full_names = request.data.getlist('full_name')
         positions = request.data.getlist('position')
         phone_numbers = request.data.getlist('phone_number')
+        if len(full_names) == 0:
+            raise CustomApiException(ErrorCodes.INVALID_INPUT, message='The guilty party must have information.')
+
         if len(full_names) != len(phone_numbers) or len(full_names) != len(positions):
             ViolationReport.objects.filter(id=violation.id).delete()
             raise CustomApiException(

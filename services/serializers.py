@@ -326,23 +326,27 @@ class HonestyTestResultSerializer(serializers.ModelSerializer):
     def validate(self, data):
         test = data.get('test')
         answer = data.get('answer')
+        test_id = getattr(test, 'id', None)
+        answer_id = getattr(answer, 'id', None)
 
         if not HonestyTest.objects.filter(id=test.id):
-            raise CustomApiException(ErrorCodes.NOT_FOUND, message=f"Test ID {test.id} not found.")
+            raise CustomApiException(ErrorCodes.NOT_FOUND, message=f"Test ID {test_id} not found.")
 
-        if not HonestyTestAnswer.objects.filter(id=answer.id, question_id=test.id):
+        if answer_id and not HonestyTestAnswer.objects.filter(id=answer_id, question_id=test_id):
             raise CustomApiException(ErrorCodes.NOT_FOUND,
-                                     message=f"Test ID {test.id} and answer ID {answer.id} doesn't match.")
+                                     message=f"Test ID {test_id} and answer ID {answer_id} doesn't match.")
 
         return data
 
     def create(self, validated_data):
         from authentication.utils import create_customer
         customer = create_customer(self.context.get('request'))
+        answer = validated_data.get('answer')
+        result = getattr(answer, 'is_true', False)
         return HonestyTestResult.objects.create(
             test=validated_data.get('test'),
             answer=validated_data.get('answer'),
-            result=validated_data.get('answer').is_true,
+            result=result,
             customer=customer
         )
 

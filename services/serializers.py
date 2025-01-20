@@ -670,3 +670,4 @@ class HandoutSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
     file = serializers.FileField()
+    type = serializers.CharField()

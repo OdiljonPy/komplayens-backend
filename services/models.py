@@ -13,11 +13,6 @@ MEDIA_TYPE_CHOICES = (
     ('PPT', 'PPT'),
 )
 
-QUESTION_TYPE_CHOICES = (
-    (1, 'One answer'),
-    (2, 'Many answers'),
-)
-
 CONFLICT_ALERT_TYPE_CHOICES = (
     (1, "About existing conflicts of interest (notification)"),
     (2, "About the employee's possible conflict of interest (declaration)"),
@@ -529,8 +524,13 @@ class Handout(BaseModel):
     category = models.ForeignKey(HandoutCategory, on_delete=models.CASCADE, verbose_name='Категория')
     name = models.CharField(max_length=100, verbose_name='Название')
     file = models.FileField(upload_to='handout/',
-    validators=[FileExtensionValidator(['pdf', 'jpg', 'jpeg', 'png', 'zip', 'xls', 'xlsx' ])], verbose_name='Файл')
+    validators=[FileExtensionValidator(['pdf', 'jpg', 'jpeg', 'png', 'zip', 'xls'])], verbose_name='Файл')
     is_published = models.BooleanField(default=True, verbose_name='Опубликовано')
+    type = models.CharField(max_length=5, blank=True, null=True, verbose_name='Тип')
+
+    def save(self, *args, **kwargs):
+        self.type = str(self.file.name).split('.')[-1]
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return str(self.name)

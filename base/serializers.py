@@ -20,7 +20,6 @@ class DistrictSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
     region = serializers.PrimaryKeyRelatedField(read_only=True)
-    region_name = serializers.CharField(source='region.name', read_only=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -29,7 +28,6 @@ class DistrictSerializer(serializers.Serializer):
         if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.LANGUAGES:
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
-        self.fields['region_name'] = serializers.CharField(source=f'region.name_{language}')
 
 
 class FAQSerializer(serializers.Serializer):

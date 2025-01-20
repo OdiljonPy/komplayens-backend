@@ -709,9 +709,12 @@ class CorruptionRiskViewSet(ViewSet):
         objects = CorruptionRisk.objects.filter(end_date__lte=datetime.today(), status=1)
         for result in objects:
             sheet_id = result.excel_url.split("/d/")[1].split("/")[0]
-            result.result = get_google_sheet_statistics(sheets_id=sheet_id)
+            content = get_google_sheet_statistics(sheets_id=sheet_id)
+            result.result_uz = content
+            result.result_ru = content
+            result.result_en = content
             result.status = 2
-            result.save(update_fields=['result', 'status'])
+            result.save(update_fields=['result_uz', 'result_ru', 'result_en', 'status'])
 
         filter_ = Q()
         params = serializer.validated_data

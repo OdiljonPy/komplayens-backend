@@ -179,7 +179,7 @@ class NewsCategory(BaseModel):
 
 class News(BaseModel):
     title = models.CharField(max_length=300, verbose_name="Заголовок")
-    short_description = models.CharField(max_length=150, verbose_name='Краткое описание')
+    short_description = models.CharField(max_length=400, verbose_name='Краткое описание')
     description = HTMLField(verbose_name="Описание")
     image = models.ImageField(upload_to="news/", verbose_name="Изображение")
     category = models.ForeignKey(to='NewsCategory', on_delete=models.SET_NULL, null=True, verbose_name='Категория')
@@ -216,7 +216,7 @@ class HonestyTest(BaseModel):
     category = models.ForeignKey(to='HonestyTestCategory', on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
-        return str(self.id)
+        return f"{self.id} - {self.advice}"
 
     class Meta:
         verbose_name = 'Тест на честность'
@@ -231,7 +231,7 @@ class HonestyTestAnswer(BaseModel):
     is_true = models.BooleanField(default=False, verbose_name='')
 
     def __str__(self):
-        return str(self.id)
+        return f"{self.id} - {self.answer}"
 
     class Meta:
         verbose_name = 'Ответ на тест на честность'
@@ -254,7 +254,7 @@ class HonestyTestResult(BaseModel):
     result = models.BooleanField(default=False, verbose_name='Результат')
 
     def __str__(self):
-        return str(self.id)
+        return f"{self.id} - {self.answer.answer}"
 
     class Meta:
         verbose_name = 'Результат честного теста'
@@ -281,7 +281,7 @@ class HonestyTestStatistic(BaseModel):
 
 class CorruptionRisk(BaseModel):
     name = models.CharField(max_length=80, verbose_name='Название')
-    short_desc = models.TextField(max_length=120, verbose_name='Краткое описание')
+    short_desc = models.TextField(max_length=500, verbose_name='Краткое описание')
     image = models.ImageField(upload_to='corruption_risk/', verbose_name='Изображение')
 
     form_url = models.URLField(verbose_name='URL-адрес Формы')
@@ -293,7 +293,7 @@ class CorruptionRisk(BaseModel):
     status = models.IntegerField(choices=Corruption_Risk_STATUS, default=1, verbose_name='Статус')
 
     def __str__(self):
-        return str(self.id)
+        return self.name
 
     class Meta:
         verbose_name = 'Риск коррупции'
@@ -360,7 +360,7 @@ class Profession(BaseModel):
     name = models.CharField(max_length=80, verbose_name='Название')
 
     def __str__(self):
-        return str(self.id)
+        return self.name
 
     class Meta:
         verbose_name = 'Профессия'
@@ -375,7 +375,7 @@ class ProfessionalEthics(BaseModel):
     profession = models.ForeignKey(Profession, on_delete=models.CASCADE, verbose_name='Профессия')
 
     def __str__(self):
-        return str(self.id)
+        return self.title
 
     class Meta:
         verbose_name = 'Профессиональная этика'
@@ -391,7 +391,7 @@ class OfficerAdvice(BaseModel):
     is_published = models.BooleanField(default=True, verbose_name='Опубликовано')
 
     def __str__(self):
-        return str(self.id)
+        return f"{self.id} - {self.officer.first_name}"
 
     class Meta:
         verbose_name = 'Советы клиентам'
@@ -403,7 +403,7 @@ class ReportType(BaseModel):
     name = models.CharField(max_length=120, verbose_name='Название')
 
     def __str__(self):
-        return str(self.id)
+        return self.name
 
     class Meta:
         verbose_name = 'Тип отчета'
@@ -427,7 +427,7 @@ class ViolationReport(BaseModel):
     is_anonim = models.BooleanField(default=False, verbose_name='Аноним')
 
     def __str__(self):
-        return str(self.id)
+        return f"{self.id} - {self.organization.name}"
 
     class Meta:
         verbose_name = 'Отчет о нарушении'
@@ -457,7 +457,7 @@ class ViolationFile(BaseModel):
                                message='File must be in (pdf, jpg, jpeg, png, mp4)')])
 
     def __str__(self):
-        return str(self.id)
+        return f"{self.id} - {self.report.organization.name}"
 
     class Meta:
         verbose_name = 'Файл нарушения'
@@ -470,7 +470,7 @@ class TechnicalSupport(BaseModel):
     comment = models.TextField(max_length=300, verbose_name='Комментарий')
 
     def __str__(self):
-        return str(self.id)
+        return f"{self.id} Техническая поддержка"
 
     class Meta:
         verbose_name = 'Техническая поддержка'

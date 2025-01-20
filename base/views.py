@@ -41,7 +41,7 @@ class DistrictViewSet(ViewSet):
         responses={200: DistrictSerializer(many=True)},
         tags=['District']
     )
-    def list(self, request, pk=None):
+    def list(self, request, pk):
         districts = District.objects.filter(region_id=pk).select_related('region')
         serializer = DistrictSerializer(districts, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)

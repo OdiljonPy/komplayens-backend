@@ -165,21 +165,22 @@ class TrainingViewSet(ViewSet):
                 Q(description_en__icontains=search_param)
             )
 
+        if params.get('category_id'):
+            filter_ &= Q(category_id=params.get('category_id'))
+
+        order_by = []
+        if params.get('popular') is True:
+            order_by.append('-views')
+
         if params.get('from_date'):
             filter_ &= Q(created_at__gte=params.get('from_date'))
 
         if params.get('to_date'):
             filter_ &= Q(created_at__lte=params.get('to_date'))
 
-        if params.get('category_id'):
-            filter_ &= Q(category_id=params.get('category_id'))
-
-        order_by = [
-            {'new': '-created_at', 'old': 'created_at'}.get('order_by'),
-        ]
-
-        if params.get('popular') is not None:
-            order_by.append('-view_count')
+        order_by.append(
+            {'new': '-created_at', 'old': 'created_at'}.get(params.get('order_by'))
+        )
 
         data = Training.objects.filter(filter_, is_published=True).order_by(*order_by)
         result = training_paginator(
@@ -303,7 +304,9 @@ class NewsViewSet(ViewSet):
             filter_ &= Q(category_id=params.get('category_id'))
 
         order_by = []
-        params.get('popular') and order_by.append('-view_count')
+        if params.get('popular') is True:
+            order_by.append('-views')
+
         order_by.append(
             {'new': '-created_at', 'old': 'created_at'}.get(params.get('order_by'))
         )
@@ -792,9 +795,14 @@ class AnnouncementViewSet(ViewSet):
 
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter(name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
-            openapi.Parameter(name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
-            openapi.Parameter(name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER),
+            openapi.Parameter(
+                name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Page number'),
+            openapi.Parameter(
+                name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Page size number'),
+            openapi.Parameter(
+                name='popular', in_=openapi.IN_QUERY, type=openapi.TYPE_BOOLEAN, description='Popular status boolean'),
+            openapi.Parameter(
+                name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Category ID'),
         ],
         operation_summary='Announcements List',
         operation_description='List of Announcements',
@@ -805,11 +813,20 @@ class AnnouncementViewSet(ViewSet):
         param_serializer = ParamValidateSerializer(data=request.query_params, context={'request': request})
         if not param_serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=param_serializer.errors)
-        category_id = param_serializer.validated_data.get('category_id')
-        data = Announcement.objects.filter(category_id=category_id, is_published=True)
-        response = get_paginated_announcement(request_data=data, context={'request': request},
-                                              page=param_serializer.validated_data.get('page'),
-                                              page_size=param_serializer.validated_data.get('page_size'))
+        params = param_serializer.validated_data
+        filter_ = Q()
+        if params.get('category_id'):
+            filter_ &= Q(category_id=params.get('category_id'))
+
+        order_by = []
+        if params.get('popular') is True:
+            order_by.append('-views')
+        order_by.append('-created_at')
+
+        data = Announcement.objects.filter(filter_, is_published=True).order_by(*order_by)
+        response = get_paginated_announcement(
+            request_data=data, context={'request': request}, page=param_serializer.validated_data.get('page'),
+            page_size=param_serializer.validated_data.get('page_size'))
         return Response(data={'result': response, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(

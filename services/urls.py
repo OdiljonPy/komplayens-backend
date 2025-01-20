@@ -40,7 +40,7 @@ urlpatterns = [
          name='list_officer_advice'),
 
     path('violation/report/', ViolationReportViewSet.as_view({'post': 'create_violation_report'})),
-    path('violation/report/types/', ViolationReportViewSet.as_view({'post': 'report_types'})),
+    path('violation/report/types/', ViolationReportViewSet.as_view({'get': 'report_types'})),
 
     path('corruption/', CorruptionRiskViewSet.as_view({'get': 'corruption_list'})),
     path('corruption/<int:pk>/', CorruptionRiskViewSet.as_view({'get': 'corruption_detail'})),

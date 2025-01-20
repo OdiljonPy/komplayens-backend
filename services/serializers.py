@@ -15,6 +15,7 @@ class ParamValidateSerializer(serializers.Serializer):
     page_size = serializers.IntegerField(required=False, default=10)
     category_id = serializers.IntegerField(required=False)
     q = serializers.CharField(required=False, default='')
+    popular = serializers.BooleanField(allow_null=True, required=False)
 
     def validate(self, data):
         if data.get('page_size') < 1 or data.get('page') < 1:
@@ -387,7 +388,6 @@ class CorruptionRiskSerializer(serializers.Serializer):
     short_desc = serializers.CharField()
     image = serializers.ImageField()
     form_url = serializers.URLField()
-    excel_url = serializers.URLField()
     start_date = serializers.DateTimeField()
     end_date = serializers.DateTimeField()
     result = serializers.CharField()

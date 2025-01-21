@@ -250,11 +250,12 @@ class HonestyTestResult(BaseModel):
     customer = models.ForeignKey(to='authentication.Customer', on_delete=models.CASCADE, verbose_name='Клиент')
     test = models.ForeignKey(to='HonestyTest', on_delete=models.CASCADE, related_name='test_result',
                              verbose_name='Тест')
-    answer = models.ForeignKey(to='HonestyTestAnswer', on_delete=models.CASCADE, verbose_name='Ответ')
+    answer = models.ForeignKey(to='HonestyTestAnswer', on_delete=models.CASCADE,
+                               blank=True, null=True, verbose_name='Ответ')
     result = models.BooleanField(default=False, verbose_name='Результат')
 
     def __str__(self):
-        return f"{self.id} - {self.answer.answer}"
+        return f"{self.id} - {self.test.advice}"
 
     class Meta:
         verbose_name = 'Результат честного теста'

@@ -328,7 +328,7 @@ class HonestyTestResultSerializer(serializers.ModelSerializer):
         test_id = getattr(test, 'id', None)
         answer_id = getattr(answer, 'id', None)
 
-        if not HonestyTest.objects.filter(id=test.id):
+        if not HonestyTest.objects.filter(id=test_id):
             raise CustomApiException(ErrorCodes.NOT_FOUND, message=f"Test ID {test_id} not found.")
 
         if answer_id and not HonestyTestAnswer.objects.filter(id=answer_id, question_id=test_id):

@@ -424,6 +424,8 @@ class HonestyViewSet(ViewSet):
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=query_params.errors)
         category_id = query_params.validated_data.get('category_id')
         organization_id = query_params.validated_data.get('organization_id')
+        if organization_id and not Organization.objects.filter(id=organization_id).exists():
+            raise CustomApiException(ErrorCodes.NOT_FOUND, message='Organization not found')
 
         if HonestyTestResult.objects.filter(test__category_id=category_id, customer_id=customer.id).exists():
             raise CustomApiException(ErrorCodes.INVALID_INPUT, message='You have already solved this test')

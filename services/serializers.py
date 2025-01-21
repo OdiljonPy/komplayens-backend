@@ -228,7 +228,6 @@ class HonestyTestCategorySerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField()
     image = serializers.ImageField()
-    in_term = serializers.BooleanField()
 
 
 class HonestyTestAnswerSerializer(serializers.Serializer):

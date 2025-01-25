@@ -643,6 +643,7 @@ class AnnouncementSerializer(serializers.Serializer):
     description = serializers.CharField()
     image = serializers.ImageField()
     views = serializers.PrimaryKeyRelatedField(read_only=True)
+    published_date = serializers.DateField()
 
     def get_category(self, obj):
         return obj.category.name

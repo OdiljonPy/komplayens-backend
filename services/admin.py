@@ -64,17 +64,18 @@ class ElectronLibraryAdmin(admin.ModelAdmin):
     list_filter = ('is_published', 'category')
 
 
-class HonestyTestAnswerInline(admin.TabularInline):
-    model = HonestyTestAnswer
-    extra = 1
-
-
 @admin.register(HonestyTest)
 class HonestyTestAdmin(admin.ModelAdmin):
     list_display = ('id', 'question')
     list_display_links = ('id', 'question')
     search_fields = ('question',)
-    inlines = (HonestyTestAnswerInline,)
+
+
+@admin.register(HonestyTestAnswer)
+class HonestyTestAnswerAdmin(admin.ModelAdmin):
+    list_display = ('id', 'question', 'answer', 'is_true')
+    list_display_links = ('id', 'question', 'answer')
+    list_filter = ('question',)
 
 
 @admin.register(HonestyTestCategory)

@@ -233,17 +233,14 @@ class HonestyTestAnswer(BaseModel):
     def __str__(self):
         return f"{self.id} - {self.answer}"
 
+    def clean(self):
+        if self.is_true is True:
+            HonestyTestAnswer.objects.filter(question=self.question, is_true=True).update(is_true=False)
+
     class Meta:
         verbose_name = 'Ответ на тест на честность'
         verbose_name_plural = 'Ответ на тест на честность'
         ordering = ('?',)
-        constraints = [
-            models.UniqueConstraint(
-                fields=['question'],
-                condition=models.Q(is_true=True),
-                name='Only one answer should be true for one question'
-            )
-        ]
 
 
 class HonestyTestResult(BaseModel):
@@ -525,7 +522,8 @@ class Handout(BaseModel):
     category = models.ForeignKey(HandoutCategory, on_delete=models.CASCADE, verbose_name='Категория')
     name = models.CharField(max_length=100, verbose_name='Название')
     file = models.FileField(upload_to='handout/',
-    validators=[FileExtensionValidator(['pdf', 'jpg', 'jpeg', 'png', 'zip', 'xls'])], verbose_name='Файл')
+                            validators=[FileExtensionValidator(['pdf', 'jpg', 'jpeg', 'png', 'zip', 'xls'])],
+                            verbose_name='Файл')
     is_published = models.BooleanField(default=True, verbose_name='Опубликовано')
     type = models.CharField(max_length=5, blank=True, null=True, verbose_name='Тип')
 

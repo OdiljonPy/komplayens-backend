@@ -125,7 +125,7 @@ class UserViewSet(ViewSet):
             raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)
         if user.is_active == 2:
             raise CustomApiException(ErrorCodes.USER_BLOCKED)
-        new_password = send_password_sms()
+        new_password = send_password_sms(user)
         user.password = make_password(new_password)
         user.save(update_fields=['password'])
         return Response(data={'result': 'Password sent', 'ok': True}, status=status.HTTP_200_OK)

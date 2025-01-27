@@ -114,8 +114,13 @@ class RainbowStatistic(BaseModel):
         return f'Статистика за {self.year}'
 
     def clean(self):
-        if self.year and RainbowStatistic.objects.filter(year=self.year).exists():
+        if self.year and RainbowStatistic.objects.filter(year=self.year).exclude(pk=self.pk).exists():
             raise ValidationError(f"Для года {self.year} уже существует запись статистики по радуге.")
+
+        if self.high + self.satisfactory + self.unsatisfactory != 100:
+            raise ValidationError(
+                "Сумма процентов (высокий, удовлетворительный, неудовлетворительный) должна быть ровно 100.")
+
 
     class Meta:
         verbose_name = 'Статистика по радуге'

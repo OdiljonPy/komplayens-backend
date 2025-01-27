@@ -14,7 +14,8 @@ from .utils import (
 
 from .serializers import (
     UserCreateSerializer, UserSerializer,
-    UserLoginSerializer, PasswordRecoverySerializer
+    UserLoginSerializer, PasswordRecoverySerializer,
+    UserPasswordUpdateSerializer
 )
 
 
@@ -78,19 +79,20 @@ class UserViewSet(ViewSet):
     @swagger_auto_schema(
         operation_summary='User update',
         operation_description='Update a user',
-        request_body=UserCreateSerializer(),
+        request_body=UserPasswordUpdateSerializer(),
         responses={200: UserCreateSerializer()},
         tags=["User"],
     )
     def user_update(self, request):
-        if is_user_created(request):
-            raise CustomApiException(ErrorCodes.ALREADY_EXISTS)
-
+        serializer = UserPasswordUpdateSerializer(data=request.data)
+        if not serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
         user = User.objects.filter(id=request.user.id, is_active=True).first()
         if not user:
             raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)
 
-        serializer = UserCreateSerializer(user, data=request.data, partial=True, context={'request': request})
+        serializer = UserCreateSerializer(
+            user, data=serializer.validated_data, partial=True, context={'request': request})
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
         serializer.save()

@@ -170,7 +170,7 @@ class StatisticsViewSet(ViewSet):
             year_id = getattr(year, 'id', None)
         if not year_id:
             raise CustomApiException(ErrorCodes.NOT_FOUND, message='Statistic Year does not exist')
-        quarterly_statistics = QuarterlyStatistic.objects.filter(year_id=year_id)
+        quarterly_statistics = QuarterlyStatistic.objects.filter(year_id=year_id).order_by('-this_year')
         if not quarterly_statistics:
             raise CustomApiException(ErrorCodes.NOT_FOUND, message='Quarterly statistic not found in this year')
         serializer = QuarterlyStatisticSerializer(quarterly_statistics, many=True, context={'request': request})

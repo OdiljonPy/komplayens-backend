@@ -225,3 +225,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHANNEL_ID = os.getenv('TELEGRAM_CHANNEL_ID')
 GOOGLE_ACCESS_JSON_NAME = os.getenv('GOOGLE_ACCESS_JSON_NAME')
+
+SMS_BASE_URL = os.getenv('SMS_BASE_URL', 'https://example.com/')
+SMS_USERNAME = os.getenv('SMS_USERNAME', '')
+SMS_PASSWORD = os.getenv('SMS_PASSWORD', '')

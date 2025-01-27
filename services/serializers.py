@@ -159,9 +159,11 @@ class ElectronLibrarySerializer(serializers.Serializer):
         self.fields['author'] = serializers.CharField(source=f'author_{language}')
         self.fields['edition_author'] = serializers.CharField(source=f'edition_author_{language}')
         self.fields['edition_type'] = serializers.CharField(source=f'edition_type_{language}')
+        self.fields['short_description'] = serializers.CharField(source=f'short_description_{language}')
 
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(max_length=80)
+    short_description = serializers.CharField(max_length=400)
     author = serializers.CharField(max_length=100)
     edition_author = serializers.CharField(max_length=100)
     edition_type = serializers.CharField(max_length=100)
@@ -281,7 +283,7 @@ class HonestyTestDefaultSerializer(serializers.Serializer):
     question = serializers.CharField()
     advice = serializers.CharField()
     category = serializers.PrimaryKeyRelatedField(read_only=True)
-    answers = HonestyTestDefaultAnswerSerializer(many=True, read_only=True, source='test_honest')
+    answers = serializers.SerializerMethodField()
     user_result = serializers.SerializerMethodField()
 
     def get_advice(self, obj):
@@ -289,6 +291,10 @@ class HonestyTestDefaultSerializer(serializers.Serializer):
 
     def get_user_result(self, obj):
         return {}
+
+    def get_answers(self, obj):
+        return HonestyTestDefaultAnswerSerializer(obj.test_honest,
+            many=True, read_only=True, context=self.context).data
 
 
 class HonestyTestSerializer(serializers.Serializer):
@@ -305,7 +311,7 @@ class HonestyTestSerializer(serializers.Serializer):
     question = serializers.CharField()
     advice = serializers.CharField()
     category = serializers.PrimaryKeyRelatedField(read_only=True)
-    answers = HonestyTestAnswerSerializer(many=True, read_only=True, source='test_honest')
+    answers = serializers.SerializerMethodField()
     user_result = serializers.SerializerMethodField()
 
     def get_user_result(self, obj):
@@ -314,6 +320,10 @@ class HonestyTestSerializer(serializers.Serializer):
         if result:
             return HonestyTestUserResultSerializer(result).data
         return None
+
+    def get_answers(self, obj):
+        return HonestyTestAnswerSerializer(obj.test_honest, many=True,
+                                           read_only=True, context=self.context).data
 
 
 class HonestyTestResultSerializer(serializers.ModelSerializer):

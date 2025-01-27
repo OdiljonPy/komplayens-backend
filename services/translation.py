@@ -51,7 +51,7 @@ translator.register(ElectronLibraryCategory, ElectronLibraryCategoryTranslationO
 
 
 class ElectronLibraryTranslationOptions(TranslationOptions):
-    fields = ('name', 'author', 'edition_author', 'edition_type',)
+    fields = ('name', 'author', 'short_description', 'edition_author', 'edition_type',)
 
 
 translator.register(ElectronLibrary, ElectronLibraryTranslationOptions)

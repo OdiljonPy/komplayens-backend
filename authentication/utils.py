@@ -38,6 +38,6 @@ def generate_passwd():
 def send_password_sms(user):
     from utils.send_otp_code import send_password
     new_password = generate_passwd()
-    message = f"Sizning yangi parolingiz {new_password}"
+    message = f"Sizning yangi parolingiz: {new_password}"
     send_password(message=message, recipient=user.phone_number, user_id=user.id)
     return new_password

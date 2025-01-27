@@ -1,12 +1,13 @@
+from datetime import timedelta
 from rest_framework import status
+from django.utils import timezone
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
 from drf_yasg.utils import swagger_auto_schema
-from django.utils import timezone
-from django.contrib.auth.hashers import check_password, make_password
 from exceptions.error_messages import ErrorCodes
 from exceptions.exception import CustomApiException
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.hashers import check_password, make_password
 from .models import User
 from .utils import (
     is_user_created, send_password_sms
@@ -127,7 +128,9 @@ class UserViewSet(ViewSet):
             raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)
         if user.is_active == 2:
             raise CustomApiException(ErrorCodes.USER_BLOCKED)
+        if user.updated_at > timezone.now() - timedelta(minutes=2):
+            return Response(data={'result': 'Can be resent after 2 minutes', 'ok': True}, status=status.HTTP_200_OK)
         new_password = send_password_sms(user)
         user.password = make_password(new_password)
-        user.save(update_fields=['password'])
+        user.save(update_fields=['password', 'updated_at'])
         return Response(data={'result': 'Password sent', 'ok': True}, status=status.HTTP_200_OK)

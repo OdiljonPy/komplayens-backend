@@ -25,9 +25,3 @@ def send_password(message: str, recipient: str, user_id: int):
         auth=HTTPBasicAuth(settings.SMS_USERNAME, settings.SMS_PASSWORD),
         json=messages
     )
-    print('=' * 50, "SMS", '=' * 50, )
-    print('-' * 50, 'json', '-' * 50, )
-    print(messages)
-    print('-' * 50, 'json', '-' * 50, )
-    print(resp)
-    print('=' * 50, "SMS", '=' * 50, )

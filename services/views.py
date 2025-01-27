@@ -394,13 +394,15 @@ class HonestyViewSet(ViewSet):
 
         if HonestyTestResult.objects.filter(test__category_id=category_id, customer_id=customer.id).exists():
             data = HonestyTest.objects.filter(category_id=category_id)
-            result_serializer = HonestyTestSerializer(data, many=True, context={'customer': customer})
+            result_serializer = HonestyTestSerializer(data, many=True,
+                                                      context={'request': request, 'customer': customer})
             percent = calculate_percent(category_id=category_id, customer=customer)
             return Response(data={'new': False, 'percent': percent, 'result': result_serializer.data, 'ok': True},
                             status=status.HTTP_200_OK)
 
         questions = HonestyTest.objects.filter(category_id=category_id)
-        serializer = HonestyTestDefaultSerializer(questions, many=True, context={'customer': customer})
+        serializer = HonestyTestDefaultSerializer(questions, many=True,
+                                                  context={'request': request, 'customer': customer})
         return Response(data={'new': True, 'percent': None, 'result': serializer.data, 'ok': True},
                         status=status.HTTP_200_OK)
 
@@ -442,7 +444,8 @@ class HonestyViewSet(ViewSet):
         stats_serializer.save()
         percent = calculate_percent(category_id=category_id, customer=customer)
         questions = HonestyTest.objects.filter(category_id=category_id)
-        question_serializer = HonestyTestSerializer(questions, many=True, context={'customer': customer})
+        question_serializer = HonestyTestSerializer(questions, many=True,
+                                                    context={'request': request, 'customer': customer})
         return Response(data={'new': False, 'percent': percent, 'result': question_serializer.data, 'ok': True},
                         status=status.HTTP_200_OK)
 
@@ -891,9 +894,9 @@ class HandoutViewSet(ViewSet):
         search_param = param_serializer.validated_data.get('q')
         if search_param:
             filter_ &= Q(
-                Q(name__icontains=search_param) |
-                Q(name__icontains=search_param) |
-                Q(name__icontains=search_param)
+                Q(name_uz__icontains=search_param) |
+                Q(name_ru__icontains=search_param) |
+                Q(name_en__icontains=search_param)
             )
         handouts = Handout.objects.filter(filter_, is_published=True)
         response = get_paginated_handout(request_data=handouts, context={'request': request},

@@ -147,6 +147,7 @@ class ElectronLibraryCategory(BaseModel):
 class ElectronLibrary(BaseModel):
     name = models.CharField(max_length=80, verbose_name='Имя')
     author = models.CharField(max_length=100, verbose_name='Автор')
+    short_description = models.CharField(max_length=400, verbose_name='Краткое описание', blank=True, null=True)
     edition_author = models.CharField(max_length=100, verbose_name='Автор издания')
     edition_type = models.CharField(max_length=100, verbose_name='Тип издания')
     edition_year = models.DateField(null=True, verbose_name='Год издания')

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import (Region, District, FAQ,
+from .models import (Region, District,
                      AboutUs, Banner, StatisticYear,
                      RainbowStatistic, LinerStatistic,
                      QuarterlyStatistic)
@@ -17,12 +17,6 @@ class DistrictAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     list_display_links = ('id', 'name')
     search_fields = ('name',)
-
-
-@admin.register(FAQ)
-class FAQAdmin(admin.ModelAdmin):
-    list_display = ('id', 'question', 'type')
-    list_display_links = ('id', 'question')
 
 
 @admin.register(AboutUs)

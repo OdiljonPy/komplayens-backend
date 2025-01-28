@@ -1,5 +1,5 @@
 from modeltranslation.translator import translator, TranslationOptions
-from .models import Region, District, FAQ, AboutUs, Banner, LinerStatistic, QuarterlyStatistic
+from .models import Region, District, AboutUs, Banner, LinerStatistic, QuarterlyStatistic
 
 class RegionTranslationOptions(TranslationOptions):
     fields = ('name',)
@@ -7,10 +7,6 @@ class RegionTranslationOptions(TranslationOptions):
 
 class DistrictTranslationOptions(TranslationOptions):
     fields = ('name',)
-
-
-class FAQTranslationOptions(TranslationOptions):
-    fields = ('question', 'answer')
 
 
 class AboutUsTranslationOptions(TranslationOptions):
@@ -31,7 +27,6 @@ class QuarterlyStatisticTranslationOptions(TranslationOptions):
 
 translator.register(Region, RegionTranslationOptions)
 translator.register(District, DistrictTranslationOptions)
-translator.register(FAQ, FAQTranslationOptions)
 translator.register(AboutUs, AboutUsTranslationOptions)
 translator.register(Banner, BannerTranslationOptions)
 translator.register(LinerStatistic, LinerStatisticTranslationOptions)

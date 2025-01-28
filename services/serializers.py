@@ -4,7 +4,7 @@ from exceptions.error_messages import ErrorCodes
 from django.conf import settings
 from .models import (
     HonestyTest, HonestyTestAnswer, GuiltyPerson,
-    ViolationFile, ConflictAlert, OfficerAdvice,
+    ViolationFile, OfficerAdvice,
     ViolationReport, TechnicalSupport, HonestyTestResult,
     News, HonestyTestStatistic
 )
@@ -294,7 +294,7 @@ class HonestyTestDefaultSerializer(serializers.Serializer):
 
     def get_answers(self, obj):
         return HonestyTestDefaultAnswerSerializer(obj.test_honest,
-            many=True, read_only=True, context=self.context).data
+                                                  many=True, read_only=True, context=self.context).data
 
 
 class HonestyTestSerializer(serializers.Serializer):
@@ -419,42 +419,6 @@ class CorruptionRiskMediaSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     filename = serializers.CharField()
     file = serializers.FileField()
-
-
-class ConflictAlertTypeSerializer(serializers.Serializer):
-    type = serializers.IntegerField(required=True)
-
-    def validate(self, data):
-        if data.get('type') is not None and data.get('type') not in [1, 2, 3]:
-            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Type must be 1, 2, or 3')
-        return data
-
-
-class ConflictAlertSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ConflictAlert
-        fields = ('id', 'organization_name', 'organization_director_full_name', 'organization_director_position',
-                  'description', 'additional_description', 'type', 'employee_full_name', 'employee_position',
-                  'employee_passport_number', 'employee_passport_series', 'employee_passport_taken_date',
-                  'employee_legal_entity_name', 'employee_legal_entity_data', 'employee_stir_number',
-                  'related_persons_full_name', 'related_persons_passport_number', 'related_persons_passport_series',
-                  'related_persons_passport_taken_date', 'related_persons_legal_entity_name',
-                  'related_persons_stir_number', 'related_persons_kinship_data', 'filled_date')
-
-    def validate(self, attrs):
-        if attrs.get('employee_passport_number') and len(attrs.get('employee_passport_number')) != 14:
-            raise CustomApiException(ErrorCodes.VALIDATION_FAILED,
-                                     message='The employee passport number should be 14 characters long')
-        if attrs.get('related_persons_passport_number') and len(attrs.get('related_persons_passport_number')) != 14:
-            raise CustomApiException(ErrorCodes.VALIDATION_FAILED,
-                                     message='The related persons passport number should be 14 characters long')
-        if attrs.get('employee_passport_series') and len(attrs.get('employee_passport_series')) != 9:
-            raise CustomApiException(ErrorCodes.VALIDATION_FAILED,
-                                     message='The employee passport series should be 9 characters long')
-        if attrs.get('related_persons_passport_series') and len(attrs.get('related_persons_passport_series')) != 9:
-            raise CustomApiException(ErrorCodes.VALIDATION_FAILED,
-                                     message='The related persons series should be 9 characters long')
-        return attrs
 
 
 class ProfessionSerializer(serializers.Serializer):

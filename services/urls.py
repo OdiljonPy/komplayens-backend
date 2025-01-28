@@ -1,7 +1,8 @@
 from django.urls import path
+
 from .views import (
     OrganizationViewSet, TrainingViewSet, ElectronLibraryViewSet,
-    NewsViewSet, HonestyViewSet, ConflictAlertViewSet,
+    NewsViewSet, HonestyViewSet,
     ProfessionalEthicsViewSet, OfficerAdviceViewSet, ViolationReportViewSet,
     TechnicalSupportViewSet, CorruptionRiskViewSet, AnnouncementViewSet,
     HandoutViewSet
@@ -27,9 +28,6 @@ urlpatterns = [
     path('honesty/test/result/', HonestyViewSet.as_view({'post': 'honesty_test_result', })),
     path('honesty/category/', HonestyViewSet.as_view({'get': 'honesty_test_categories'})),
 
-    path('conflict/alert/',
-         ConflictAlertViewSet.as_view({'post': 'create_conflict_alert', 'delete': 'delete_conflict_alert'})),
-    path('conflict/alert/<int:pk>/', ConflictAlertViewSet.as_view({'get': 'conflict_alert'})),
     path('profession/', ProfessionalEthicsViewSet.as_view({'get': 'profession_list'})),
     path('professional/ethics/', ProfessionalEthicsViewSet.as_view({'get': 'professional_ethics_list'})),
     path('professional/ethics/<int:pk>/', ProfessionalEthicsViewSet.as_view({'get': 'professional_ethics'})),

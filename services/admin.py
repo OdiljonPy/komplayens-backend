@@ -1,8 +1,9 @@
 from django.contrib import admin
+
 from .models import (
     CategoryOrganization, Organization, Training,
     TrainingMedia, ElectronLibraryCategory, ElectronLibrary, News,
-    HonestyTest, HonestyTestAnswer, ConflictAlert,
+    HonestyTest, HonestyTestAnswer,
     Profession, ProfessionalEthics, OfficerAdvice, ReportType,
     ViolationReport, TechnicalSupport, TrainingCategory,
     NewsCategory, HonestyTestCategory, HonestyTestStatistic,
@@ -95,13 +96,6 @@ class HonestyTestStatisticAdmin(admin.ModelAdmin):
 class HonestyTestResultAdmin(admin.ModelAdmin):
     list_display = ('id', 'customer', 'test')
     list_display_links = ('id', 'customer')
-
-
-@admin.register(ConflictAlert)
-class ConflictAlertAdmin(admin.ModelAdmin):
-    list_display = ('id', 'organization_name', 'organization_director_full_name', 'type')
-    list_display_links = ('id', 'organization_name')
-    search_fields = ('organization_name',)
 
 
 @admin.register(Profession)

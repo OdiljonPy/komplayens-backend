@@ -1,19 +1,21 @@
 from datetime import datetime
-from django.utils import timezone
-from rest_framework.viewsets import ViewSet
-from rest_framework.response import Response
-from rest_framework import status
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-from django.db.models import Q
 
-from exceptions.exception import CustomApiException
+from django.db.models import Q
+from django.utils import timezone
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
+
+from authentication.models import ContentViewer
+from authentication.utils import create_customer
 from exceptions.error_messages import ErrorCodes
+from exceptions.exception import CustomApiException
 from .models import (
     CategoryOrganization, Organization, Training,
     ElectronLibraryCategory, TrainingCategory,
-    ElectronLibrary, News, HonestyTest,
-    ConflictAlert, Profession, ProfessionalEthics,
+    ElectronLibrary, News, HonestyTest, Profession, ProfessionalEthics,
     OfficerAdvice, ReportType, NewsCategory,
     HonestyTestCategory, ViolationReport,
     HonestyTestResult, CorruptionRisk,
@@ -21,15 +23,22 @@ from .models import (
     CorruptionRiskMedia, HandoutCategory,
     Handout
 )
-from authentication.models import ContentViewer
-
+from .repository.announcement_paginator import get_paginated_announcement
+from .repository.corruption_risk_paginator import corruption_risk_paginator
+from .repository.electron_library_paginator import get_paginated_e_library
+from .repository.handout_paginator import get_paginated_handout
+from .repository.news_paginator import news_paginator
+from .repository.officer_advice_paginator import officer_advice_paginator
+from .repository.organization_paginator import get_paginated_organizations
+from .repository.profession_paginator import profession_paginator
+from .repository.training_paginator import training_paginator
 from .serializers import (
     CategoryOrganizationSerializer, OrganizationSerializer,
     TrainingSerializer, TrainingDetailSerializer, TrainingCategorySerializer,
     ElectronLibraryCategorySerializer, ElectronLibrarySerializer, NewsSerializer,
     ProfessionSerializer, ProfessionalEthicsSerializer, OfficerAdviceSerializer,
     ReportTypeSerializer, ViolationReportSerializer, TechnicalSupportSerializer,
-    ConflictAlertSerializer, ConflictAlertTypeSerializer, TrainingParamValidator,
+    TrainingParamValidator,
     ParamValidateSerializer, NewsParamValidator, NewsCategorySerializer,
     NewsDetailSerializer, ProfessionalEthicsParamValidator, OfficerAdviceParamValidator,
     HonestyTestCategorySerializer, HonestyTestResultSerializer,
@@ -41,18 +50,7 @@ from .serializers import (
     AnnouncementSerializer, CorruptionRiskMediaSerializer,
     HandoutCategorySerializer, HandoutSerializer
 )
-from .repository.training_paginator import training_paginator
-from .repository.organization_paginator import get_paginated_organizations
-from .repository.news_paginator import news_paginator
-from .repository.electron_library_paginator import get_paginated_e_library
-from .repository.profession_paginator import profession_paginator
-from .repository.officer_advice_paginator import officer_advice_paginator
-from .repository.corruption_risk_paginator import corruption_risk_paginator
-from .repository.announcement_paginator import get_paginated_announcement
-from .repository.handout_paginator import get_paginated_handout
-from authentication.utils import create_customer
 from .utils import (
-    file_one_create, file_two_create, file_three_create,
     get_google_sheet_statistics, calculate_percent
 )
 
@@ -448,61 +446,6 @@ class HonestyViewSet(ViewSet):
                                                     context={'request': request, 'customer': customer})
         return Response(data={'new': False, 'percent': percent, 'result': question_serializer.data, 'ok': True},
                         status=status.HTTP_200_OK)
-
-
-class ConflictAlertViewSet(ViewSet):
-    @swagger_auto_schema(
-        manual_parameters=[openapi.Parameter(
-            name='type', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Type of ConflictAlert (1, 2, 3)'
-        )],
-        operation_summary='Conflict alert',
-        operation_description='Create conflict alert',
-        request_body=ConflictAlertSerializer,
-        responses={200: ConflictAlertSerializer()},
-        tags=['ConflictAlert']
-    )
-    def create_conflict_alert(self, request):
-        param_serializer = ConflictAlertTypeSerializer(data=request.query_params, context={'request': request})
-        if not param_serializer.is_valid():
-            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=param_serializer.errors)
-        file_type = param_serializer.validated_data.get('type')
-        serializer = ConflictAlertSerializer(data=request.data, context={'request': request})
-        if not serializer.is_valid():
-            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
-        serializer.save()
-        if file_type == 1:
-            file_one_create(serialized_data=serializer.data)
-        elif file_type == 2:
-            file_two_create(serialized_data=serializer.data)
-        elif file_type == 3:
-            file_three_create(serialized_data=serializer.data)
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_201_CREATED)
-
-    @swagger_auto_schema(
-        operation_summary='Conflict alert',
-        operation_description='Detail of conflict alert',
-        responses={200: ConflictAlertSerializer()},
-        tags=['ConflictAlert']
-    )
-    def conflict_alert(self, request, pk):
-        data = ConflictAlert.objects.filter(id=pk).first()
-        if not data:
-            raise CustomApiException(ErrorCodes.NOT_FOUND)
-        serializer = ConflictAlertSerializer(data, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        operation_summary='Conflict alert delete',
-        operation_description='Delete conflict alert',
-        responses={200: ConflictAlertSerializer()},
-        tags=['ConflictAlert']
-    )
-    def delete_conflict_alert(self, request, pk):
-        data = ConflictAlert.objects.filter(id=pk).first()
-        if not data:
-            raise CustomApiException(ErrorCodes.INVALID_INPUT)
-        data.delete()
-        return Response(data={'result': '', 'ok': True}, status=status.HTTP_200_OK)
 
 
 class ProfessionalEthicsViewSet(ViewSet):

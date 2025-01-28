@@ -30,22 +30,6 @@ class DistrictSerializer(serializers.Serializer):
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
 
 
-class FAQSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    question = serializers.CharField()
-    answer = serializers.CharField()
-    type = serializers.IntegerField()
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        request = self.context.get("request")
-        language = 'ru'
-        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.LANGUAGES:
-            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
-        self.fields['question'] = serializers.CharField(source=f'question_{language}')
-        self.fields['answer'] = serializers.CharField(source=f'answer_{language}')
-
-
 class AboutUsSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     title = serializers.CharField()
@@ -63,16 +47,8 @@ class AboutUsSerializer(serializers.Serializer):
         self.fields['short_description'] = serializers.CharField(source=f'short_description_{language}')
 
 
-class TypeSerializer(serializers.Serializer):
+class AboutUsTypeSerializer(serializers.Serializer):
     type = serializers.IntegerField()
-
-    def validate(self, data):
-        if data.get('type') not in [1, 2, 3]:
-            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='FAQ type must be 1, 2, or 3')
-        return data
-
-
-class AboutUsTypeSerializer(TypeSerializer):
     def validate(self, data):
         if data.get('type') not in [1, 2, 3]:
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='AboutUs type must be 1, 2 or 3')

@@ -1,13 +1,12 @@
 from .models import (
-    Region, District, FAQ,
+    Region, District,
     AboutUs, Banner, StatisticYear,
     RainbowStatistic, LinerStatistic,
     QuarterlyStatistic
 )
 from .serializers import (
     RegionSerializer, DistrictSerializer,
-    FAQSerializer, AboutUsSerializer,
-    TypeSerializer, AboutUsTypeSerializer,
+    AboutUsSerializer, AboutUsTypeSerializer,
     BannerSerializer, StatisticYearSerializer,
     RainbowStatisticSerializer, LinerStatisticSerializer,
     StatisticParamSerializer, QuarterlyStatisticSerializer
@@ -44,26 +43,6 @@ class DistrictViewSet(ViewSet):
     def list(self, request, pk):
         districts = District.objects.filter(region_id=pk).select_related('region')
         serializer = DistrictSerializer(districts, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-
-class FAQViewSet(ViewSet):
-    @swagger_auto_schema(
-        operation_summary='List of FAQs',
-        operation_description='List of FAQs',
-        manual_parameters=[
-            openapi.Parameter(name='type', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
-                              description="FAQ Type, choices: 1, 2, 3"),],
-        responses={200: FAQSerializer(many=True)},
-        tags=['FAQ']
-    )
-    def list(self, request):
-        param_serializer = TypeSerializer(data=request.query_params, context={'request': request})
-        if not param_serializer.is_valid():
-            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, param_serializer.errors)
-        faq_type = param_serializer.validated_data.get('type')
-        faqs = FAQ.objects.filter(type=faq_type).order_by('-created_at')
-        serializer = FAQSerializer(faqs, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 

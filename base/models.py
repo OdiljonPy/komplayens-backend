@@ -58,9 +58,9 @@ class FAQ(BaseModel):
 
 
 class AboutUs(BaseModel):
-    title = models.CharField(max_length=200, verbose_name='Название', null=True, blank=True)
-    short_description = models.TextField(max_length=500, verbose_name='Краткое описание', null=True, blank=True)
-    image = models.ImageField(upload_to='about/', verbose_name='Изображение', null=True, blank=True)
+    title = models.CharField(max_length=200, verbose_name='Название')
+    short_description = models.TextField(max_length=500, verbose_name='Краткое описание')
+    image = models.ImageField(upload_to='about/', verbose_name='Изображение')
     type = models.IntegerField(choices=ABOUT_TYPE_CHOICES, default=1, verbose_name='Категория')
     is_published = models.BooleanField(default=True, verbose_name='Oпубликован')
 

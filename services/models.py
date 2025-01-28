@@ -147,7 +147,7 @@ class ElectronLibraryCategory(BaseModel):
 class ElectronLibrary(BaseModel):
     name = models.CharField(max_length=80, verbose_name='Имя')
     author = models.CharField(max_length=100, verbose_name='Автор')
-    short_description = models.CharField(max_length=400, verbose_name='Краткое описание', blank=True, null=True)
+    short_description = models.CharField(max_length=400, verbose_name='Краткое описание')
     edition_author = models.CharField(max_length=100, verbose_name='Автор издания')
     edition_type = models.CharField(max_length=100, verbose_name='Тип издания')
     edition_year = models.DateField(null=True, verbose_name='Год издания')
@@ -185,7 +185,7 @@ class News(BaseModel):
     image = models.ImageField(upload_to="news/", verbose_name="Изображение")
     category = models.ForeignKey(to='NewsCategory', on_delete=models.SET_NULL, null=True, verbose_name='Категория')
     is_published = models.BooleanField(default=False, verbose_name="Опубликован")
-    published_date = models.DateField(null=True, blank=True, verbose_name="Дата публикации")
+    published_date = models.DateField(verbose_name="Дата публикации")
     views = models.IntegerField(default=0, verbose_name='Просмотры')
 
     def __str__(self):
@@ -495,7 +495,7 @@ class Announcement(BaseModel):
     description = HTMLField(verbose_name='Описание')
     image = models.ImageField(upload_to='post/', verbose_name='Изображение')
     is_published = models.BooleanField(default=False, verbose_name='Опубликовано')
-    published_date = models.DateField(blank=True, null=True, verbose_name='Дата публикации')
+    published_date = models.DateField(verbose_name='Дата публикации')
     views = models.IntegerField(default=0, verbose_name='Просмотры')
 
     def __str__(self):

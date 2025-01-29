@@ -109,6 +109,7 @@ class TrainingSerializer(serializers.Serializer):
     video_length = serializers.FloatField()
     category = serializers.PrimaryKeyRelatedField(read_only=True)
     views = serializers.IntegerField()
+    created_at = serializers.DateTimeField()
 
 
 class TrainingMediaSerializer(serializers.Serializer):

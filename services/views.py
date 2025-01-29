@@ -214,7 +214,7 @@ class TrainingViewSet(ViewSet):
         tags=['Training']
     )
     def training_category(self, request):
-        data = TrainingCategory.objects.all()
+        data = TrainingCategory.objects.order_by('created_at')
         serializer = TrainingCategorySerializer(data, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 

@@ -115,7 +115,7 @@ class OrganizationViewSet(ViewSet):
                 Q(name_ru__icontains=search_param) |
                 Q(name_en__icontains=search_param)
             )
-        data = CategoryOrganization.objects.filter(filter_)
+        data = CategoryOrganization.objects.filter(filter_).order_by('created_at')
         serializer = CategoryOrganizationSerializer(data, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -270,7 +270,7 @@ class ElectronLibraryViewSet(ViewSet):
         tags=['ElectronLibrary']
     )
     def electron_library_category(self, request):
-        data = ElectronLibraryCategory.objects.all()
+        data = ElectronLibraryCategory.objects.order_by('created_at')
         serializer = ElectronLibraryCategorySerializer(data, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -346,7 +346,7 @@ class NewsViewSet(ViewSet):
         tags=['News']
     )
     def news_category(self, request):
-        data = NewsCategory.objects.all()
+        data = NewsCategory.objects.order_by('created_at')
         serializer = NewsCategorySerializer(data, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -370,7 +370,7 @@ class HonestyViewSet(ViewSet):
                 Q(name_ru__icontains=search_param) |
                 Q(name_en__icontains=search_param)
             )
-        data = HonestyTestCategory.objects.filter(filter_, in_term=True)
+        data = HonestyTestCategory.objects.filter(filter_, in_term=True).order_by('created_at')
         serializer = HonestyTestCategorySerializer(data, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -568,7 +568,7 @@ class ProfessionalEthicsViewSet(ViewSet):
         tags=['ProfessionalEthics']
     )
     def profession_list(self, request):
-        data = Profession.objects.all()
+        data = Profession.objects.order_by('created_at')
         serializer = ProfessionSerializer(data, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -685,7 +685,7 @@ class ViolationReportViewSet(ViewSet):
         tags=['ViolationReport']
     )
     def report_types(self, request):
-        data = ReportType.objects.all()
+        data = ReportType.objects.order_by('created_at')
         serializer = ReportTypeSerializer(data, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -794,7 +794,7 @@ class AnnouncementViewSet(ViewSet):
         tags=['Announcement']
     )
     def announcement_categories(self, request):
-        categories = AnnouncementCategory.objects.all()
+        categories = AnnouncementCategory.objects.order_by('created_at')
         serializer = AnnouncementCategorySerializer(categories, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -865,7 +865,7 @@ class HandoutViewSet(ViewSet):
         tags=['Handout']
     )
     def handout_categories(self, request):
-        categories = HandoutCategory.objects.all()
+        categories = HandoutCategory.objects.order_by('created_at')
         serializer = HandoutCategorySerializer(categories, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 

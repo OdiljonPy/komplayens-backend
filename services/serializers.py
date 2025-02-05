@@ -16,6 +16,7 @@ class ParamValidateSerializer(serializers.Serializer):
     category_id = serializers.IntegerField(required=False)
     q = serializers.CharField(required=False, default='')
     popular = serializers.BooleanField(allow_null=True, required=False)
+    order_by = serializers.ChoiceField(choices=('new', 'old'), required=False, default='new')
 
     def validate(self, data):
         if data.get('page_size') < 1 or data.get('page') < 1:

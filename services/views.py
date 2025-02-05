@@ -736,7 +736,7 @@ class CorruptionRiskViewSet(ViewSet):
             filter_ &= Q(end_date__gte=params.get('to_date'))
 
         order_by = [
-            {'new': '-created_at', 'old': '-created_at'}.get(params.get('order_by')),
+            {'new': '-created_at', 'old': 'created_at'}.get(params.get('order_by')),
         ]
 
         query_response = CorruptionRisk.objects.filter(filter_).order_by(*order_by)
@@ -808,6 +808,8 @@ class AnnouncementViewSet(ViewSet):
                 name='popular', in_=openapi.IN_QUERY, type=openapi.TYPE_BOOLEAN, description='Popular status boolean'),
             openapi.Parameter(
                 name='category_id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Category ID'),
+            openapi.Parameter(
+                name='order_by', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, description='Order by (new or old)')
         ],
         operation_summary='Announcements List',
         operation_description='List of Announcements',
@@ -826,7 +828,10 @@ class AnnouncementViewSet(ViewSet):
         order_by = []
         if params.get('popular') is True:
             order_by.append('-views')
-        order_by.append('-created_at')
+
+        order_by.append(
+            {'new': '-created_at', 'old': 'created_at'}.get(params.get('order_by'))
+        )
 
         data = Announcement.objects.filter(filter_, is_published=True).order_by(*order_by)
         response = get_paginated_announcement(

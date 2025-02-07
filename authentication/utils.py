@@ -32,7 +32,7 @@ def create_customer(request):
 
 
 def generate_passwd():
-    return ''.join(random.sample(string.ascii_letters + string.digits, k=9))
+    return ''.join(random.sample(string.ascii_letters + string.digits, k=5))
 
 
 def send_password_sms(user):

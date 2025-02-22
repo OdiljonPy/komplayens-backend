@@ -16,7 +16,7 @@ translator.register(CategoryOrganization, CategoryOrganizationTranslationOptions
 
 
 class OrganizationTranslationOptions(TranslationOptions):
-    fields = ('name', 'address',)
+    fields = ('name',)
 
 
 translator.register(Organization, OrganizationTranslationOptions)

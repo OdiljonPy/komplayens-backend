@@ -49,7 +49,7 @@ class Organization(BaseModel):
     facebook = models.URLField(blank=True, null=True, verbose_name='Фейсбук')
     twitter = models.URLField(blank=True, null=True, verbose_name='Твиттер')
     youtube = models.URLField(blank=True, null=True, verbose_name='Ютуб')
-    telegram_bot = models.CharField(max_length=100, default='https://t.me/')
+    telegram_bot = models.CharField(max_length=100, default='https://t.me/', verbose_name='Телеграм-бот')
 
     def __str__(self):
         return self.name

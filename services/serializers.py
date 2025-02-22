@@ -60,7 +60,6 @@ class OrganizationSerializer(serializers.Serializer):
         if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
-        self.fields['address'] = serializers.CharField(source=f'address_{language}')
 
     id = serializers.IntegerField(read_only=True)
     category = serializers.PrimaryKeyRelatedField(read_only=True)
@@ -68,15 +67,13 @@ class OrganizationSerializer(serializers.Serializer):
     phone_number = serializers.CharField(max_length=15)
     phone_number2 = serializers.CharField(max_length=15)
     email = serializers.EmailField()
-    region = serializers.PrimaryKeyRelatedField(read_only=True)
-    district = serializers.PrimaryKeyRelatedField(read_only=True)
-    address = serializers.CharField()
     weblink = serializers.URLField()
     instagram = serializers.URLField()
     telegram = serializers.URLField()
     facebook = serializers.URLField()
     twitter = serializers.URLField()
     youtube = serializers.URLField()
+    telegram_bot = serializers.CharField(max_length=100)
 
 
 class TrainingCategorySerializer(serializers.Serializer):

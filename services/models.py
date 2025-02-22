@@ -43,15 +43,13 @@ class Organization(BaseModel):
     phone_number = models.CharField(max_length=15, verbose_name="Номер телефона")
     phone_number2 = models.CharField(max_length=15, verbose_name='Номер телефона 2', blank=True, null=True)
     email = models.EmailField(blank=True, null=True, verbose_name="Электронная почта")
-    region = models.ForeignKey(Region, on_delete=models.PROTECT, verbose_name="Регион")
-    district = models.ForeignKey(District, on_delete=models.PROTECT, verbose_name="Область")
-    address = models.CharField(max_length=255, verbose_name="Адрес")
     weblink = models.URLField(blank=True, null=True, verbose_name='Ссылка')
     instagram = models.URLField(blank=True, null=True, verbose_name='Инстаграм')
     telegram = models.URLField(blank=True, null=True, verbose_name='Телеграм')
     facebook = models.URLField(blank=True, null=True, verbose_name='Фейсбук')
     twitter = models.URLField(blank=True, null=True, verbose_name='Твиттер')
     youtube = models.URLField(blank=True, null=True, verbose_name='Ютуб')
+    telegram_bot = models.CharField(max_length=100, default='https://t.me/')
 
     def __str__(self):
         return self.name

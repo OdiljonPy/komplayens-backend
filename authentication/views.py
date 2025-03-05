@@ -36,7 +36,10 @@ class UserViewSet(ViewSet):
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
         serializer.save()
-        return Response(data={'result': 'User Created Successfully', 'ok': True}, status=status.HTTP_201_CREATED)
+        return Response(
+            data={'result': 'User Created Successfully', 'ok': True},
+            status=status.HTTP_201_CREATED
+        )
 
     @swagger_auto_schema(
         operation_summary='Login',
@@ -50,7 +53,7 @@ class UserViewSet(ViewSet):
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
 
-        user = User.objects.filter(phone_number=serializer.data.get('phone_number')).first()
+        user = User.objects.filter(phone_number=serializer.data['phone_number']).first()
         if not user:
             raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)
 

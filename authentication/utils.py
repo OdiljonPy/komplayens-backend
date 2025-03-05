@@ -1,6 +1,8 @@
 import re
 import random
 import string
+from ipaddress import ip_address
+
 from exceptions.error_messages import ErrorCodes
 from exceptions.exception import CustomApiException
 
@@ -24,10 +26,10 @@ def create_customer(request):
     user_agent = request.META.get('HTTP_USER_AGENT')
     ip_address = request.META.get('HTTP_X_FORWARDED_FOR', None)
     ip_address = ip_address or request.META.get('REMOTE_ADDR')
-    customer = Customer.objects.filter(ip_address=ip_address, user_agent=user_agent).first()
-    if customer:
-        return customer
-    customer = Customer.objects.create(ip_address=ip_address, user_agent=user_agent)
+    customer, created = Customer.objects.get_or_create(
+        ip_address = ip_address,
+        user_agent = user_agent
+    )
     return customer
 
 

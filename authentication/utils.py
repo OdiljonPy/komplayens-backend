@@ -33,13 +33,13 @@ def create_customer(request):
     return customer
 
 
-def generate_passwd():
+def generate_password():
     return ''.join(random.sample(string.ascii_letters + string.digits, k=5))
 
 
 def send_password_sms(user):
     from utils.send_otp_code import send_password
-    new_password = generate_passwd()
+    new_password = generate_password()
     message = (f"Komplayens: Parolingizni tiklash uchun yangi parol: {new_password}. "
                f"Xavfsizlik uchun tizimga kirgach, uni almashtiring.")
     send_password(message=message, recipient=user.phone_number, user_id=user.id)

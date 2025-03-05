@@ -78,7 +78,8 @@ class UserViewSet(ViewSet):
         user.save()
         return Response(
             data={'result': {'access_token': str(access_token), 'refresh_token': str(refresh_token)}, 'ok': True},
-            status=status.HTTP_200_OK)
+            status=status.HTTP_200_OK
+        )
 
     @swagger_auto_schema(
         operation_summary='User update',
@@ -91,12 +92,14 @@ class UserViewSet(ViewSet):
         serializer = UserPasswordUpdateSerializer(data=request.data)
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
-        user = User.objects.filter(id=request.user.id, is_active=True).first()
-        if not user:
+        try:
+            user = User.objects.get(id=request.user.id, is_active=True)
+        except User.DoesNotExist:
             raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)
 
         serializer = UserCreateSerializer(
-            user, data=serializer.validated_data, partial=True, context={'request': request})
+            user, data=serializer.validated_data, partial=True, context={'request': request}
+        )
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
         serializer.save()
@@ -111,9 +114,12 @@ class UserViewSet(ViewSet):
     def user_detail(self, request):
         user = User.objects.filter(id=request.user.id, status=2, is_active=True).first()
         if not user:
-            raise CustomApiException(ErrorCodes.NOT_FOUND)
+            raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)
         serializer = UserSerializer(user, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+        return Response(
+            data={'result': serializer.data, 'ok': True},
+            status=status.HTTP_200_OK
+        )
 
     @swagger_auto_schema(
         operation_summary='Password recovery',

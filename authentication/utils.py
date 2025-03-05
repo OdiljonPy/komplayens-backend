@@ -15,10 +15,10 @@ def phone_number_validation(value):
 def user_exists(request):
     from .models import User
     phone_number = request.data.get('phone_number')
-    if phone_number:
-        user = User.objects.filter(phone_number=phone_number).exclude(id=request.user.id).first()
-        return user
-    return None
+    if not phone_number:
+        return None
+
+    return User.objects.filter(phone_number=phone_number).exclude(id=request.user.id).first()
 
 
 def create_customer(request):
@@ -27,8 +27,8 @@ def create_customer(request):
     ip_address = request.META.get('HTTP_X_FORWARDED_FOR', None)
     ip_address = ip_address or request.META.get('REMOTE_ADDR')
     customer, created = Customer.objects.get_or_create(
-        ip_address = ip_address,
-        user_agent = user_agent
+        ip_address=ip_address,
+        user_agent=user_agent
     )
     return customer
 

@@ -10,13 +10,13 @@ def phone_number_validation(value):
         raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Phone number is invalid.')
 
 
-def is_user_created(request):
+def user_exists(request):
     from .models import User
-    data = request.data
-    if 'phone_number' in data:
-        user = User.objects.filter(phone_number=data.get('phone_number')).exclude(id=request.user.id).first()
+    phone_number = request.data.get('phone_number')
+    if phone_number:
+        user = User.objects.filter(phone_number=phone_number).exclude(id=request.user.id).first()
         return user
-    return
+    return None
 
 
 def create_customer(request):

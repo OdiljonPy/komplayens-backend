@@ -10,7 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password, make_password
 from .models import User
 from .utils import (
-    is_user_created, send_password_sms
+    user_exists, send_password_sms
 )
 
 from .serializers import (
@@ -29,7 +29,7 @@ class UserViewSet(ViewSet):
         tags=["User"],
     )
     def create(self, request):
-        user = is_user_created(request)
+        user = user_exists(request)
         if user:
             raise CustomApiException(ErrorCodes.ALREADY_EXISTS)
         serializer = UserCreateSerializer(data=request.data, context={'request': request})

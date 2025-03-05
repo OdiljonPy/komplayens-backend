@@ -58,7 +58,7 @@ class UserViewSet(ViewSet):
             raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)
 
         if user.is_active == 2:
-            raise CustomApiException(ErrorCodes.INVALID_INPUT, message='Is User blocked')
+            raise CustomApiException(ErrorCodes.INVALID_INPUT, message='User is blocked')
 
         if user.role == 3 and user.status in (1, 3):
             message = {
@@ -67,7 +67,7 @@ class UserViewSet(ViewSet):
             }.get(user.status)
             raise CustomApiException(ErrorCodes.INVALID_INPUT, message=message)
 
-        if not check_password(serializer.data.get('password'), user.password):
+        if not check_password(serializer.data['password'], user.password):
             raise CustomApiException(ErrorCodes.INCORRECT_PASSWORD)
         login_time = timezone.now()
         refresh_token = RefreshToken.for_user(user)

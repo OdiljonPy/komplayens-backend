@@ -184,7 +184,10 @@ class TrainingViewSet(ViewSet):
 
         data = Training.objects.filter(filter_, is_published=True).order_by(*order_by)
         result = training_paginator(
-            data, context={'request': request}, page=params.get('page'), page_size=params.get('page_size'))
+            data,
+            context={'request': request}, page=params.get('page'),
+            page_size=params.get('page_size')
+        )
         return Response(data={'result': result, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(

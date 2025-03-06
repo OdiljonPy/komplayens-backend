@@ -131,15 +131,22 @@ class UserViewSet(ViewSet):
         serializer = PasswordRecoverySerializer(data=request.data)
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
-        phone_number = serializer.validated_data.get('phone_number')
-        user = User.objects.filter(phone_number=phone_number).first()
+
+        user = User.objects.filter(phone_number=serializer.validated_data['phone_number']).first()
         if not user:
             raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)
+
         if user.is_active == 2:
             raise CustomApiException(ErrorCodes.USER_BLOCKED)
+
         if user.updated_at > timezone.now() - timedelta(minutes=2):
-            return Response(data={'result': 'Can be resent after 2 minutes', 'ok': True}, status=status.HTTP_200_OK)
+            return Response(
+                data={'result': 'Can be resent after 2 minutes', 'ok': True},
+                status=status.HTTP_200_OK
+            )
+
         new_password = send_password_sms(user)
         user.password = make_password(new_password)
         user.save(update_fields=['password', 'updated_at'])
+
         return Response(data={'result': 'Password sent', 'ok': True}, status=status.HTTP_200_OK)

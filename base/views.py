@@ -147,8 +147,10 @@ class StatisticsViewSet(ViewSet):
 
         rainbow_serializer = RainbowStatisticSerializer(rainbow_statistics, context={'request': request})
         liner_serializer = LinerStatisticSerializer(liner_statistics, many=True, context={'request': request})
-        return Response(data={'result': {'rainbow' : rainbow_serializer.data, 'liner': liner_serializer.data},
-                              'ok': True}, status=status.HTTP_200_OK)
+        return Response(
+            data={'result': {'rainbow' : rainbow_serializer.data, 'liner': liner_serializer.data},'ok': True},
+            status=status.HTTP_200_OK
+        )
 
     @swagger_auto_schema(
         manual_parameters=[

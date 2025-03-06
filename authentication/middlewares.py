@@ -9,9 +9,6 @@ class UserAuthMiddleware(MiddlewareMixin):
         include_urls = [reverse('user_detail'),
                         reverse('create_officer_advice'), reverse('list_officer_advice')
                         ]
-        pk = view_kwargs.get('pk')
-        # if pk is not None:
-        #     include_urls.append(reverse(viewname='', kwargs={'pk': pk}))
 
         if request.path not in include_urls:
             return

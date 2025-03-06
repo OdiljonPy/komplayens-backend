@@ -1,6 +1,8 @@
 import re
 import random
 import string
+from ipaddress import ip_address
+
 from exceptions.error_messages import ErrorCodes
 from exceptions.exception import CustomApiException
 
@@ -10,13 +12,13 @@ def phone_number_validation(value):
         raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Phone number is invalid.')
 
 
-def is_user_created(request):
+def user_exists(request):
     from .models import User
-    data = request.data
-    if 'phone_number' in data:
-        user = User.objects.filter(phone_number=data.get('phone_number')).exclude(id=request.user.id).first()
-        return user
-    return
+    phone_number = request.data.get('phone_number')
+    if not phone_number:
+        return None
+
+    return User.objects.filter(phone_number=phone_number).exclude(id=request.user.id).first()
 
 
 def create_customer(request):
@@ -24,20 +26,20 @@ def create_customer(request):
     user_agent = request.META.get('HTTP_USER_AGENT')
     ip_address = request.META.get('HTTP_X_FORWARDED_FOR', None)
     ip_address = ip_address or request.META.get('REMOTE_ADDR')
-    customer = Customer.objects.filter(ip_address=ip_address, user_agent=user_agent).first()
-    if customer:
-        return customer
-    customer = Customer.objects.create(ip_address=ip_address, user_agent=user_agent)
+    customer, created = Customer.objects.get_or_create(
+        ip_address=ip_address,
+        user_agent=user_agent
+    )
     return customer
 
 
-def generate_passwd():
+def generate_password():
     return ''.join(random.sample(string.ascii_letters + string.digits, k=5))
 
 
 def send_password_sms(user):
     from utils.send_otp_code import send_password
-    new_password = generate_passwd()
+    new_password = generate_password()
     message = (f"Komplayens: Parolingizni tiklash uchun yangi parol: {new_password}. "
                f"Xavfsizlik uchun tizimga kirgach, uni almashtiring.")
     send_password(message=message, recipient=user.phone_number, user_id=user.id)

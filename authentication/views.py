@@ -10,7 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password, make_password
 from .models import User
 from .utils import (
-    is_user_created, send_password_sms
+    user_exists, send_password_sms
 )
 
 from .serializers import (
@@ -29,14 +29,17 @@ class UserViewSet(ViewSet):
         tags=["User"],
     )
     def create(self, request):
-        user = is_user_created(request)
+        user = user_exists(request)
         if user:
             raise CustomApiException(ErrorCodes.ALREADY_EXISTS)
         serializer = UserCreateSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
         serializer.save()
-        return Response(data={'result': 'User Created Successfully', 'ok': True}, status=status.HTTP_201_CREATED)
+        return Response(
+            data={'result': 'User Created Successfully', 'ok': True},
+            status=status.HTTP_201_CREATED
+        )
 
     @swagger_auto_schema(
         operation_summary='Login',
@@ -50,12 +53,12 @@ class UserViewSet(ViewSet):
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
 
-        user = User.objects.filter(phone_number=serializer.data.get('phone_number')).first()
+        user = User.objects.filter(phone_number=serializer.data['phone_number']).first()
         if not user:
             raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)
 
         if user.is_active == 2:
-            raise CustomApiException(ErrorCodes.INVALID_INPUT, message='Is User blocked')
+            raise CustomApiException(ErrorCodes.INVALID_INPUT, message='User is blocked')
 
         if user.role == 3 and user.status in (1, 3):
             message = {
@@ -64,7 +67,7 @@ class UserViewSet(ViewSet):
             }.get(user.status)
             raise CustomApiException(ErrorCodes.INVALID_INPUT, message=message)
 
-        if not check_password(serializer.data.get('password'), user.password):
+        if not check_password(serializer.data['password'], user.password):
             raise CustomApiException(ErrorCodes.INCORRECT_PASSWORD)
         login_time = timezone.now()
         refresh_token = RefreshToken.for_user(user)
@@ -75,7 +78,8 @@ class UserViewSet(ViewSet):
         user.save()
         return Response(
             data={'result': {'access_token': str(access_token), 'refresh_token': str(refresh_token)}, 'ok': True},
-            status=status.HTTP_200_OK)
+            status=status.HTTP_200_OK
+        )
 
     @swagger_auto_schema(
         operation_summary='User update',
@@ -88,12 +92,14 @@ class UserViewSet(ViewSet):
         serializer = UserPasswordUpdateSerializer(data=request.data)
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
-        user = User.objects.filter(id=request.user.id, is_active=True).first()
-        if not user:
+        try:
+            user = User.objects.get(id=request.user.id, is_active=True)
+        except User.DoesNotExist:
             raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)
 
         serializer = UserCreateSerializer(
-            user, data=serializer.validated_data, partial=True, context={'request': request})
+            user, data=serializer.validated_data, partial=True, context={'request': request}
+        )
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
         serializer.save()
@@ -108,9 +114,12 @@ class UserViewSet(ViewSet):
     def user_detail(self, request):
         user = User.objects.filter(id=request.user.id, status=2, is_active=True).first()
         if not user:
-            raise CustomApiException(ErrorCodes.NOT_FOUND)
+            raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)
         serializer = UserSerializer(user, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+        return Response(
+            data={'result': serializer.data, 'ok': True},
+            status=status.HTTP_200_OK
+        )
 
     @swagger_auto_schema(
         operation_summary='Password recovery',
@@ -122,15 +131,22 @@ class UserViewSet(ViewSet):
         serializer = PasswordRecoverySerializer(data=request.data)
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
-        phone_number = serializer.validated_data.get('phone_number')
-        user = User.objects.filter(phone_number=phone_number).first()
+
+        user = User.objects.filter(phone_number=serializer.validated_data['phone_number']).first()
         if not user:
             raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)
+
         if user.is_active == 2:
             raise CustomApiException(ErrorCodes.USER_BLOCKED)
+
         if user.updated_at > timezone.now() - timedelta(minutes=2):
-            return Response(data={'result': 'Can be resent after 2 minutes', 'ok': True}, status=status.HTTP_200_OK)
+            return Response(
+                data={'result': 'Can be resent after 2 minutes', 'ok': True},
+                status=status.HTTP_200_OK
+            )
+
         new_password = send_password_sms(user)
         user.password = make_password(new_password)
         user.save(update_fields=['password', 'updated_at'])
+
         return Response(data={'result': 'Password sent', 'ok': True}, status=status.HTTP_200_OK)

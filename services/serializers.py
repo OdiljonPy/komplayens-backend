@@ -535,7 +535,7 @@ class ViolationFileSerializer(serializers.ModelSerializer):
         fields = ('id', 'report', 'file')
 
 
-class TechnicalSupportSerializer(serializers.Serializer):
+class TechnicalSupportSerializer(serializers.ModelSerializer):
     class Meta:
         model = TechnicalSupport
         fields = ('id', 'image', 'comment')

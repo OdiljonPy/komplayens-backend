@@ -251,11 +251,14 @@ class ElectronLibraryViewSet(ViewSet):
             filter_ &= Q(
                 Q(name_uz__icontains=search_param) |
                 Q(name_ru__icontains=search_param) |
-                Q(name_en__icontains=search_param)
+                Q(name_en__icontains=search_param) |
+                Q(auther_uz__icontains=search_param) |
+                Q(auther_ru__icontains=search_param) |
+                Q(auther_en__icontains=search_param)
             )
         if category_id:
             filter_ &= Q(category_id=category_id)
-        data = ElectronLibrary.objects.filter(filter_, is_published=True)
+        data = ElectronLibrary.objects.filter(filter_, is_published=True).distinct()
         result = get_paginated_e_library(
             request_data=data, context={'request': request}, page=param_serializer.validated_data.get('page'),
             page_size=param_serializer.validated_data.get('page_size'))

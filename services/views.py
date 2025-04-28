@@ -252,9 +252,9 @@ class ElectronLibraryViewSet(ViewSet):
                 Q(name_uz__icontains=search_param) |
                 Q(name_ru__icontains=search_param) |
                 Q(name_en__icontains=search_param) |
-                Q(auther_uz__icontains=search_param) |
-                Q(auther_ru__icontains=search_param) |
-                Q(auther_en__icontains=search_param)
+                Q(author_uz__icontains=search_param) |
+                Q(author_ru__icontains=search_param) |
+                Q(author_en__icontains=search_param)
             )
         if category_id:
             filter_ &= Q(category_id=category_id)

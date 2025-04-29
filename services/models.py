@@ -190,7 +190,7 @@ class News(BaseModel):
 
 
 class HonestyTestCategory(BaseModel):
-    name = models.CharField(max_length=40, verbose_name='Название категории')
+    name = models.CharField(max_length=256, verbose_name='Название категории')
     image = models.ImageField(upload_to='honesty_test/category', verbose_name='Изображение')
     in_term = models.BooleanField(default=True, verbose_name='B перспективе')
 
